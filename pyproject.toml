@@ -5,7 +5,19 @@ description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "cloudscraper>=1.2.71",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "markdownify>=0.14.1",
+    "numpy>=2.2.2",
+    "playwright>=1.50.0",
+    "pypdf>=5.3.0",
+    "timeout-decorator>=0.5.0",
+    "whisper>=1.1.10",
+    "youtube-transcript-api>=0.6.3",
+    "yt-dlp>=2025.1.26",
+]
 
 [project.scripts]
 kabigon = "kabigon.cli:main"
@@ -16,6 +28,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["mypy>=1.13.0", "pytest>=8.3.3", "pytest-cov>=6.0.0", "ruff>=0.7.3"]
+mlx = ["mlx-whisper>=0.4.1"]
 
 [tool.ruff]
 exclude = ["build"]
