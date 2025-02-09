@@ -8,7 +8,6 @@ from .cloudscraper import CloudscraperLoader
 from .httpx import HttpxLoader
 from .loader import Loader
 from .pdf import PDFLoader
-from .pipeline import PipelineLoader
 from .playwright import PlaywrightLoader
 from .reel import ReelLoader
 from .singlefile import SinglefileLoader

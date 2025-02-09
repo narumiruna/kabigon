@@ -3,15 +3,8 @@ from urllib.parse import urlunparse
 
 from loguru import logger
 
-from .cloudscraper import CloudscraperLoader
-from .httpx import HttpxLoader
 from .loader import Loader
 from .loader import LoaderError
-from .pdf import PDFLoader
-from .reel import ReelLoader
-from .singlefile import SinglefileLoader
-from .youtube import YoutubeLoader
-from .ytdlp import YtdlpLoader
 
 REPLACEMENTS = {
     "api.fxtwitter.com": [
@@ -35,17 +28,9 @@ def replace_domain(url: str) -> str:
     return url
 
 
-class PipelineLoader(Loader):
-    def __init__(self) -> None:
-        self.loaders: list[Loader] = [
-            YoutubeLoader(),
-            ReelLoader(),
-            YtdlpLoader(),
-            PDFLoader(),
-            CloudscraperLoader(),
-            HttpxLoader(),
-            SinglefileLoader(),
-        ]
+class Compose(Loader):
+    def __init__(self, loaders: list[Loader]) -> None:
+        self.loaders = loaders
 
     def load(self, url: str) -> str:
         url = replace_domain(url)
