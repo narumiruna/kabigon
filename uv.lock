@@ -381,6 +381,8 @@ dependencies = [
     { name = "httpx" },
     { name = "loguru" },
     { name = "markdownify" },
+    { name = "numpy" },
+    { name = "openai-whisper" },
     { name = "playwright" },
     { name = "pypdf" },
     { name = "rich" },
@@ -407,6 +409,8 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "markdownify", specifier = ">=0.14.1" },
+    { name = "numpy", specifier = ">=2.1.3" },
+    { name = "openai-whisper", specifier = ">=20240930" },
     { name = "playwright", specifier = ">=1.50.0" },
     { name = "pypdf", specifier = ">=5.3.0" },
     { name = "rich", specifier = ">=13.9.4" },
@@ -877,6 +881,21 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/87/20/199b8713428322a2f22b722c62b8cc278cc53dffa9705d744484b5035ee9/nvidia_nvtx_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:781e950d9b9f60d8241ccea575b32f5105a5baf4c2351cab5256a24869f12a1a", size = 99144 },
 ]
+
+[[package]]
+name = "openai-whisper"
+version = "20240930"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "more-itertools" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "tiktoken" },
+    { name = "torch" },
+    { name = "tqdm" },
+    { name = "triton", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux') or sys_platform == 'linux2'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f5/77/952ca71515f81919bd8a6a4a3f89a27b09e73880cebf90957eda8f2f8545/openai-whisper-20240930.tar.gz", hash = "sha256:b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2", size = 800544 }
 
 [[package]]
 name = "packaging"
