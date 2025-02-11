@@ -5,6 +5,7 @@ from typing import Final
 from loguru import logger
 
 from .cloudscraper import CloudscraperLoader
+from .compose import Compose
 from .httpx import HttpxLoader
 from .loader import Loader
 from .pdf import PDFLoader
