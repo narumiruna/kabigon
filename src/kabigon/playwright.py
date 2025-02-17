@@ -20,7 +20,7 @@ class PlaywrightLoader(Loader):
         self.wait_until = wait_until
         self.browser_headless = browser_headless
 
-    @timeout_decorator.timeout(5)
+    @timeout_decorator.timeout(60)
     def load(self, url: str) -> str:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=self.browser_headless)
