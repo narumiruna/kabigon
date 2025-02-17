@@ -19,7 +19,7 @@ class NotPDFError(LoaderError):
 
 
 class PDFLoader(Loader):
-    @timeout_decorator.timeout(5)
+    @timeout_decorator.timeout(10)
     def load(self, url_or_file: str) -> str:
         if url_or_file.startswith("http"):
             url_or_file = download_pdf_from_url(url_or_file)
