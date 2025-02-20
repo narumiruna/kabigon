@@ -1,7 +1,6 @@
 import click
 from rich import print
 
-from .cloudscraper import CloudscraperLoader
 from .compose import Compose
 from .httpx import HttpxLoader
 from .pdf import PDFLoader
@@ -20,7 +19,6 @@ def main(url: str) -> None:
             ReelLoader(),
             YtdlpLoader(),
             PDFLoader(),
-            CloudscraperLoader(),
             HttpxLoader(),
             SinglefileLoader(),
         ]
