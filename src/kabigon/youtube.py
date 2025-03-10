@@ -1,5 +1,4 @@
 import asyncio
-import concurrent
 import concurrent.futures
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
