@@ -17,3 +17,9 @@ class HttpxLoader(Loader):
         response = httpx.get(url, headers=DEFAULT_HEADERS, follow_redirects=True)
         response.raise_for_status()
         return html_to_markdown(response.content)
+
+    async def async_load(self, url: str) -> str:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=DEFAULT_HEADERS, follow_redirects=True)
+            response.raise_for_status()
+            return html_to_markdown(response.content)
