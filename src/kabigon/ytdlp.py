@@ -1,8 +1,10 @@
+import asyncio
 import functools
 import hashlib
 import os
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from typing import Final
 
 import numpy as np
@@ -130,3 +132,10 @@ class YtdlpLoader(Loader):
 
         result = _transcribe(audio)
         return result.get("text", "")
+
+    async def async_load(self, url: str):
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(self.async_load, url)
+            while not future.done():
+                await asyncio.sleep(0.0)
+            return future.result()
