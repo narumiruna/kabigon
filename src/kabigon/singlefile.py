@@ -1,3 +1,5 @@
+import asyncio
+import concurrent.futures
 import os
 import subprocess
 import tempfile
@@ -32,6 +34,12 @@ class SinglefileLoader(Loader):
         filename = self.download(url)
         content = str(charset_normalizer.from_path(filename).best())
         return html_to_markdown(content)
+
+    async def async_load(self, url: str):
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            result = await loop.run_in_executor(executor, self.load, url)
+            return result
 
     def download(self, url: str) -> str:
         logger.info("Downloading HTML using SingleFile: {}", url)
