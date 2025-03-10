@@ -29,3 +29,12 @@ class ReelLoader(Loader):
         html_content = self.httpx_loader.load(url)
 
         return f"{audio_content}\n\n{html_content}"
+
+    async def async_load(self, url: str):
+        if not is_reel_url(url):
+            raise NotReelURLError(url)
+
+        audio_content = await self.ytdlp_loader.async_load(url)
+        html_content = await self.httpx_loader.async_load(url)
+
+        return f"{audio_content}\n\n{html_content}"
