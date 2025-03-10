@@ -1,5 +1,3 @@
-import asyncio
-import concurrent.futures
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
@@ -92,9 +90,3 @@ class YoutubeLoader(Loader):
             if text:
                 lines.append(text)
         return "\n".join(lines)
-
-    async def async_load(self, url: str):
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            result = await loop.run_in_executor(executor, self.load, url)
-            return result

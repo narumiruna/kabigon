@@ -1,5 +1,3 @@
-import asyncio
-import concurrent.futures
 import functools
 import hashlib
 import os
@@ -132,9 +130,3 @@ class YtdlpLoader(Loader):
 
         result = _transcribe(audio)
         return result.get("text", "")
-
-    async def async_load(self, url: str):
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            result = await loop.run_in_executor(executor, self.load, url)
-            return result
