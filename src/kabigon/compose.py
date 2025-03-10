@@ -50,3 +50,22 @@ class Compose(Loader):
                 logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
 
         raise LoaderError(f"Failed to load URL: {url}")
+
+    async def async_load(self, url: str) -> str:
+        url = replace_domain(url)
+
+        for loader in self.loaders:
+            try:
+                loaded_content = await loader.async_load(url)
+
+                if not loaded_content:
+                    logger.info("[{}] Failed to load URL: {}, got empty result", loader.__class__.__name__, url)
+                    continue
+
+                logger.info("[{}] Successfully loaded URL: {}", loader.__class__.__name__, url)
+                return loaded_content
+
+            except Exception as e:
+                logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
+
+        raise LoaderError(f"Failed to load URL: {url}")
