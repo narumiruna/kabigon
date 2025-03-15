@@ -1,6 +1,7 @@
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
+import aioytt
 import timeout_decorator
 from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -89,4 +90,13 @@ class YoutubeLoader(Loader):
             text = str(transcript_piece.get("text", "")).strip()
             if text:
                 lines.append(text)
+        return "\n".join(lines)
+
+    async def async_load(self, url: str) -> str:
+        transcript = await aioytt.get_transcript_from_url(url)
+        lines = []
+        for piece in transcript:
+            text = piece.text.strip()
+            if text:
+                lines += text
         return "\n".join(lines)
