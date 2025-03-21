@@ -33,5 +33,5 @@ class YoutubeLoader(Loader):
         for piece in transcript:
             text = piece.text.strip()
             if text:
-                lines += text
+                lines.append(text)
         return "\n".join(lines)
