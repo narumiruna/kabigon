@@ -1,5 +1,3 @@
-import timeout_decorator
-
 from .httpx import HttpxLoader
 from .loader import Loader
 from .loader import LoaderError
@@ -20,7 +18,6 @@ class ReelLoader(Loader):
         self.httpx_loader = HttpxLoader()
         self.ytdlp_loader = YtdlpLoader()
 
-    @timeout_decorator.timeout(300)
     def load(self, url: str) -> str:
         if not is_reel_url(url):
             raise NotReelURLError(url)

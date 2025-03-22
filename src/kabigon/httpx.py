@@ -1,5 +1,4 @@
 import httpx
-import timeout_decorator
 
 from .loader import Loader
 from .utils import html_to_markdown
@@ -12,7 +11,6 @@ DEFAULT_HEADERS = {
 
 
 class HttpxLoader(Loader):
-    @timeout_decorator.timeout(10)
     def load(self, url: str) -> str:
         response = httpx.get(url, headers=DEFAULT_HEADERS, follow_redirects=True)
         response.raise_for_status()
