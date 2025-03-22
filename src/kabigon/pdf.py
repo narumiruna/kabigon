@@ -1,5 +1,7 @@
-import tempfile
+import io
 from pathlib import Path
+from typing import IO
+from typing import Any
 
 import httpx
 import timeout_decorator
@@ -15,38 +17,45 @@ DEFAULT_HEADERS = {
 
 
 class NotPDFError(LoaderError):
-    pass
+    def __init__(self, url: str) -> None:
+        super().__init__(f"URL is not a PDF: {url}")
 
 
 class PDFLoader(Loader):
     @timeout_decorator.timeout(10)
     def load(self, url_or_file: str) -> str:
-        if url_or_file.startswith("http"):
-            url_or_file = download_pdf_from_url(url_or_file)
-        return read_pdf_content(url_or_file)
+        if not url_or_file.startswith("http"):
+            return read_pdf_content(url_or_file)
+
+        resp = httpx.get(url_or_file, headers=DEFAULT_HEADERS, follow_redirects=True)
+        resp.raise_for_status()
+
+        if resp.headers.get("content-type") != "application/pdf":
+            raise NotPDFError(url_or_file)
+
+        return read_pdf_content(io.BytesIO(resp.content))
+
+    async def async_load(self, url_or_file: str) -> str:
+        if not url_or_file.startswith("http"):
+            return read_pdf_content(url_or_file)
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url_or_file, headers=DEFAULT_HEADERS, follow_redirects=True)
+            resp.raise_for_status()
+
+            if resp.headers.get("content-type") != "application/pdf":
+                raise NotPDFError(url_or_file)
+
+            return read_pdf_content(io.BytesIO(resp.content))
 
 
-def download_pdf_from_url(url: str) -> str:
-    response = httpx.get(url=url, headers=DEFAULT_HEADERS, follow_redirects=True)
-    response.raise_for_status()
-
-    is_pdf = response.headers.get("content-type") == "application/pdf"
-    if not is_pdf:
-        raise NotPDFError(f"URL is not a PDF: {url}")
-
-    suffix = ".pdf" if is_pdf else None
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as fp:
-        fp.write(response.content)
-        return fp.name
-
-
-def read_pdf_content(f: str | Path) -> str:
+def read_pdf_content(f: str | Path | IO[Any]) -> str:
     lines = []
     with PdfReader(f) as reader:
         for page in reader.pages:
             text = page.extract_text(extraction_mode="plain")
             for line in text.splitlines():
-                if not line.strip():
-                    continue
-                lines.append(line.strip())
+                stripped = line.strip()
+                if stripped:
+                    lines.append(stripped)
     return "\n".join(lines)
