@@ -28,7 +28,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["mypy>=1.13.0", "pytest>=8.3.3", "pytest-cov>=6.0.0", "ruff>=0.7.3"]
+dev = [
+    "mypy>=1.13.0",
+    "pip>=25.0.1",
+ "pytest>=8.3.3",
+ "pytest-cov>=6.0.0",
+ "ruff>=0.7.3",
+]
 mlx = ["mlx-whisper>=0.4.1"]
 
 [tool.ruff]
