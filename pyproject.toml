@@ -1,6 +1,6 @@
 [project]
 name = "kabigon"
-version = "0.4.2"
+version = "0.5.0"
 description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
@@ -31,9 +31,9 @@ build-backend = "hatchling.build"
 dev = [
     "mypy>=1.13.0",
     "pip>=25.0.1",
- "pytest>=8.3.3",
- "pytest-cov>=6.0.0",
- "ruff>=0.7.3",
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.7.3",
 ]
 mlx = ["mlx-whisper>=0.4.1"]
 
