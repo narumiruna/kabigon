@@ -4,7 +4,6 @@ from typing import IO
 from typing import Any
 
 import httpx
-import timeout_decorator
 from pypdf import PdfReader
 
 from .loader import Loader
@@ -22,7 +21,6 @@ class NotPDFError(LoaderError):
 
 
 class PDFLoader(Loader):
-    @timeout_decorator.timeout(10)
     def load(self, url_or_file: str) -> str:
         if not url_or_file.startswith("http"):
             return read_pdf_content(url_or_file)
