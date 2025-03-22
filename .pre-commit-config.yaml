@@ -6,7 +6,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.5
+    rev: v0.11.2
     hooks:
       - id: ruff
         args: [--fix]
@@ -17,6 +17,6 @@ repos:
       - id: mypy
         args: [--install-types, --non-interactive]
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.5.29
+    rev: 0.6.9
     hooks:
       - id: uv-lock
