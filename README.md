@@ -4,6 +4,7 @@
 
 ```shell
 pip install kabigon
+playwright install chromium
 ```
 
 ## Usage
@@ -26,7 +27,7 @@ content = kabigon.Compose(
         kabigon.YtdlpLoader(),
         kabigon.PDFLoader(),
         kabigon.HttpxLoader(),
-        kabigon.SinglefileLoader(),
+        kabigon.PlaywrightLoader(),
     ]
 ).load(url)
 print(content)
