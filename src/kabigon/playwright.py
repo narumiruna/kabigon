@@ -1,7 +1,5 @@
 from typing import Literal
 
-from loguru import logger
-from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
 
@@ -12,8 +10,8 @@ from .utils import html_to_markdown
 class PlaywrightLoader(Loader):
     def __init__(
         self,
-        timeout: int = 10_000,
-        wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "networkidle",
+        timeout: float | None = 0,
+        wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
         browser_headless: bool = False,
     ) -> None:
         self.timeout = timeout
@@ -37,11 +35,7 @@ class PlaywrightLoader(Loader):
             browser = await p.chromium.launch(headless=self.browser_headless)
             page = await browser.new_page()
 
-            try:
-                await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
-            except TimeoutError as e:
-                logger.error("Unable to load url: {}, got error: {}", url, e)
-                await page.goto(url)
+            await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
 
             content = await page.content()
             await browser.close()
