@@ -26,7 +26,7 @@ content = kabigon.Compose(
         kabigon.ReelLoader(),
         kabigon.YtdlpLoader(),
         kabigon.PDFLoader(),
-        kabigon.HttpxLoader(),
+        # kabigon.HttpxLoader(),
         kabigon.PlaywrightLoader(),
     ]
 ).load(url)
