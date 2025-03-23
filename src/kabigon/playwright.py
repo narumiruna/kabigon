@@ -1,5 +1,7 @@
 from typing import Literal
 
+from loguru import logger
+from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
 
@@ -35,7 +37,11 @@ class PlaywrightLoader(Loader):
             browser = await p.chromium.launch(headless=self.browser_headless)
             page = await browser.new_page()
 
-            await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            try:
+                await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            except TimeoutError as e:
+                logger.error("Unable to load url: {}, got error: {}", url, e)
+                await page.goto(url)
 
             content = await page.content()
             await browser.close()
