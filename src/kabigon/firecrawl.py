@@ -2,14 +2,9 @@ import os
 
 from firecrawl import FirecrawlApp
 
+from .errors import FirecrawlError
+from .errors import FirecrawlKeyError
 from .loader import Loader
-from .loader import LoaderError
-
-
-class FirecrawlError(LoaderError):
-    def __init__(self, url: str, error: str) -> None:
-        msg = f"Failed to load URL: {url}, got: {error}"
-        super().__init__(msg)
 
 
 class FirecrawlLoader(Loader):
@@ -18,7 +13,7 @@ class FirecrawlLoader(Loader):
 
         api_key = os.getenv("FIRECRAWL_API_KEY")
         if not api_key:
-            raise ValueError("FIRECRAWL_API_KEY is not set.")
+            raise FirecrawlKeyError()
 
         self.app = FirecrawlApp(api_key=api_key)
 

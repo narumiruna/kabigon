@@ -3,8 +3,8 @@ from urllib.parse import urlunparse
 
 from loguru import logger
 
+from .errors import LoaderError
 from .loader import Loader
-from .loader import LoaderError
 
 REPLACEMENTS = {
     "api.fxtwitter.com": [

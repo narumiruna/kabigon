@@ -14,7 +14,3 @@ class Loader:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             result = await loop.run_in_executor(executor, self.load, url)
             return result
-
-
-class LoaderError(Exception):
-    pass

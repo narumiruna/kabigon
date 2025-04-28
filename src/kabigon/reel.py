@@ -1,16 +1,11 @@
+from .errors import NotReelURLError
 from .httpx import HttpxLoader
 from .loader import Loader
-from .loader import LoaderError
 from .ytdlp import YtdlpLoader
 
 
 def is_reel_url(url: str) -> bool:
     return url.startswith("https://www.instagram.com/reel")
-
-
-class NotReelURLError(LoaderError):
-    def __init__(self, url: str):
-        super().__init__(f"URL is not an Instagram Reel: {url}")
 
 
 class ReelLoader(Loader):

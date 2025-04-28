@@ -6,18 +6,13 @@ from typing import Any
 import httpx
 from pypdf import PdfReader
 
+from .errors import NotPDFError
 from .loader import Loader
-from .loader import LoaderError
 
 DEFAULT_HEADERS = {
     "Accept-Language": "zh-TW,zh;q=0.9,ja;q=0.8,en-US;q=0.7,en;q=0.6",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",  # noqa
 }
-
-
-class NotPDFError(LoaderError):
-    def __init__(self, url: str) -> None:
-        super().__init__(f"URL is not a PDF: {url}")
 
 
 class PDFLoader(Loader):
