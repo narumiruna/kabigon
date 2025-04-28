@@ -5,6 +5,7 @@ from typing import Final
 from loguru import logger
 
 from .compose import Compose
+from .firecrawl import FirecrawlLoader
 from .httpx import HttpxLoader
 from .loader import Loader
 from .pdf import PDFLoader
