@@ -14,7 +14,7 @@ from loguru import logger
 from .loader import Loader
 
 try:
-    import mlx_whisper  # noqa: F401
+    import mlx_whisper  # noqa: F401 # type: ignore
 
     _mlx_whisper_installed = True
 except ImportError:
