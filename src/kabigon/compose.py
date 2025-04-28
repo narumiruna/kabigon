@@ -3,7 +3,7 @@ from urllib.parse import urlunparse
 
 from loguru import logger
 
-from .errors import LoaderError
+from .errors import KabigonError
 from .loader import Loader
 
 REPLACEMENTS = {
@@ -49,7 +49,7 @@ class Compose(Loader):
             except Exception as e:
                 logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
 
-        raise LoaderError(f"Failed to load URL: {url}")
+        raise KabigonError(f"Failed to load URL: {url}")
 
     async def async_load(self, url: str) -> str:
         url = replace_domain(url)
@@ -68,4 +68,4 @@ class Compose(Loader):
             except Exception as e:
                 logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
 
-        raise LoaderError(f"Failed to load URL: {url}")
+        raise KabigonError(f"Failed to load URL: {url}")
