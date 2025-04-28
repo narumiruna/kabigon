@@ -11,7 +11,6 @@ from .loader import Loader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
 from .reel import ReelLoader
-from .singlefile import SinglefileLoader
 from .youtube import YoutubeLoader
 from .ytdlp import YtdlpLoader
 
