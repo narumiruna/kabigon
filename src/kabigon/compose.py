@@ -7,14 +7,15 @@ from .errors import KabigonError
 from .loader import Loader
 
 REPLACEMENTS = {
-    "api.fxtwitter.com": [
+    # fixupx.com seems better than api.fxtwitter.com
+    "fixupx.com": [
         "twitter.com",
         "x.com",
         "fxtwitter.com",
         "vxtwitter.com",
         "fixvx.com",
         "twittpr.com",
-        "fixupx.com",
+        "api.fxtwitter.com",
     ]
 }
 
