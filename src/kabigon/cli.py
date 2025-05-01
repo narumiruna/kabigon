@@ -1,4 +1,4 @@
-import click
+import typer
 from rich import print
 
 from .compose import Compose
@@ -11,9 +11,7 @@ from .youtube import YoutubeLoader
 from .ytdlp import YtdlpLoader
 
 
-@click.command()
-@click.argument("url", type=click.STRING)
-def main(url: str) -> None:
+def run(url: str) -> None:
     loader = Compose(
         [
             PttLoader(),
@@ -27,3 +25,7 @@ def main(url: str) -> None:
     )
     result = loader.load(url)
     print(result)
+
+
+def main() -> None:
+    typer.run(run)
