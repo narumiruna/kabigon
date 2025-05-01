@@ -1,11 +1,11 @@
-from .errors import NotReelURLError
 from .httpx import HttpxLoader
 from .loader import Loader
 from .ytdlp import YtdlpLoader
 
 
-def is_reel_url(url: str) -> bool:
-    return url.startswith("https://www.instagram.com/reel")
+def check_reel_url(url: str) -> None:
+    if not url.startswith("https://www.instagram.com/reel"):
+        raise ValueError(f"URL is not an Instagram Reel: {url}")
 
 
 class ReelLoader(Loader):
@@ -14,8 +14,7 @@ class ReelLoader(Loader):
         self.ytdlp_loader = YtdlpLoader()
 
     def load(self, url: str) -> str:
-        if not is_reel_url(url):
-            raise NotReelURLError(url)
+        check_reel_url(url)
 
         audio_content = self.ytdlp_loader.load(url)
         html_content = self.httpx_loader.load(url)
@@ -23,8 +22,7 @@ class ReelLoader(Loader):
         return f"{audio_content}\n\n{html_content}"
 
     async def async_load(self, url: str):
-        if not is_reel_url(url):
-            raise NotReelURLError(url)
+        check_reel_url(url)
 
         audio_content = await self.ytdlp_loader.async_load(url)
         html_content = await self.httpx_loader.async_load(url)

@@ -1,12 +1,12 @@
 from urllib.parse import urlparse
 
-from .errors import NotTwitterURLError
 from .httpx import HttpxLoader
 from .loader import Loader
 
 
-def is_ptt_url(url: str) -> bool:
-    return urlparse(url).netloc == "www.ptt.cc"
+def check_ptt_url(url: str) -> None:
+    if urlparse(url).netloc != "www.ptt.cc":
+        raise ValueError(f"URL must be from ptt.cc, got {url}")
 
 
 class PttLoader(Loader):
@@ -20,13 +20,11 @@ class PttLoader(Loader):
         )
 
     def load(self, url: str) -> str:
-        if not is_ptt_url(url):
-            raise NotTwitterURLError(url)
+        check_ptt_url(url)
 
         return self.httpx_loader.load(url)
 
     async def async_load(self, url: str):
-        if not is_ptt_url(url):
-            raise NotTwitterURLError(url)
+        check_ptt_url(url)
 
         return await self.httpx_loader.async_load(url)
