@@ -10,6 +10,7 @@ from .httpx import HttpxLoader
 from .loader import Loader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
+from .ptt import PttLoader
 from .reel import ReelLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
