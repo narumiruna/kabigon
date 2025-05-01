@@ -21,3 +21,8 @@ class NotPDFError(KabigonError):
 class NotReelURLError(KabigonError):
     def __init__(self, url: str):
         super().__init__(f"URL is not an Instagram Reel: {url}")
+
+
+class NotTwitterURLError(KabigonError):
+    def __init__(self, url: str):
+        super().__init__(f"URL is not a Twitter URL: {url}")
