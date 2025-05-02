@@ -26,7 +26,8 @@ class PlaywrightLoader(Loader):
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=self.browser_headless)
-            page = browser.new_page()
+            context = browser.new_context()
+            page = context.new_page()
 
             page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
 
@@ -46,7 +47,8 @@ class PlaywrightLoader(Loader):
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=self.browser_headless)
-            page = await browser.new_page()
+            context = await browser.new_context()
+            page = await context.new_page()
 
             await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
 
