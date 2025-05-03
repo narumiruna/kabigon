@@ -634,7 +634,6 @@ dependencies = [
     { name = "loguru" },
     { name = "markdownify" },
     { name = "numpy" },
-    { name = "playwright" },
     { name = "pypdf" },
     { name = "rich" },
     { name = "typer" },
@@ -643,6 +642,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+playwright = [
+    { name = "playwright" },
+]
 whisper = [
     { name = "openai-whisper" },
 ]
@@ -666,14 +668,14 @@ requires-dist = [
     { name = "markdownify", specifier = ">=0.14.1" },
     { name = "numpy", specifier = ">=2.2.5" },
     { name = "openai-whisper", marker = "extra == 'whisper'", specifier = ">=20240930" },
-    { name = "playwright", specifier = ">=1.52.0" },
+    { name = "playwright", marker = "extra == 'playwright'", specifier = ">=1.52.0" },
     { name = "pypdf", specifier = ">=5.3.0" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.15.3" },
     { name = "youtube-transcript-api", specifier = ">=0.6.3" },
     { name = "yt-dlp", specifier = ">=2025.4.30" },
 ]
-provides-extras = ["whisper"]
+provides-extras = ["whisper", "playwright"]
 
 [package.metadata.requires-dev]
 dev = [
