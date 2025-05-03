@@ -1,16 +1,21 @@
-import functools
+# import functools
 import hashlib
 import os
-import subprocess
+
+# import subprocess
 import tempfile
 from typing import Final
 
-import numpy as np
-import whisper
+# import numpy as np
 import yt_dlp
 from loguru import logger
 
 from .loader import Loader
+
+try:
+    import whisper
+except ImportError:
+    logger.info("OpenAI Whisper not installed. Please install it with `pip install openai-whisper`.")
 
 DEFAULT_FFMPEG_PATH: Final[str] = "ffmpeg"
 
@@ -56,64 +61,58 @@ def download_audio(url: str) -> str:
     return filename + ".mp3"
 
 
-def load_audio(file: str, sr: int = 16000):
-    """
-    Open an audio file and read as mono waveform, resampling as necessary
+# def load_audio(file: str, sr: int = 16000):
+#     """
+#     Open an audio file and read as mono waveform, resampling as necessary
 
-    Parameters
-    ----------
-    file: str
-        The audio file to open
+#     Parameters
+#     ----------
+#     file: str
+#         The audio file to open
 
-    sr: int
-        The sample rate to resample the audio if necessary
+#     sr: int
+#         The sample rate to resample the audio if necessary
 
-    Returns
-    -------
-    A NumPy array containing the audio waveform, in float32 dtype.
-    """
-    ffmpeg_path = get_ffmpeg_path()
+#     Returns
+#     -------
+#     A NumPy array containing the audio waveform, in float32 dtype.
+#     """
+#     ffmpeg_path = get_ffmpeg_path()
 
-    # This launches a subprocess to decode audio while down-mixing
-    # and resampling as necessary.  Requires the ffmpeg CLI in PATH.
-    # fmt: off
-    cmd = [
-        ffmpeg_path,
-        "-nostdin",
-        "-threads", "0",
-        "-i", file,
-        "-f", "s16le",
-        "-ac", "1",
-        "-acodec", "pcm_s16le",
-        "-ar", str(sr),
-        "-"
-    ]
-    # fmt: on
-    try:
-        out = subprocess.run(cmd, capture_output=True, check=True).stdout
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+#     # This launches a subprocess to decode audio while down-mixing
+#     # and resampling as necessary.  Requires the ffmpeg CLI in PATH.
+#     # fmt: off
+#     cmd = [
+#         ffmpeg_path,
+#         "-nostdin",
+#         "-threads", "0",
+#         "-i", file,
+#         "-f", "s16le",
+#         "-ac", "1",
+#         "-acodec", "pcm_s16le",
+#         "-ar", str(sr),
+#         "-"
+#     ]
+#     # fmt: on
+#     try:
+#         out = subprocess.run(cmd, capture_output=True, check=True).stdout
+#     except subprocess.CalledProcessError as e:
+#         raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
 
-    return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
-
-
-@functools.cache
-def get_whisper_model(model: str = "tiny") -> whisper.Whisper:
-    return whisper.load_model(model)
-
-
-def _transcribe(audio: np.ndarray) -> dict:
-    model = get_whisper_model()
-    return model.transcribe(audio)
+#     return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
 
 
 class YtdlpLoader(Loader):
+    def __init__(self, model: str = "tiny") -> None:
+        self.model = whisper.load_model(model)
+
     def load(self, url: str) -> str:
         audio_file = download_audio(url)
-        audio = load_audio(audio_file)
+        # audio = load_audio(audio_file)
+        audio = whisper.load_audio(audio_file)
 
         # Clean up the audio file
         os.remove(audio_file)
 
-        result = _transcribe(audio)
+        result = self.model.transcribe(audio)
         return result.get("text", "")
