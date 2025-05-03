@@ -27,6 +27,10 @@ whisper = ["openai-whisper>=20240930"]
 playwright = [
     "playwright>=1.52.0",
 ]
+all = [
+    "openai-whisper>=20240930",
+    "playwright>=1.52.0",
+]
 
 [build-system]
 requires = ["hatchling"]
