@@ -3,7 +3,7 @@
 ## Installation
 
 ```shell
-pip install kabigon
+pip install kabigon[all]
 playwright install chromium
 ```
 
