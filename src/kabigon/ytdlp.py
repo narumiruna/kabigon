@@ -6,20 +6,11 @@ import tempfile
 from typing import Final
 
 import numpy as np
-import timeout_decorator
 import whisper
 import yt_dlp
 from loguru import logger
 
 from .loader import Loader
-
-try:
-    import mlx_whisper  # noqa: F401 # type: ignore
-
-    _mlx_whisper_installed = True
-except ImportError:
-    _mlx_whisper_installed = False
-
 
 DEFAULT_FFMPEG_PATH: Final[str] = "ffmpeg"
 
@@ -107,20 +98,16 @@ def load_audio(file: str, sr: int = 16000):
 
 
 @functools.cache
-def _load_whisper_model() -> whisper.Whisper:
-    return whisper.load_model("tiny")
+def get_whisper_model(model: str = "tiny") -> whisper.Whisper:
+    return whisper.load_model(model)
 
 
 def _transcribe(audio: np.ndarray) -> dict:
-    if _mlx_whisper_installed:
-        return mlx_whisper.transcribe(audio, path_or_hf_repo="mlx-community/whisper-tiny")
-
-    model = _load_whisper_model()
+    model = get_whisper_model()
     return model.transcribe(audio)
 
 
 class YtdlpLoader(Loader):
-    @timeout_decorator.timeout(300)
     def load(self, url: str) -> str:
         audio_file = download_audio(url)
         audio = load_audio(audio_file)

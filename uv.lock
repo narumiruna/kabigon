@@ -637,7 +637,6 @@ dependencies = [
     { name = "playwright" },
     { name = "pypdf" },
     { name = "rich" },
-    { name = "timeout-decorator" },
     { name = "typer" },
     { name = "youtube-transcript-api" },
     { name = "yt-dlp" },
@@ -670,7 +669,6 @@ requires-dist = [
     { name = "playwright", specifier = ">=1.52.0" },
     { name = "pypdf", specifier = ">=5.3.0" },
     { name = "rich", specifier = ">=13.9.4" },
-    { name = "timeout-decorator", specifier = ">=0.5.0" },
     { name = "typer", specifier = ">=0.15.3" },
     { name = "youtube-transcript-api", specifier = ">=0.6.3" },
     { name = "yt-dlp", specifier = ">=2025.4.30" },
@@ -1766,12 +1764,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fa/5c/74e4c137530dd8504e97e3a41729b1103a4ac29036cbfd3250b11fd29451/tiktoken-0.9.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:cd69372e8c9dd761f0ab873112aba55a0e3e506332dd9f7522ca466e817b1b7a", size = 1258465 },
     { url = "https://files.pythonhosted.org/packages/de/a8/8f499c179ec900783ffe133e9aab10044481679bb9aad78436d239eee716/tiktoken-0.9.0-cp313-cp313-win_amd64.whl", hash = "sha256:5ea0edb6f83dc56d794723286215918c1cde03712cbbafa0348b33448faf5b95", size = 894669 },
 ]
-
-[[package]]
-name = "timeout-decorator"
-version = "0.5.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/80/f8/0802dd14c58b5d3d72bb9caa4315535f58787a1dc50b81bbbcaaa15451be/timeout-decorator-0.5.0.tar.gz", hash = "sha256:6a2f2f58db1c5b24a2cc79de6345760377ad8bdc13813f5265f6c3e63d16b3d7", size = 4754 }
 
 [[package]]
 name = "tomli"
