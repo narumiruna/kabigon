@@ -10,14 +10,14 @@ class Compose(Loader):
     def load(self, url: str) -> str:
         for loader in self.loaders:
             try:
-                content = loader.load(url)
+                result = loader.load(url)
 
-                if not content:
+                if not result:
                     logger.info("[{}] Failed to load URL: {}, got empty result", loader.__class__.__name__, url)
                     continue
 
                 logger.info("[{}] Successfully loaded URL: {}", loader.__class__.__name__, url)
-                return content
+                return result
 
             except Exception as e:
                 logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
@@ -27,14 +27,14 @@ class Compose(Loader):
     async def async_load(self, url: str) -> str:
         for loader in self.loaders:
             try:
-                content = await loader.async_load(url)
+                result = await loader.async_load(url)
 
-                if not content:
+                if not result:
                     logger.info("[{}] Failed to load URL: {}, got empty result", loader.__class__.__name__, url)
                     continue
 
                 logger.info("[{}] Successfully loaded URL: {}", loader.__class__.__name__, url)
-                return content
+                return result
 
             except Exception as e:
                 logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
