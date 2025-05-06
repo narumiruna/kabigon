@@ -14,6 +14,7 @@ from .ptt import PttLoader
 from .reel import ReelLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
+from .youtube_ytdlp import YoutubeYtdlpLoader
 from .ytdlp import YtdlpLoader
 
 LOGURU_LEVEL: Final[str] = os.getenv("LOGURU_LEVEL", "INFO")
