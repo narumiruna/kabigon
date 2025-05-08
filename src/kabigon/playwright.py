@@ -1,8 +1,5 @@
 from typing import Literal
 
-from playwright.async_api import async_playwright
-from playwright.sync_api import sync_playwright
-
 from .loader import Loader
 from .utils import html_to_markdown
 
@@ -19,6 +16,14 @@ class PlaywrightLoader(Loader):
         self.browser_headless = browser_headless
 
     def load(self, url: str) -> str:
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError as e:
+            raise ImportError(
+                "Playwright is not installed."
+                "Please install it with `pip install playwright` and run `playwright install`."
+            ) from e
+
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=self.browser_headless)
             page = browser.new_page()
@@ -31,6 +36,14 @@ class PlaywrightLoader(Loader):
             return html_to_markdown(content)
 
     async def async_load(self, url: str) -> str:
+        try:
+            from playwright.async_api import async_playwright
+        except ImportError as e:
+            raise ImportError(
+                "Playwright is not installed."
+                "Please install it with `pip install playwright` and run `playwright install`."
+            ) from e
+
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=self.browser_headless)
             page = await browser.new_page()
