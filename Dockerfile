@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable
+    uv sync --frozen --no-dev --no-editable --extra all
 
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 
@@ -25,8 +25,9 @@ COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-RUN playwright install --with-deps chromium
-RUN apt-get update && apt-get install -y xauth \
+RUN playwright install --with-deps chromium \
+    && apt-get update \
+    && apt-get install -y xauth \
     && rm -rf /var/lib/apt/lists/*
 
 # ENTRYPOINT ["kabigon"]
