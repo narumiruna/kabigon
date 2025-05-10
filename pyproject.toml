@@ -11,6 +11,8 @@ dependencies = [
     "httpx>=0.28.1",
     "loguru>=0.7.3",
     "markdownify>=0.14.1",
+    "openai-whisper>=20240930",
+    "playwright>=1.52.0",
     "pypdf>=5.3.0",
     "rich>=13.9.4",
     "typer>=0.15.3",
@@ -20,16 +22,6 @@ dependencies = [
 
 [project.scripts]
 kabigon = "kabigon.cli:main"
-
-[project.optional-dependencies]
-whisper = ["openai-whisper>=20240930"]
-playwright = [
-    "playwright>=1.52.0",
-]
-all = [
-    "openai-whisper>=20240930",
-    "playwright>=1.52.0",
-]
 
 [build-system]
 requires = ["hatchling"]
