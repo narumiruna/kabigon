@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable --extra all
+    uv sync --frozen --no-dev --no-editable --all-extras
 
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
 
