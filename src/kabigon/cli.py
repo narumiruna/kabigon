@@ -8,7 +8,6 @@ from .ptt import PttLoader
 from .reel import ReelLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
-from .ytdlp import YtdlpLoader
 
 
 def run(url: str) -> None:
@@ -18,7 +17,6 @@ def run(url: str) -> None:
             TwitterLoader(),
             YoutubeLoader(),
             ReelLoader(),
-            YtdlpLoader(),
             PDFLoader(),
             PlaywrightLoader(),
         ]
