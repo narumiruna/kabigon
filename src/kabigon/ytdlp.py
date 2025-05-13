@@ -1,6 +1,5 @@
-import hashlib
 import os
-import tempfile
+import uuid
 from pathlib import Path
 
 import yt_dlp
@@ -26,9 +25,10 @@ def download_audio(url: str, outtmpl: str | None = None) -> None:
         ydl_opts["outtmpl"] = outtmpl
 
     ffmpeg_path = os.getenv("FFMPEG_PATH")
-    if ffmpeg_path is None:
+    if ffmpeg_path is not None:
         ydl_opts["ffmpeg_location"] = ffmpeg_path
 
+    logger.info("Downloading audio from URL: {} with options: {}", url, ydl_opts)
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
@@ -46,16 +46,16 @@ class YtdlpLoader(Loader):
         self.load_audio = whisper.load_audio
 
     def load(self, url: str) -> str:
-        temp_dir = Path(tempfile.gettempdir())
-        outtmpl = hashlib.sha512(url.encode("utf-8")).hexdigest()
-        path = (temp_dir / outtmpl).with_suffix(".mp3")
-
+        outtmpl = uuid.uuid4().hex[:20]
+        path = str(Path(outtmpl).with_suffix(".mp3"))
         download_audio(url, outtmpl=outtmpl)
-        audio = self.load_audio(path)
 
-        # Clean up the audio file
-        os.remove(path)
+        try:
+            audio = self.load_audio(path)
+            logger.info("Transcribing audio file: {}", path)
+            result = self.model.transcribe(audio)
+        finally:
+            # Clean up the audio file
+            os.remove(path)
 
-        logger.info("Transcribing audio file: {}", path)
-        result = self.model.transcribe(audio)
         return result.get("text", "")
