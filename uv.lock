@@ -385,7 +385,7 @@ wheels = [
 
 [[package]]
 name = "firecrawl-py"
-version = "2.6.0"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -395,9 +395,9 @@ dependencies = [
     { name = "requests" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/d6/8aafd1ad3b25b59f7b5227af9952d238d6cf752429aa9ec24057c4f7d36c/firecrawl_py-2.6.0.tar.gz", hash = "sha256:e0186f1b7695cb2b7248e1dbf89870a31494fd017554eb41332bad085afc8b3e", size = 37836, upload-time = "2025-05-16T19:28:14.454Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/06/9ff7d2f5f37f18bb752c43c1a279c8794c4c7190202304437509a4caff94/firecrawl_py-2.7.0.tar.gz", hash = "sha256:67e683c984a8b708d20ef0a896be7bff7223ccd08fdfea080a66de503284cf36", size = 37828, upload-time = "2025-05-20T19:58:13.246Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/35/2850f05f5c2d0b654527e151786385d481eb232a9c6c5d751466adb34adf/firecrawl_py-2.6.0-py3-none-any.whl", hash = "sha256:c21defc268afdb5e619ed71a024db51336e5b488b6e8be1869576483263025c0", size = 275043, upload-time = "2025-05-16T19:28:12.664Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/34/fd9fbab8714f92d31325c54b7631632f13273117009dfa74c03f83319987/firecrawl_py-2.7.0-py3-none-any.whl", hash = "sha256:950d785d950494db448670ec380f93283cf3b553e4969f6aaeb2f3b0eb3eafd8", size = 71213, upload-time = "2025-05-20T19:58:12.032Z" },
 ]
 
 [[package]]
