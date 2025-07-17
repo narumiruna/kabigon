@@ -25,11 +25,11 @@ class YoutubeLoader(Loader):
                 lines.append(text)
         return "\n".join(lines)
 
-    async def async_load(self, url: str) -> str:
-        transcript = await aioytt.get_transcript_from_url(url)
-        lines = []
-        for piece in transcript:
-            text = piece.text.strip()
-            if text:
-                lines.append(text)
-        return "\n".join(lines)
+    # async def async_load(self, url: str) -> str:
+    #     transcript = await aioytt.get_transcript_from_url(url)
+    #     lines = []
+    #     for piece in transcript:
+    #         text = piece.text.strip()
+    #         if text:
+    #             lines.append(text)
+    #     return "\n".join(lines)
