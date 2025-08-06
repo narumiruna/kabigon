@@ -14,7 +14,7 @@ dependencies = [
     "pypdf>=5.3.0",
     "rich>=13.9.4",
     "typer>=0.15.3",
-    "youtube-transcript-api>=0.6.3",
+    "youtube-transcript-api>=1.2.2",
     "yt-dlp>=2025.4.30",
 ]
 

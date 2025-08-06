@@ -14,13 +14,11 @@ class YoutubeLoader(Loader):
     def load(self, url: str) -> str:
         video_id = aioytt.video_id.parse_video_id(url)
 
-        transcript_pieces: list[dict[str, str | float]] = YouTubeTranscriptApi().get_transcript(
-            video_id, self.languages
-        )
+        fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
 
         lines = []
-        for transcript_piece in transcript_pieces:
-            text = str(transcript_piece.get("text", "")).strip()
+        for snippet in fetched.snippets:
+            text = str(snippet.text).strip()
             if text:
                 lines.append(text)
         return "\n".join(lines)

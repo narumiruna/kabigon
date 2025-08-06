@@ -710,7 +710,7 @@ requires-dist = [
     { name = "pypdf", specifier = ">=5.3.0" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.15.3" },
-    { name = "youtube-transcript-api", specifier = ">=0.6.3" },
+    { name = "youtube-transcript-api", specifier = ">=1.2.2" },
     { name = "yt-dlp", specifier = ">=2025.4.30" },
 ]
 provides-extras = ["whisper", "playwright", "all"]
