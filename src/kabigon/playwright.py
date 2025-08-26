@@ -1,7 +1,6 @@
 from typing import Literal
 
 from loguru import logger
-from playwright.sync_api import TimeoutError
 
 from .loader import Loader
 from .utils import html_to_markdown
@@ -20,6 +19,7 @@ class PlaywrightLoader(Loader):
 
     def load(self, url: str) -> str:
         try:
+            from playwright.sync_api import TimeoutError
             from playwright.sync_api import sync_playwright
         except ImportError as e:
             raise ImportError(
@@ -44,6 +44,7 @@ class PlaywrightLoader(Loader):
 
     async def async_load(self, url: str) -> str:
         try:
+            from playwright.async_api import TimeoutError
             from playwright.async_api import async_playwright
         except ImportError as e:
             raise ImportError(
