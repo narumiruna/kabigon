@@ -17,7 +17,7 @@ TWITTER_DOMAINS = [
 
 
 def replace_domain(url: str, new_domain: str = "x.com") -> str:
-    return urlunparse(urlparse(url)._replace(netloc=new_domain))
+    return str(urlunparse(urlparse(url)._replace(netloc=new_domain)))
 
 
 def check_x_url(url: str) -> None:
@@ -27,7 +27,7 @@ def check_x_url(url: str) -> None:
 
 class TwitterLoader(Loader):
     def __init__(self) -> None:
-        self.playwright_loader = PlaywrightLoader(wait_until="networkidle")
+        self.playwright_loader = PlaywrightLoader(wait_until="networkidle", timeout=10_000)
 
     def load(self, url: str) -> str:
         check_x_url(url)

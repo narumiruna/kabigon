@@ -1,5 +1,8 @@
 from typing import Literal
 
+from loguru import logger
+from playwright.sync_api import TimeoutError
+
 from .loader import Loader
 from .utils import html_to_markdown
 
@@ -29,7 +32,10 @@ class PlaywrightLoader(Loader):
             context = browser.new_context()
             page = context.new_page()
 
-            page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            try:
+                page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            except TimeoutError as e:
+                logger.warning("TimeoutError: {}, (url: {}, timeout: {})", e, url, self.timeout)
 
             content = page.content()
             browser.close()
@@ -50,7 +56,10 @@ class PlaywrightLoader(Loader):
             context = await browser.new_context()
             page = await context.new_page()
 
-            await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            try:
+                await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+            except TimeoutError as e:
+                logger.warning("TimeoutError: {}, (url: {}, timeout: {})", e, url, self.timeout)
 
             content = await page.content()
             await browser.close()
