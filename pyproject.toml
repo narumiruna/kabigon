@@ -74,4 +74,4 @@ ignore_missing_imports = true
 current_version = "0.8.13"
 tag = true
 commit = true
-pre_commit_hooks = ["uv lock", "git add uv.lock"]
+pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
