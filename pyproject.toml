@@ -1,6 +1,6 @@
 [project]
 name = "kabigon"
-version = "0.8.16"
+version = "0.9.0"
 description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
@@ -71,7 +71,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 ignore_missing_imports = true
 
 [tool.bumpversion]
-current_version = "0.8.16"
+current_version = "0.9.0"
 tag = true
 commit = true
 pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
