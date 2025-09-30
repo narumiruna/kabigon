@@ -26,8 +26,8 @@ def check_x_url(url: str) -> None:
 
 
 class TwitterLoader(Loader):
-    def __init__(self) -> None:
-        self.playwright_loader = PlaywrightLoader(wait_until="networkidle", timeout=10_000)
+    def __init__(self, timeout: float = 30_000) -> None:
+        self.playwright_loader = PlaywrightLoader(wait_until="networkidle", timeout=timeout)
 
     def load(self, url: str) -> str:
         check_x_url(url)
