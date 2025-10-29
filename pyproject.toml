@@ -22,9 +22,9 @@ dependencies = [
 kabigon = "kabigon.cli:main"
 
 [project.optional-dependencies]
-whisper = ["openai-whisper>=20240930"]
+whisper = ["openai-whisper>=20250625"]
 playwright = ["playwright>=1.52.0"]
-all = ["openai-whisper>=20240930", "playwright>=1.52.0"]
+all = ["openai-whisper>=20250625", "playwright>=1.52.0"]
 
 [build-system]
 requires = ["hatchling"]
