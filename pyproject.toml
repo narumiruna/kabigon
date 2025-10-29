@@ -16,15 +16,12 @@ dependencies = [
     "typer>=0.15.3",
     "youtube-transcript-api>=1.2.2",
     "yt-dlp>=2025.4.30",
+    "openai-whisper>=20250625",
+    "playwright>=1.52.0",
 ]
 
 [project.scripts]
 kabigon = "kabigon.cli:main"
-
-[project.optional-dependencies]
-whisper = ["openai-whisper>=20250625"]
-playwright = ["playwright>=1.52.0"]
-all = ["openai-whisper>=20250625", "playwright>=1.52.0"]
 
 [build-system]
 requires = ["hatchling"]
@@ -39,7 +36,6 @@ dev = [
     "ruff>=0.7.3",
     "types-requests>=2.32.0.20250328",
 ]
-
 
 [tool.ruff]
 exclude = ["build"]
