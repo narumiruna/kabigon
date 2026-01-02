@@ -78,7 +78,66 @@ The codebase implements a chain-of-responsibility pattern through the `Compose` 
    - `PlaywrightLoader`: Browser-based web scraping (fallback for generic URLs)
    - `HttpxLoader`: Simple HTTP requests with markdown conversion
    - `FirecrawlLoader`: Firecrawl API integration
+   - `RedditLoader`: Reddit posts and comments (see detailed notes below)
    - `PttLoader`, `TwitterLoader`, `YoutubeYtdlpLoader`: Specialized loaders
+
+### Reddit Loader Implementation
+
+**Location**: `src/kabigon/reddit.py`
+
+**Approach**: The RedditLoader uses a specific strategy to avoid Reddit's CAPTCHA challenges:
+
+1. **URL Conversion**: Automatically converts any Reddit URL to `old.reddit.com` format
+   - Modern Reddit often shows CAPTCHAs for automated access
+   - old.reddit.com is more scraper-friendly and has simpler HTML structure
+   - Implemented via `convert_to_old_reddit()` function in reddit.py:31-41
+
+2. **Playwright-Based Scraping**: Uses headless Chromium with custom user agent
+   - User Agent: Chrome 131 on Windows (reddit.py:12-14)
+   - Wait strategy: `wait_until="networkidle"` to ensure full page load
+   - Configurable timeout (default: 30 seconds)
+
+3. **Domain Validation**: Checks URL is from Reddit domains before processing
+   - Supported domains: `reddit.com`, `www.reddit.com`, `old.reddit.com`
+   - Implemented via `check_reddit_url()` function in reddit.py:17-28
+   - Raises `ValueError` if URL is not from Reddit
+
+4. **Full Async Support**: Both `load()` and `async_load()` implementations
+   - Sync version uses `playwright.sync_api`
+   - Async version uses `playwright.async_api` (true async, not ProcessPoolExecutor)
+
+**CLI Integration**:
+- ✅ Exported in `__init__.py` for programmatic use
+- ❌ NOT included in CLI default loader chain (src/kabigon/cli.py:14-22)
+- Must be used explicitly via `Compose` for Reddit URLs
+
+**Usage Example** (see `examples/read_reddit.py`):
+```python
+import kabigon
+
+url = "https://reddit.com/r/confession/comments/..."
+
+# Manual composition with fallback
+loader = kabigon.Compose([
+    kabigon.RedditLoader(),
+    kabigon.HttpxLoader(),       # Fallback if RedditLoader fails
+    kabigon.PlaywrightLoader(),  # Final fallback
+])
+
+content = loader.load(url)
+```
+
+**Why Not in CLI Default Chain**:
+- RedditLoader requires Playwright (heavier dependency)
+- HttpxLoader or PlaywrightLoader in default chain can handle Reddit URLs
+- RedditLoader provides better quality for Reddit-specific URLs when used explicitly
+- Allows users to opt-in for Reddit-optimized extraction
+
+**Key Design Decisions**:
+- old.reddit.com avoids CAPTCHA and simplifies HTML parsing
+- Custom user agent mimics real browser to avoid detection
+- Domain validation ensures loader only processes Reddit URLs
+- Separate from default chain to keep CLI lightweight for general use
 
 ### Loader Strategy
 
@@ -163,3 +222,5 @@ kabigon https://www.youtube.com/watch?v=...
 kabigon https://www.instagram.com/reel/...
 kabigon https://example.com/document.pdf
 ```
+
+**Note**: For Reddit URLs, the CLI will use the default PlaywrightLoader. For better Reddit-specific extraction, use RedditLoader programmatically (see Reddit Loader Implementation section and `examples/read_reddit.py`).
