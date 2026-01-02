@@ -11,6 +11,7 @@ from .loader import Loader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
 from .ptt import PttLoader
+from .reddit import RedditLoader
 from .reel import ReelLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
@@ -18,4 +19,4 @@ from .youtube_ytdlp import YoutubeYtdlpLoader
 from .ytdlp import YtdlpLoader
 
 LOGURU_LEVEL: Final[str] = os.getenv("LOGURU_LEVEL", "INFO")
-logger.configure(handlers=[{"sink": sys.stderr, "level": LOGURU_LEVEL}])
+logger.configure(handlers=[{"sink": sys.stderr, "level": LOGURU_LEVEL}])  # ty:ignore[invalid-argument-type]
