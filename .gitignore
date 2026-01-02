@@ -130,3 +130,6 @@ dmypy.json
 
 # ruff
 .ruff_cache/
+
+# Local Claude settings
+.claude/settings.local.json
