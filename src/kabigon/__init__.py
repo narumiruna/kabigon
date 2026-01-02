@@ -19,4 +19,5 @@ from .youtube_ytdlp import YoutubeYtdlpLoader
 from .ytdlp import YtdlpLoader
 
 LOGURU_LEVEL: Final[str] = os.getenv("LOGURU_LEVEL", "INFO")
+logger.remove()
 logger.add(sys.stderr, level=LOGURU_LEVEL)
