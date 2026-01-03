@@ -19,6 +19,7 @@ repos:
     hooks:
       - id: ty-check
         name: ty-check
+        description: "Run 'ty check' for Python type checking"
         entry: uv run ty check
         language: system
         types_or: [python, pyi]
