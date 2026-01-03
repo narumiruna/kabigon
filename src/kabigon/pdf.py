@@ -20,7 +20,7 @@ class NotPDFError(Exception):
 
 
 class PDFLoader(Loader):
-    async def async_load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
+    async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
         if not url_or_file.startswith("http"):
             return read_pdf_content(url_or_file)
 

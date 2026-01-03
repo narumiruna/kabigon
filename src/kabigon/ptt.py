@@ -19,7 +19,7 @@ class PttLoader(Loader):
             }
         )
 
-    async def async_load(self, url: str):
+    async def load(self, url: str):
         check_ptt_url(url)
 
-        return await self.httpx_loader.async_load(url)
+        return await self.httpx_loader.load(url)

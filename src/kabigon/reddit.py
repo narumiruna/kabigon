@@ -55,7 +55,7 @@ class RedditLoader(Loader):
         """
         self.timeout = timeout
 
-    async def async_load(self, url: str) -> str:
+    async def load(self, url: str) -> str:
         """Asynchronously load Reddit content from URL.
 
         Args:

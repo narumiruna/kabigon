@@ -17,7 +17,7 @@ class PlaywrightLoader(Loader):
         self.wait_until = wait_until
         self.browser_headless = browser_headless
 
-    async def async_load(self, url: str) -> str:
+    async def load(self, url: str) -> str:
         try:
             from playwright.async_api import TimeoutError
             from playwright.async_api import async_playwright
