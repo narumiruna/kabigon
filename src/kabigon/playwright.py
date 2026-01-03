@@ -17,31 +17,6 @@ class PlaywrightLoader(Loader):
         self.wait_until = wait_until
         self.browser_headless = browser_headless
 
-    def load(self, url: str) -> str:
-        try:
-            from playwright.sync_api import TimeoutError
-            from playwright.sync_api import sync_playwright
-        except ImportError as e:
-            raise ImportError(
-                "Playwright is not installed."
-                "Please install it with `pip install playwright` and run `playwright install`."
-            ) from e
-
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=self.browser_headless)
-            context = browser.new_context()
-            page = context.new_page()
-
-            try:
-                page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
-            except TimeoutError as e:
-                logger.warning("TimeoutError: {}, (url: {}, timeout: {})", e, url, self.timeout)
-
-            content = page.content()
-            browser.close()
-
-            return html_to_markdown(content)
-
     async def async_load(self, url: str) -> str:
         try:
             from playwright.async_api import TimeoutError

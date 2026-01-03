@@ -11,7 +11,7 @@ class YoutubeLoader(Loader):
     def __init__(self, languages: list[str] | None = None) -> None:
         self.languages = languages or DEFAULT_LANGUAGES
 
-    def load(self, url: str) -> str:
+    def load_sync(self, url: str) -> str:
         video_id = aioytt.video_id.parse_video_id(url)
 
         fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
@@ -22,12 +22,3 @@ class YoutubeLoader(Loader):
             if text:
                 lines.append(text)
         return "\n".join(lines)
-
-    # async def async_load(self, url: str) -> str:
-    #     transcript = await aioytt.get_transcript_from_url(url)
-    #     lines = []
-    #     for piece in transcript:
-    #         text = piece.text.strip()
-    #         if text:
-    #             lines.append(text)
-    #     return "\n".join(lines)

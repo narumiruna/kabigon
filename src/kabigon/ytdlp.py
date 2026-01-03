@@ -45,7 +45,7 @@ class YtdlpLoader(Loader):
         self.model = whisper.load_model(model)
         self.load_audio = whisper.load_audio
 
-    def load(self, url: str) -> str:
+    def load_sync(self, url: str) -> str:
         outtmpl = uuid.uuid4().hex[:20]
         path = str(Path(outtmpl).with_suffix(".mp3"))
         download_audio(url, outtmpl=outtmpl)

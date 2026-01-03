@@ -5,9 +5,11 @@ from .compose import Compose
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
 from .ptt import PttLoader
+from .reddit import RedditLoader
 from .reel import ReelLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
+from .youtube_ytdlp import YoutubeYtdlpLoader
 
 
 def run(url: str) -> None:
@@ -15,13 +17,16 @@ def run(url: str) -> None:
         [
             PttLoader(),
             TwitterLoader(),
+            RedditLoader(),
             YoutubeLoader(),
             ReelLoader(),
+            YoutubeYtdlpLoader(),
             PDFLoader(),
-            PlaywrightLoader(),
+            PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
+            PlaywrightLoader(timeout=10_000),
         ]
     )
-    result = loader.load(url)
+    result = loader.load_sync(url)
     print(result)
 
 

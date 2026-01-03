@@ -11,5 +11,5 @@ loader = kabigon.Compose(
 )
 
 # Load the content
-content = loader.load(url)
+content = loader.load_sync(url)
 print(content)
