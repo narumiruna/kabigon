@@ -29,11 +29,11 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.13.0",
     "pip>=25.0.1",
     "pytest>=8.3.3",
     "pytest-cov>=6.0.0",
     "ruff>=0.7.3",
+    "ty>=0.0.8",
     "types-requests>=2.32.0.20250328",
 ]
 
@@ -63,8 +63,6 @@ force-single-line = true
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
 
-[tool.mypy]
-ignore_missing_imports = true
 
 [tool.bumpversion]
 current_version = "0.10.1"
