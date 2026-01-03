@@ -188,8 +188,9 @@ All loaders support both sync and async:
 - `__init__.py` ignores F401 (unused import) and F403 (star import)
 
 ### Type Hints
-- Use modern Python 3.10+ syntax: `list[str]`, `dict[str, Any]`
+- Use modern Python 3.12+ syntax: `list[str]`, `dict[str, Any]`
 - ty configured to ignore missing imports
+- All type checks must pass (`make type` or `uv run ty check .`)
 
 ## Testing Notes
 
