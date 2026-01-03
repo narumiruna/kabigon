@@ -29,7 +29,7 @@ class TwitterLoader(Loader):
     def __init__(self, timeout: float = 30_000) -> None:
         self.playwright_loader = PlaywrightLoader(wait_until="networkidle", timeout=timeout)
 
-    async def load(self, url: str):
+    async def load(self, url: str) -> str:
         check_x_url(url)
 
         url = replace_domain(url)
