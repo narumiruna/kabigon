@@ -1,7 +1,10 @@
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
+from playwright.async_api import async_playwright
+
 from .loader import Loader
+from .utils import html_to_markdown
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -67,10 +70,6 @@ class RedditLoader(Loader):
         Raises:
             ValueError: If URL is not from Reddit
         """
-        from playwright.async_api import async_playwright
-
-        from .utils import html_to_markdown
-
         check_reddit_url(url)
         url = convert_to_old_reddit(url)
 

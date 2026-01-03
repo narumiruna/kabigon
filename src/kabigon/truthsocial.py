@@ -1,6 +1,9 @@
 from urllib.parse import urlparse
 
+from playwright.async_api import async_playwright
+
 from .loader import Loader
+from .utils import html_to_markdown
 
 TRUTHSOCIAL_DOMAINS = [
     "truthsocial.com",
@@ -53,10 +56,6 @@ class TruthSocialLoader(Loader):
         Raises:
             ValueError: If URL is not from Truth Social
         """
-        from playwright.async_api import async_playwright
-
-        from .utils import html_to_markdown
-
         check_truthsocial_url(url)
 
         async with async_playwright() as p:

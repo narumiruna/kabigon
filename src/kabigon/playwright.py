@@ -1,6 +1,8 @@
 from typing import Literal
 
 from loguru import logger
+from playwright.async_api import TimeoutError
+from playwright.async_api import async_playwright
 
 from .loader import Loader
 from .utils import html_to_markdown
@@ -18,15 +20,6 @@ class PlaywrightLoader(Loader):
         self.browser_headless = browser_headless
 
     async def load(self, url: str) -> str:
-        try:
-            from playwright.async_api import TimeoutError
-            from playwright.async_api import async_playwright
-        except ImportError as e:
-            raise ImportError(
-                "Playwright is not installed."
-                "Please install it with `pip install playwright` and run `playwright install`."
-            ) from e
-
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=self.browser_headless)
             context = await browser.new_context()
