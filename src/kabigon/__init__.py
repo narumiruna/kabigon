@@ -4,6 +4,8 @@ from typing import Final
 
 from loguru import logger
 
+from .api import load_url
+from .api import load_url_sync
 from .compose import Compose
 from .firecrawl import FirecrawlLoader
 from .httpx import HttpxLoader

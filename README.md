@@ -31,7 +31,11 @@ import kabigon
 
 url = "https://www.google.com.tw"
 
-# Simple usage
+# Simplest usage - automatically uses the best loader
+content = kabigon.load_url(url)
+print(content)
+
+# Or use specific loader
 content = kabigon.PlaywrightLoader().load_sync(url)
 print(content)
 
@@ -57,7 +61,11 @@ import kabigon
 async def main():
     url = "https://www.google.com.tw"
 
-    # Single URL
+    # Simplest usage - automatically uses the best loader
+    content = await kabigon.load_url_async(url)
+    print(content)
+
+    # Or use specific loader
     loader = kabigon.PlaywrightLoader()
     content = await loader.load(url)
     print(content)
@@ -78,13 +86,21 @@ async def main():
         kabigon.PlaywrightLoader(),
     ])
 
-    # Parallel processing
-    results = await asyncio.gather(*[loader.load(url) for url in urls])
+    # Parallel processing with automatic loader selection
+    results = await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])
     for url, content in zip(urls, results):
         print(f"{url}: {len(content)} chars")
 
 asyncio.run(main())
 ```
+
+### API Comparison
+
+| Usage | Simplest | Custom Loader Chain |
+|-------|----------|---------------------|
+| **Sync** | `kabigon.load_url(url)` | `loader.load_sync(url)` |
+| **Async** | `await kabigon.load_url_async(url)` | `await loader.load(url)` |
+| **Batch Async** | `await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])` | `await asyncio.gather(*[loader.load(url) for url in urls])` |
 
 ## Supported Sources
 
