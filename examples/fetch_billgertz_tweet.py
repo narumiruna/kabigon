@@ -12,7 +12,7 @@ def main() -> None:
         ]
     )
 
-    result = loader.load(url)
+    result = loader.load_sync(url)
     print(result)
 
 

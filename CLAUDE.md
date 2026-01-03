@@ -56,19 +56,21 @@ make publish
 
 ## Architecture
 
-### Core Design Pattern: Chain of Responsibility
+### Core Design Pattern: Async-First with Chain of Responsibility
 
-The codebase implements a chain-of-responsibility pattern through the `Compose` class:
+The codebase implements a chain-of-responsibility pattern with async-first design:
 
 1. **Base Interface**: `Loader` (src/kabigon/loader.py)
-   - Abstract base with `load(url: str) -> str` and `async_load(url: str) -> str`
-   - All loaders inherit from this
+   - **Primary API**: `async def load(url: str) -> str` - All loaders implement this
+   - **Convenience wrapper**: `def load_sync(url: str) -> str` - Wraps async with `asyncio.run()`
+   - All loaders inherit from this base class
 
 2. **Composite Pattern**: `Compose` (src/kabigon/compose.py)
    - Takes a list of loaders
-   - Tries each loader in sequence until one succeeds
+   - Tries each loader in sequence until one succeeds (using `await loader.load(url)`)
    - Logs failures and continues to next loader
    - Raises exception only if all loaders fail
+   - Supports both async (`await compose.load()`) and sync (`compose.load_sync()`) usage
 
 3. **Concrete Loaders**: Each loader handles specific URL types
    - `YoutubeLoader`: YouTube transcripts via youtube-transcript-api
@@ -102,14 +104,15 @@ The codebase implements a chain-of-responsibility pattern through the `Compose` 
    - Implemented via `check_reddit_url()` function in reddit.py:17-28
    - Raises `ValueError` if URL is not from Reddit
 
-4. **Full Async Support**: Both `load()` and `async_load()` implementations
-   - Sync version uses `playwright.sync_api`
-   - Async version uses `playwright.async_api` (true async, not ProcessPoolExecutor)
+4. **Async Implementation**: Uses Playwright's async API
+   - Primary implementation: `async def load()` using `playwright.async_api`
+   - Sync wrapper available via `load_sync()` inherited from base `Loader` class
+   - True async implementation (not using thread pools)
 
 **CLI Integration**:
 - ✅ Exported in `__init__.py` for programmatic use
-- ❌ NOT included in CLI default loader chain (src/kabigon/cli.py:14-22)
-- Must be used explicitly via `Compose` for Reddit URLs
+- ✅ **Included in CLI default loader chain** (src/kabigon/cli.py:20)
+- Available for all kabigon CLI invocations
 
 **Usage Example** (see `examples/read_reddit.py`):
 ```python
@@ -117,21 +120,29 @@ import kabigon
 
 url = "https://reddit.com/r/confession/comments/..."
 
-# Manual composition with fallback
+# Using CLI default chain (includes RedditLoader)
+from kabigon.cli import run
+run(url)
+
+# Or manual composition with fallback
 loader = kabigon.Compose([
     kabigon.RedditLoader(),
     kabigon.HttpxLoader(),       # Fallback if RedditLoader fails
     kabigon.PlaywrightLoader(),  # Final fallback
 ])
 
-content = loader.load(url)
+# Sync usage
+content = loader.load_sync(url)
+
+# Async usage
+import asyncio
+content = asyncio.run(loader.load(url))
 ```
 
-**Why Not in CLI Default Chain**:
-- RedditLoader requires Playwright (heavier dependency)
-- HttpxLoader or PlaywrightLoader in default chain can handle Reddit URLs
-- RedditLoader provides better quality for Reddit-specific URLs when used explicitly
-- Allows users to opt-in for Reddit-optimized extraction
+**Integration Decision**:
+- ✅ Now included in CLI default chain for better Reddit URL handling
+- RedditLoader's old.reddit.com strategy avoids CAPTCHA effectively
+- Positioned before generic PlaywrightLoader for optimized extraction
 
 **Key Design Decisions**:
 - old.reddit.com avoids CAPTCHA and simplifies HTML parsing
@@ -141,21 +152,42 @@ content = loader.load(url)
 
 ### Loader Strategy
 
-Order matters in the CLI default composition (src/kabigon/cli.py:14-22):
-1. Domain-specific loaders first (Ptt, Twitter, Youtube, Reel, PDF)
+Order matters in the CLI default composition (src/kabigon/cli.py:16-27):
+1. Domain-specific loaders first (Ptt, Twitter, Reddit, Youtube, Reel, YoutubeYtdlp, PDF)
 2. Generic PlaywrightLoader last (catches all remaining URLs)
+   - First attempt: timeout=50s, wait_until="networkidle" (thorough)
+   - Second attempt: timeout=10s (faster fallback)
 
 Each loader should:
+- Implement `async def load(url: str) -> str` as the primary method
 - Validate if it can handle the URL (raise exception if not)
 - Return empty string if URL seems compatible but extraction fails
 - Let exceptions bubble up to Compose for logging
 
-### Async Support
+### Async-First Design
 
-All loaders support both sync and async:
-- `load()`: Synchronous
-- `async_load()`: Asynchronous (default implementation uses ProcessPoolExecutor)
-- Some loaders override async_load for true async operations (e.g., PlaywrightLoader)
+**All loaders are async-first** with sync convenience wrappers:
+
+- **`async def load(url: str) -> str`**: Primary implementation (all loaders must implement this)
+- **`def load_sync(url: str) -> str`**: Convenience wrapper that calls `asyncio.run(self.load(url))`
+
+**Benefits**:
+- Natural support for parallel processing with `asyncio.gather()`
+- Better performance for I/O-bound operations
+- Playwright and httpx are async-native, no need for thread pools
+- Backward compatible via `load_sync()` wrapper
+
+**Usage patterns**:
+```python
+# Sync (simple scripts, CLI)
+content = loader.load_sync(url)
+
+# Async (single URL in async context)
+content = await loader.load(url)
+
+# Async (parallel batch processing)
+results = await asyncio.gather(*[loader.load(url) for url in urls])
+```
 
 ## Dependencies
 
@@ -220,8 +252,18 @@ kabigon <url>
 
 # Examples
 kabigon https://www.youtube.com/watch?v=...
+kabigon https://x.com/user/status/123456789
+kabigon https://reddit.com/r/python/comments/xyz/...
 kabigon https://www.instagram.com/reel/...
 kabigon https://example.com/document.pdf
+kabigon https://www.ptt.cc/bbs/Gossiping/...
 ```
 
-**Note**: For Reddit URLs, the CLI will use the default PlaywrightLoader. For better Reddit-specific extraction, use RedditLoader programmatically (see Reddit Loader Implementation section and `examples/read_reddit.py`).
+**Supported URL Types**: The CLI automatically detects and uses the appropriate loader:
+- Twitter/X → TwitterLoader (converts to x.com)
+- Reddit → RedditLoader (converts to old.reddit.com)
+- YouTube → YoutubeLoader (transcript) or YoutubeYtdlpLoader (audio transcription)
+- Instagram Reels → ReelLoader
+- PDF files → PDFLoader
+- PTT forum → PttLoader
+- Generic URLs → PlaywrightLoader (browser-based scraping)

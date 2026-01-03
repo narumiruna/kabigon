@@ -1,13 +1,9 @@
 import asyncio
-import concurrent.futures
 
 
 class Loader:
-    def load(self, url: str) -> str:
-        raise NotImplementedError
+    def load_sync(self, url: str) -> str:
+        return asyncio.run(self.load(url))
 
-    async def async_load(self, url: str):
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            result = await loop.run_in_executor(executor, self.load, url)
-            return result
+    async def load(self, url: str) -> str:
+        return await asyncio.to_thread(self.load_sync, url)

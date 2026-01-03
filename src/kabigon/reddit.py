@@ -55,36 +55,7 @@ class RedditLoader(Loader):
         """
         self.timeout = timeout
 
-    def load(self, url: str) -> str:
-        """Load Reddit content from URL.
-
-        Args:
-            url: Reddit URL to load
-
-        Returns:
-            Loaded content as markdown
-
-        Raises:
-            ValueError: If URL is not from Reddit
-        """
-        from playwright.sync_api import sync_playwright
-
-        from .utils import html_to_markdown
-
-        check_reddit_url(url)
-        url = convert_to_old_reddit(url)
-
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context(user_agent=USER_AGENT)
-            page = context.new_page()
-            page.goto(url, timeout=self.timeout, wait_until="networkidle")
-            content = page.content()
-            browser.close()
-
-            return html_to_markdown(content)
-
-    async def async_load(self, url: str) -> str:
+    async def load(self, url: str) -> str:
         """Asynchronously load Reddit content from URL.
 
         Args:
