@@ -32,7 +32,7 @@ import kabigon
 url = "https://www.google.com.tw"
 
 # Simplest usage - automatically uses the best loader
-content = kabigon.load_url(url)
+content = kabigon.load_url_sync(url)
 print(content)
 
 # Or use specific loader
@@ -62,7 +62,7 @@ async def main():
     url = "https://www.google.com.tw"
 
     # Simplest usage - automatically uses the best loader
-    content = await kabigon.load_url_async(url)
+    content = await kabigon.load_url(url)
     print(content)
 
     # Or use specific loader
@@ -87,7 +87,7 @@ async def main():
     ])
 
     # Parallel processing with automatic loader selection
-    results = await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])
+    results = await asyncio.gather(*[kabigon.load_url(url) for url in urls])
     for url, content in zip(urls, results):
         print(f"{url}: {len(content)} chars")
 
@@ -98,9 +98,9 @@ asyncio.run(main())
 
 | Usage | Simplest | Custom Loader Chain |
 |-------|----------|---------------------|
-| **Sync** | `kabigon.load_url(url)` | `loader.load_sync(url)` |
-| **Async** | `await kabigon.load_url_async(url)` | `await loader.load(url)` |
-| **Batch Async** | `await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])` | `await asyncio.gather(*[loader.load(url) for url in urls])` |
+| **Sync** | `kabigon.load_url_sync(url)` | `loader.load_sync(url)` |
+| **Async** | `await kabigon.load_url(url)` | `await loader.load(url)` |
+| **Batch Async** | `await asyncio.gather(*[kabigon.load_url(url) for url in urls])` | `await asyncio.gather(*[loader.load(url) for url in urls])` |
 
 ## Supported Sources
 

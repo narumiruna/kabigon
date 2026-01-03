@@ -4,13 +4,13 @@ import kabigon
 
 
 def test_load_url_function_exists() -> None:
-    """Test that load_url function exists and is callable."""
-    assert hasattr(kabigon.api, "load_url")
+    """Test that load_url_sync function exists and is callable."""
+    assert hasattr(kabigon.api, "load_url_sync")
     assert callable(kabigon.api.load_url_sync)
 
 
 def test_load_url_async_function_exists() -> None:
-    """Test that load_url_async function exists and is callable."""
+    """Test that load_url (async) function exists and is callable."""
     assert hasattr(kabigon.api, "load_url")
     assert callable(kabigon.api.load_url)
 
