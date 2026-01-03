@@ -13,6 +13,7 @@ from .playwright import PlaywrightLoader
 from .ptt import PttLoader
 from .reddit import RedditLoader
 from .reel import ReelLoader
+from .truthsocial import TruthSocialLoader
 from .twitter import TwitterLoader
 from .youtube import YoutubeLoader
 from .youtube_ytdlp import YoutubeYtdlpLoader
