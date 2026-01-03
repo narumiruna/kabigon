@@ -28,9 +28,9 @@ uv run pytest -v -s tests/test_youtube_ytdlp.py::test_name
 make lint
 # Or: uv run ruff check .
 
-# Run mypy type checking
+# Run ty type checking
 make type
-# Or: uv run mypy --install-types --non-interactive .
+# Or: uv run ty check .
 
 # Auto-fix linting issues
 uv run ruff check --fix .
@@ -173,7 +173,7 @@ All loaders support both sync and async:
 ### Dev Dependencies
 - `pytest` + `pytest-cov`: Testing
 - `ruff`: Linting and formatting
-- `mypy`: Type checking
+- `ty`: Type checking
 
 ### Environment Variables
 - `LOGURU_LEVEL`: Set logging level (default: INFO)
@@ -189,7 +189,7 @@ All loaders support both sync and async:
 
 ### Type Hints
 - Use modern Python 3.10+ syntax: `list[str]`, `dict[str, Any]`
-- mypy configured to ignore missing imports
+- ty configured to ignore missing imports
 
 ## Testing Notes
 
