@@ -19,6 +19,7 @@ kabigon <url>
 # Examples
 kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 kabigon https://x.com/elonmusk/status/123456789
+kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
 kabigon https://reddit.com/r/python/comments/xyz/...
 kabigon https://example.com/document.pdf
 ```
@@ -37,6 +38,7 @@ print(content)
 # With multiple loaders (tries each in order)
 loader = kabigon.Compose([
     kabigon.TwitterLoader(),
+    kabigon.TruthSocialLoader(),
     kabigon.YoutubeLoader(),
     kabigon.RedditLoader(),
     kabigon.PDFLoader(),
@@ -63,12 +65,14 @@ async def main():
     # Batch processing multiple URLs in parallel
     urls = [
         "https://x.com/user1/status/123",
+        "https://truthsocial.com/@user/posts/456",
         "https://youtube.com/watch?v=abc",
         "https://reddit.com/r/python/comments/xyz",
     ]
 
     loader = kabigon.Compose([
         kabigon.TwitterLoader(),
+        kabigon.TruthSocialLoader(),
         kabigon.YoutubeLoader(),
         kabigon.RedditLoader(),
         kabigon.PlaywrightLoader(),
@@ -87,7 +91,9 @@ asyncio.run(main())
 | Source | Loader | Description |
 |--------|--------|-------------|
 | YouTube | `YoutubeLoader` | Extracts video transcripts |
+| YouTube | `YoutubeYtdlpLoader` | Audio transcription via yt-dlp + Whisper |
 | Twitter/X | `TwitterLoader` | Extracts tweet content |
+| Truth Social | `TruthSocialLoader` | Extracts Truth Social posts |
 | Reddit | `RedditLoader` | Extracts Reddit posts and comments |
 | Instagram Reels | `ReelLoader` | Audio transcription + metadata |
 | PDF | `PDFLoader` | Extracts text from PDF files (URL or local) |

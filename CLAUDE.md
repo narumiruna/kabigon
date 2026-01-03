@@ -74,14 +74,72 @@ The codebase implements a chain-of-responsibility pattern with async-first desig
 
 3. **Concrete Loaders**: Each loader handles specific URL types
    - `YoutubeLoader`: YouTube transcripts via youtube-transcript-api
+   - `YoutubeYtdlpLoader`: YouTube audio transcription via yt-dlp + OpenAI Whisper
+   - `TwitterLoader`: Twitter/X posts (see src/kabigon/twitter.py)
+   - `TruthSocialLoader`: Truth Social posts (see detailed notes below)
+   - `RedditLoader`: Reddit posts and comments (see detailed notes below)
    - `ReelLoader`: Instagram Reels (combines YtdlpLoader + HttpxLoader)
-   - `YtdlpLoader`: Audio transcription via yt-dlp + OpenAI Whisper
+   - `PttLoader`: PTT forum posts (Taiwan)
    - `PDFLoader`: PDF extraction from URLs or local files
+   - `YtdlpLoader`: Audio transcription via yt-dlp + OpenAI Whisper
    - `PlaywrightLoader`: Browser-based web scraping (fallback for generic URLs)
    - `HttpxLoader`: Simple HTTP requests with markdown conversion
    - `FirecrawlLoader`: Firecrawl API integration
-   - `RedditLoader`: Reddit posts and comments (see detailed notes below)
-   - `PttLoader`, `TwitterLoader`, `YoutubeYtdlpLoader`: Specialized loaders
+
+### Truth Social Loader Implementation
+
+**Location**: `src/kabigon/truthsocial.py`
+
+**Approach**: TruthSocialLoader handles Truth Social posts with specific strategies for JavaScript-heavy pages:
+
+1. **Domain Validation**: Checks URL is from Truth Social domains before processing
+   - Supported domains: `truthsocial.com`, `www.truthsocial.com`
+   - Implemented via `check_truthsocial_url()` function
+   - Raises `ValueError` if URL is not from Truth Social
+
+2. **Playwright-Based Scraping**: Uses headless Chromium with extended timeout
+   - Default timeout: 60 seconds (longer than other loaders due to heavy JS)
+   - Wait strategy: `wait_until="networkidle"` to ensure full page load
+   - Custom User Agent: Chrome 131 on Windows (truthsocial.py:10-12)
+   - Truth Social heavily relies on JavaScript for content rendering
+
+3. **Async Implementation**: Uses Playwright's async API
+   - Primary implementation: `async def load()` using `playwright.async_api`
+   - Sync wrapper available via `load_sync()` inherited from base `Loader` class
+   - True async implementation (not using thread pools)
+
+**CLI Integration**:
+- ✅ Exported in `__init__.py` for programmatic use
+- ✅ Included in CLI default loader chain (src/kabigon/cli.py:21)
+- Positioned after TwitterLoader, before RedditLoader
+
+**Usage Example** (see `examples/truthsocial.py`):
+```python
+import kabigon
+
+url = "https://truthsocial.com/@realDonaldTrump/posts/123456"
+
+# Direct usage
+loader = kabigon.TruthSocialLoader()
+content = loader.load_sync(url)
+
+# With Compose
+loader = kabigon.Compose([
+    kabigon.TruthSocialLoader(),
+    kabigon.PlaywrightLoader(),  # Fallback
+])
+
+# Async usage
+import asyncio
+content = asyncio.run(loader.load(url))
+```
+
+**Key Design Decisions**:
+- Extended timeout (60s) to handle JavaScript-heavy content
+- networkidle wait strategy ensures content is fully loaded
+- Similar pattern to TwitterLoader and RedditLoader
+
+**Test Coverage**: 86% (tests/test_truthsocial.py)
 
 ### Reddit Loader Implementation
 
@@ -152,8 +210,16 @@ content = asyncio.run(loader.load(url))
 
 ### Loader Strategy
 
-Order matters in the CLI default composition (src/kabigon/cli.py:16-27):
-1. Domain-specific loaders first (Ptt, Twitter, Reddit, Youtube, Reel, YoutubeYtdlp, PDF)
+Order matters in the CLI default composition (src/kabigon/cli.py:17-30):
+1. Domain-specific loaders first (in order):
+   - PttLoader (Taiwan PTT forum)
+   - TwitterLoader (Twitter/X)
+   - TruthSocialLoader (Truth Social)
+   - RedditLoader (Reddit)
+   - YoutubeLoader (YouTube transcripts)
+   - ReelLoader (Instagram Reels)
+   - YoutubeYtdlpLoader (YouTube audio transcription)
+   - PDFLoader (PDF files)
 2. Generic PlaywrightLoader last (catches all remaining URLs)
    - First attempt: timeout=50s, wait_until="networkidle" (thorough)
    - Second attempt: timeout=10s (faster fallback)
@@ -261,6 +327,7 @@ kabigon https://www.ptt.cc/bbs/Gossiping/...
 
 **Supported URL Types**: The CLI automatically detects and uses the appropriate loader:
 - Twitter/X → TwitterLoader (converts to x.com)
+- Truth Social → TruthSocialLoader (60s timeout, networkidle)
 - Reddit → RedditLoader (converts to old.reddit.com)
 - YouTube → YoutubeLoader (transcript) or YoutubeYtdlpLoader (audio transcription)
 - Instagram Reels → ReelLoader
