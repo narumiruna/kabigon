@@ -310,6 +310,49 @@ uv sync
 playwright install chromium
 ```
 
+## Python API
+
+### Simplest Usage
+
+**Sync** (single line):
+```python
+import kabigon
+text = kabigon.load_url("https://example.com")
+```
+
+**Async** (for batch processing):
+```python
+import asyncio
+import kabigon
+
+# Single URL
+text = await kabigon.load_url_async("https://example.com")
+
+# Parallel batch processing
+urls = ["url1", "url2", "url3"]
+results = await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])
+```
+
+These convenience functions use the same default loader chain as the CLI (see `_get_default_loader()` in `__init__.py`).
+
+### Custom Loader Chain
+
+For more control over which loaders to use:
+
+**Sync**:
+```python
+loader = kabigon.Compose([
+    kabigon.TwitterLoader(),
+    kabigon.PlaywrightLoader(),
+])
+text = loader.load_sync(url)
+```
+
+**Async**:
+```python
+text = await loader.load(url)
+```
+
 ## CLI Usage
 
 ```bash
