@@ -49,7 +49,7 @@ def load_url_sync(url: str) -> str:
 
     Example:
         >>> import kabigon
-        >>> text = kabigon.load_url("https://example.com")
+        >>> text = kabigon.load_url_sync("https://example.com")
         >>> print(text)
     """
     loader = _get_default_loader()
@@ -74,7 +74,7 @@ async def load_url(url: str) -> str:
         >>> import asyncio
         >>> import kabigon
         >>> async def main():
-        ...     text = await kabigon.load_url_async("https://example.com")
+        ...     text = await kabigon.load_url("https://example.com")
         ...     print(text)
         >>> asyncio.run(main())
     """

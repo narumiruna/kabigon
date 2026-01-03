@@ -317,7 +317,7 @@ playwright install chromium
 **Sync** (single line):
 ```python
 import kabigon
-text = kabigon.load_url("https://example.com")
+text = kabigon.load_url_sync("https://example.com")
 ```
 
 **Async** (for batch processing):
@@ -326,14 +326,14 @@ import asyncio
 import kabigon
 
 # Single URL
-text = await kabigon.load_url_async("https://example.com")
+text = await kabigon.load_url("https://example.com")
 
 # Parallel batch processing
 urls = ["url1", "url2", "url3"]
-results = await asyncio.gather(*[kabigon.load_url_async(url) for url in urls])
+results = await asyncio.gather(*[kabigon.load_url(url) for url in urls])
 ```
 
-These convenience functions use the same default loader chain as the CLI (see `_get_default_loader()` in `__init__.py`).
+These convenience functions use the same default loader chain as the CLI (see `_get_default_loader()` in `api.py`).
 
 ### Custom Loader Chain
 
