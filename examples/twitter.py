@@ -1,4 +1,4 @@
-from kabigon.twitter import TwitterLoader
+from kabigon.loaders.twitter import TwitterLoader
 
 
 def main() -> None:

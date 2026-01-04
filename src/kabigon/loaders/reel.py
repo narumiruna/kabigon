@@ -1,4 +1,4 @@
-from .core.loader import Loader
+from ..core.loader import Loader
 from .httpx import HttpxLoader
 from .ytdlp import YtdlpLoader
 

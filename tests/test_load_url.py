@@ -1,6 +1,7 @@
 import pytest
 
 import kabigon
+from kabigon import loaders
 
 
 def test_load_url_function_exists() -> None:
@@ -18,7 +19,7 @@ def test_load_url_async_function_exists() -> None:
 def test_get_default_loader() -> None:
     """Test that _get_default_loader returns a Compose instance."""
     loader = kabigon.api._get_default_loader()
-    assert isinstance(loader, kabigon.Compose)
+    assert isinstance(loader, loaders.Compose)
     assert len(loader.loaders) == 10  # Should have all default loaders
 
 

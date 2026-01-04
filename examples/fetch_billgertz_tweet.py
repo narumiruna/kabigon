@@ -1,14 +1,14 @@
-import kabigon
+from kabigon import loaders
 
 
 def main() -> None:
     url = "https://x.com/BillGertz/status/2005141727489708352"
 
     # Use TwitterLoader directly or Compose with fallback
-    loader = kabigon.Compose(
+    loader = loaders.Compose(
         [
-            kabigon.TwitterLoader(),
-            kabigon.PlaywrightLoader(),  # Fallback
+            loaders.TwitterLoader(),
+            loaders.PlaywrightLoader(),  # Fallback
         ]
     )
 

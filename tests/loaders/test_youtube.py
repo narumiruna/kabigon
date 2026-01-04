@@ -1,11 +1,11 @@
 import pytest
 
-from kabigon.youtube import NoVideoIDFoundError
-from kabigon.youtube import UnsupportedURLNetlocError
-from kabigon.youtube import UnsupportedURLSchemeError
-from kabigon.youtube import VideoIDError
-from kabigon.youtube import check_youtube_url
-from kabigon.youtube import parse_video_id
+from kabigon.loaders.youtube import NoVideoIDFoundError
+from kabigon.loaders.youtube import UnsupportedURLNetlocError
+from kabigon.loaders.youtube import UnsupportedURLSchemeError
+from kabigon.loaders.youtube import VideoIDError
+from kabigon.loaders.youtube import check_youtube_url
+from kabigon.loaders.youtube import parse_video_id
 
 
 @pytest.mark.parametrize(

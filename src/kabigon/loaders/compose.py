@@ -1,6 +1,6 @@
 from loguru import logger
 
-from .core.loader import Loader
+from ..core.loader import Loader
 
 
 class Compose(Loader):
