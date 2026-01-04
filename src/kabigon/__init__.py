@@ -7,9 +7,9 @@ from loguru import logger
 from .api import load_url
 from .api import load_url_sync
 from .compose import Compose
+from .core.loader import Loader
 from .firecrawl import FirecrawlLoader
 from .httpx import HttpxLoader
-from .loader import Loader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
 from .ptt import PttLoader

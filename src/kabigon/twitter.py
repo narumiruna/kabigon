@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-from .loader import Loader
+from .core.loader import Loader
 from .playwright import PlaywrightLoader
 
 TWITTER_DOMAINS = [

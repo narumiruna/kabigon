@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
+from .core.loader import Loader
 from .httpx import HttpxLoader
-from .loader import Loader
 
 
 def check_ptt_url(url: str) -> None:

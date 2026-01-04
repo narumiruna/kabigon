@@ -1,4 +1,4 @@
-from .loader import Loader
+from .core.loader import Loader
 from .youtube import check_youtube_url
 from .ytdlp import YtdlpLoader
 

@@ -1,6 +1,6 @@
 import httpx
 
-from .loader import Loader
+from .core.loader import Loader
 from .utils import html_to_markdown
 
 
