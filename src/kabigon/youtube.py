@@ -98,13 +98,24 @@ def parse_video_id(url: str) -> str:
 
 
 def check_youtube_url(url: str) -> None:
-    scheme = urlparse(url).scheme
-    if scheme not in ALLOWED_SCHEMES:
-        raise ValueError(f"URL scheme is not allowed: {scheme}")
+    """Validate that the given URL is a supported YouTube URL.
 
-    domain = urlparse(url).netloc
-    if domain not in ALLOWED_NETLOCS:
-        raise ValueError(f"URL domain is not allowed: {domain}")
+    This delegates to ``parse_video_id`` to ensure that URL validation
+    (including scheme and netloc checks) is implemented in a single place.
+    Any validation failures are surfaced as ``ValueError`` to maintain
+    the previous public interface of this function.
+
+    Args:
+        url: YouTube video URL to validate.
+
+    Raises:
+        ValueError: If URL is invalid or not a supported YouTube URL.
+    """
+    try:
+        # We only care about validation here; the caller does not need the ID.
+        parse_video_id(url)
+    except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as exc:
+        raise ValueError(str(exc)) from exc
 
 
 class YoutubeLoader(Loader):
