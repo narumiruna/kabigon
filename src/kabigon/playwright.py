@@ -4,7 +4,7 @@ from loguru import logger
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from .loader import Loader
+from .core.loader import Loader
 from .utils import html_to_markdown
 
 

@@ -2,7 +2,7 @@ import os
 
 from firecrawl import FirecrawlApp
 
-from .loader import Loader
+from .core.loader import Loader
 
 
 class FirecrawlLoader(Loader):
