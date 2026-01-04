@@ -120,8 +120,8 @@
 ### README.md 擴充
 
 #### 需要加入的內容:
-- [ ] **Badges**: PyPI version, CI status, codecov, license
-- [ ] **功能特色**: 列出支援的平台和特殊功能
+- [x] **Badges**: PyPI version, Python version, codecov, license
+- [x] **功能特色**: 列出支援的平台和特殊功能
 - [ ] **安裝選項**: 完整版 vs 輕量版 (如果實作 optional dependencies)
 - [x] **詳細使用範例**:
   - [x] 各種 URL 類型範例 (YouTube, Instagram, Reddit, Twitter, PDF) ✅ 已有
