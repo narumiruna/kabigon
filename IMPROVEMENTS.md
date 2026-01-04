@@ -337,7 +337,7 @@ kabigon --loader youtube,playwright <url>
 2. ✅ 新增更多範例 (7 個範例檔案)
 3. ✅ 新增 CLAUDE.md (AI 協作文檔)
 4. ⏸️ 設定 MkDocs (optional)
-5. ⏸️ 新增 Troubleshooting 章節
+5. ✅ 新增 Troubleshooting 章節
 
 ### Phase 3: 功能增強 🚧 部分完成
 1. ⏸️ CLI 功能擴充 (批次、輸出格式)
