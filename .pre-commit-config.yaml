@@ -15,14 +15,11 @@ repos:
     rev: 0.9.21
     hooks:
       - id: uv-lock
-  - repo: local
+  - repo: https://github.com/narumiruna/ty-pre-commit
+    rev: v0.0.1
     hooks:
       - id: ty-check
-        name: ty-check
-        description: "Run 'ty check' for Python type checking"
-        entry: uv run ty check
-        language: system
-        types_or: [python, pyi]
-        args: []
-        require_serial: true
-        pass_filenames: false
+  - repo: https://github.com/tombi-toml/tombi-pre-commit
+    rev: v0.7.14
+    hooks:
+      - id: tombi-format
