@@ -1,6 +1,6 @@
 import pytest
 
-from kabigon.youtube_ytdlp import check_youtube_url
+from kabigon.youtube import check_youtube_url
 
 
 @pytest.mark.parametrize(
