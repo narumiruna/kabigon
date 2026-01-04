@@ -98,9 +98,9 @@ def parse_video_id(url: str) -> str:
 
 
 def check_youtube_url(url: str) -> None:
-    schema = urlparse(url).scheme
-    if schema not in ALLOWED_SCHEMES:
-        raise ValueError(f"URL scheme is not allowed: {schema}")
+    scheme = urlparse(url).scheme
+    if scheme not in ALLOWED_SCHEMES:
+        raise ValueError(f"URL scheme is not allowed: {scheme}")
 
     domain = urlparse(url).netloc
     if domain not in ALLOWED_NETLOCS:
