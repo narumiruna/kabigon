@@ -88,8 +88,8 @@ def parse_video_id(url: str) -> str:
         else:
             raise NoVideoIDFoundError(url)
     else:
-        path = parsed_url.path.lstrip("/")
-        video_id = path.split("/")[-1]
+        stripped_path = parsed_url.path.lstrip("/")
+        video_id = stripped_path.split("/")[-1]
 
     if len(video_id) != 11:  # Video IDs are 11 characters long
         raise VideoIDError(video_id)
