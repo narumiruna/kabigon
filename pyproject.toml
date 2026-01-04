@@ -1,6 +1,6 @@
 [project]
 name = "kabigon"
-version = "0.13.0"
+version = "0.14.0"
 description = ""
 readme = "README.md"
 requires-python = ">=3.12"
@@ -62,7 +62,7 @@ force-single-line = true
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.bumpversion]
-current_version = "0.13.0"
+current_version = "0.14.0"
 tag = true
 commit = true
 pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
