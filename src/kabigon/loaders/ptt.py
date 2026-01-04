@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from .core.loader import Loader
+from ..core.loader import Loader
 from .httpx import HttpxLoader
 
 

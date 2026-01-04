@@ -5,7 +5,7 @@ from pathlib import Path
 import yt_dlp
 from loguru import logger
 
-from .core.loader import Loader
+from ..core.loader import Loader
 
 
 def download_audio(url: str, outtmpl: str | None = None) -> None:

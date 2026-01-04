@@ -1,11 +1,11 @@
-import kabigon
+from kabigon.loaders.truthsocial import TruthSocialLoader
 
 
 def main() -> None:
     url = "https://truthsocial.com/@realDonaldTrump/posts/115830428767897167"
 
     # Use TruthSocialLoader directly
-    loader = kabigon.TruthSocialLoader()
+    loader = TruthSocialLoader()
     result = loader.load_sync(url)
     print(result)
 

@@ -1,4 +1,4 @@
-from kabigon.ptt import PttLoader
+from kabigon.loaders.ptt import PttLoader
 
 
 def main() -> None:

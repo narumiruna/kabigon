@@ -3,7 +3,7 @@ from urllib.parse import urlunparse
 
 from playwright.async_api import async_playwright
 
-from .core.loader import Loader
+from ..core.loader import Loader
 from .utils import html_to_markdown
 
 REDDIT_DOMAINS = [

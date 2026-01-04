@@ -1,33 +1,24 @@
-from .compose import Compose
-from .pdf import PDFLoader
-from .playwright import PlaywrightLoader
-from .ptt import PttLoader
-from .reddit import RedditLoader
-from .reel import ReelLoader
-from .truthsocial import TruthSocialLoader
-from .twitter import TwitterLoader
-from .youtube import YoutubeLoader
-from .youtube_ytdlp import YoutubeYtdlpLoader
+from . import loaders
 
 
-def _get_default_loader() -> Compose:
+def _get_default_loader() -> loaders.Compose:
     """Get the default loader composition used by CLI.
 
     Returns:
         Compose: Default loader chain with all available loaders
     """
-    return Compose(
+    return loaders.Compose(
         [
-            PttLoader(),
-            TwitterLoader(),
-            TruthSocialLoader(),
-            RedditLoader(),
-            YoutubeLoader(),
-            ReelLoader(),
-            YoutubeYtdlpLoader(),
-            PDFLoader(),
-            PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
-            PlaywrightLoader(timeout=10_000),
+            loaders.PttLoader(),
+            loaders.TwitterLoader(),
+            loaders.TruthSocialLoader(),
+            loaders.RedditLoader(),
+            loaders.YoutubeLoader(),
+            loaders.ReelLoader(),
+            loaders.YoutubeYtdlpLoader(),
+            loaders.PDFLoader(),
+            loaders.PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
+            loaders.PlaywrightLoader(timeout=10_000),
         ]
     )
 

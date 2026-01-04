@@ -1,7 +1,7 @@
 import pytest
 
-from kabigon.truthsocial import TruthSocialLoader
-from kabigon.truthsocial import check_truthsocial_url
+from kabigon.loaders.truthsocial import TruthSocialLoader
+from kabigon.loaders.truthsocial import check_truthsocial_url
 
 
 @pytest.mark.parametrize(
