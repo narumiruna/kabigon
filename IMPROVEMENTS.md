@@ -31,8 +31,7 @@
 
 ### 中優先度 🟡
 4. **PDF/Ytdlp/Firecrawl 測試** - 提升到 60%+ 覆蓋率
-5. **Troubleshooting 文檔** - 新增常見問題解決方案
-6. **錯誤處理改進** - 更詳細的錯誤訊息和自訂例外
+5. **錯誤處理改進** - 更詳細的錯誤訊息和自訂例外
 
 ### 低優先度 🟢
 7. **CLI 功能擴充** - 批次處理、輸出格式選擇
@@ -129,11 +128,11 @@
   - [x] Async 用法範例 ✅ 已有
   - [x] 批次處理範例 ✅ 已有
 - [x] **Loader 說明表格**: 每個 loader 的適用場景 ✅ 已有
-- [ ] **Troubleshooting**: 常見問題和解決方案
-  - Playwright browser 未安裝
-  - FFmpeg 未安裝
-  - CAPTCHA 問題
-  - Timeout 問題
+- [x] **Troubleshooting**: 常見問題和解決方案 ✅ 已完成 (README.md lines 162-227)
+  - ✅ Playwright browser 未安裝
+  - ✅ FFmpeg 未安裝
+  - ✅ CAPTCHA 問題
+  - ✅ Timeout 問題
 - [ ] **貢獻指南**: 如何新增 loader、如何測試
 
 ### API 文檔
@@ -332,12 +331,12 @@ kabigon --loader youtube,playwright <url>
 
 **成果**: 覆蓋率從 38% 提升到 69%，增加 31 個百分點！
 
-### Phase 2: 文檔完善 🚧 進行中
+### Phase 2: 文檔完善 ✅ 已完成
 1. ✅ 擴充 README (已有詳細範例和使用說明)
 2. ✅ 新增更多範例 (7 個範例檔案)
 3. ✅ 新增 CLAUDE.md (AI 協作文檔)
 4. ⏸️ 設定 MkDocs (optional)
-5. ✅ 新增 Troubleshooting 章節
+5. ✅ 新增 Troubleshooting 章節 (README.md lines 162-227)
 
 ### Phase 3: 功能增強 🚧 部分完成
 1. ⏸️ CLI 功能擴充 (批次、輸出格式)
@@ -369,6 +368,7 @@ kabigon --loader youtube,playwright <url>
 - ✅ RedditLoader 已整合到 CLI 預設鏈
 - ✅ TruthSocialLoader 完整實作並整合
 - ✅ 新增 CLAUDE.md 文檔
+- ✅ 新增 Troubleshooting 章節到 README.md (lines 162-227)
 
 ### 2026-01-03
 - 📝 初始版本建立
