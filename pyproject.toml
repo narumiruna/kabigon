@@ -3,21 +3,20 @@ name = "kabigon"
 version = "0.13.0"
 description = ""
 readme = "README.md"
-authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 requires-python = ">=3.12"
+authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies = [
-    "aioytt>=0.2.4",
-    "firecrawl-py>=2.4.1",
-    "httpx>=0.28.1",
-    "loguru>=0.7.3",
-    "markdownify>=0.14.1",
-    "pypdf>=5.3.0",
-    "rich>=13.9.4",
-    "typer>=0.15.3",
-    "youtube-transcript-api>=1.2.2",
-    "yt-dlp>=2025.4.30",
-    "openai-whisper>=20250625",
-    "playwright>=1.52.0",
+  "firecrawl-py>=2.4.1",
+  "httpx>=0.28.1",
+  "loguru>=0.7.3",
+  "markdownify>=0.14.1",
+  "openai-whisper>=20250625",
+  "playwright>=1.52.0",
+  "pypdf>=5.3.0",
+  "rich>=13.9.4",
+  "typer>=0.15.3",
+  "youtube-transcript-api>=1.2.2",
+  "yt-dlp>=2025.4.30",
 ]
 
 [project.scripts]
@@ -29,11 +28,11 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "pip>=25.0.1",
-    "pytest>=8.3.3",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.7.3",
-    "ty>=0.0.8",
+  "pip>=25.0.1",
+  "pytest>=8.3.3",
+  "pytest-cov>=6.0.0",
+  "ruff>=0.7.3",
+  "ty>=0.0.8",
 ]
 
 [tool.ruff]
@@ -42,15 +41,15 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
-    "B",   # flake8-bugbear
-    "C",   # flake8-comprehensions
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
-    "N",   # pep8-naming
-    "SIM", # flake8-simplify
-    "UP",  # pyupgrade
-    "W",   # pycodestyle warnings
+  "B",  # flake8-bugbear
+  "C",  # flake8-comprehensions
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort
+  "N",  # pep8-naming
+  "SIM",  # flake8-simplify
+  "UP",  # pyupgrade
+  "W",  # pycodestyle warnings
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -61,7 +60,6 @@ force-single-line = true
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
-
 
 [tool.bumpversion]
 current_version = "0.13.0"

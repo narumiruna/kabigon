@@ -1,5 +1,5 @@
+from .core.loader import Loader
 from .httpx import HttpxLoader
-from .loader import Loader
 from .ytdlp import YtdlpLoader
 
 

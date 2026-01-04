@@ -260,7 +260,7 @@ results = await asyncio.gather(*[loader.load(url) for url in urls])
 ### Core Runtime Dependencies
 - `playwright`: Browser automation (requires `playwright install chromium`)
 - `yt-dlp` + `openai-whisper`: Audio download and transcription
-- `youtube-transcript-api`, `aioytt`: YouTube transcript extraction
+- `youtube-transcript-api`: YouTube transcript extraction
 - `pypdf`: PDF text extraction
 - `httpx`: HTTP client
 - `markdownify`: HTML to Markdown conversion

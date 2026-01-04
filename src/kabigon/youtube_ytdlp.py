@@ -1,20 +1,6 @@
-from urllib.parse import urlparse
-
-from aioytt.video_id import ALLOWED_NETLOCS
-from aioytt.video_id import ALLOWED_SCHEMES
-
-from .loader import Loader
+from .core.loader import Loader
+from .youtube import check_youtube_url
 from .ytdlp import YtdlpLoader
-
-
-def check_youtube_url(url: str) -> None:
-    schema = urlparse(url).scheme
-    if schema not in ALLOWED_SCHEMES:
-        raise ValueError(f"URL scheme is not allowed: {schema}")
-
-    domain = urlparse(url).netloc
-    if domain not in ALLOWED_NETLOCS:
-        raise ValueError(f"URL domain is not allowed: {domain}")
 
 
 class YoutubeYtdlpLoader(Loader):
