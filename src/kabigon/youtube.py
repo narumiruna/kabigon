@@ -84,7 +84,7 @@ def parse_video_id(url: str) -> str:
         parsed_query = parse_qs(query)
         if "v" in parsed_query:
             ids = parsed_query["v"]
-            video_id = ids if isinstance(ids, str) else ids[0]
+            video_id = ids[0]
         else:
             raise NoVideoIDFoundError(url)
     else:
