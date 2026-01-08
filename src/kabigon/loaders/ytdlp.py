@@ -5,7 +5,7 @@ from pathlib import Path
 import yt_dlp
 from loguru import logger
 
-from kabigon.core.exception import MissingDependencyError
+from kabigon.core.exception import WhisperNotInstalledError
 from kabigon.core.loader import Loader
 
 
@@ -39,7 +39,7 @@ class YtdlpLoader(Loader):
         try:
             import whisper
         except ImportError as e:
-            raise MissingDependencyError("OpenAI Whisper", "pip install openai-whisper") from e  # noqa: TRY003
+            raise WhisperNotInstalledError from e
 
         self.model = whisper.load_model(model)
         self.load_audio = whisper.load_audio

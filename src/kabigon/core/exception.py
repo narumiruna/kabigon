@@ -22,14 +22,20 @@ class InvalidURLError(KabigonError, ValueError):
 class ConfigurationError(KabigonError):
     """Raised when required configuration is missing."""
 
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
+
+class FirecrawlAPIKeyNotSetError(ConfigurationError):
+    """Raised when FIRECRAWL_API_KEY environment variable is not set."""
+
+    def __init__(self) -> None:
+        super().__init__("FIRECRAWL_API_KEY is not set.")
 
 
 class MissingDependencyError(KabigonError):
     """Raised when a required dependency is not installed."""
 
-    def __init__(self, package: str, install_command: str) -> None:
-        self.package = package
-        self.install_command = install_command
-        super().__init__(f"{package} not installed. Please install it with `{install_command}`.")
+
+class WhisperNotInstalledError(MissingDependencyError):
+    """Raised when OpenAI Whisper is not installed."""
+
+    def __init__(self) -> None:
+        super().__init__("OpenAI Whisper not installed. Please install it with `pip install openai-whisper`.")
