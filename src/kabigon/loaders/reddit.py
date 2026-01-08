@@ -3,6 +3,7 @@ from urllib.parse import urlunparse
 
 from playwright.async_api import async_playwright
 
+from kabigon.core.exception import InvalidURLError
 from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
@@ -29,7 +30,7 @@ def check_reddit_url(url: str) -> None:
     """
     netloc = urlparse(url).netloc
     if netloc not in REDDIT_DOMAINS:
-        raise ValueError(f"URL is not a Reddit URL: {url}")
+        raise InvalidURLError(url, "Reddit")
 
 
 def convert_to_old_reddit(url: str) -> str:

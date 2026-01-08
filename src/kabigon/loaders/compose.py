@@ -1,5 +1,6 @@
 from loguru import logger
 
+from kabigon.core.exception import LoaderError
 from kabigon.core.loader import Loader
 
 
@@ -11,7 +12,10 @@ class Compose(Loader):
         for loader in self.loaders:
             try:
                 result = await loader.load(url)
-
+            except Exception as e:  # noqa: BLE001
+                # We intentionally catch all exceptions to try the next loader in the chain
+                logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
+            else:
                 if not result:
                     logger.info("[{}] Failed to load URL: {}, got empty result", loader.__class__.__name__, url)
                     continue
@@ -19,7 +23,4 @@ class Compose(Loader):
                 logger.info("[{}] Successfully loaded URL: {}", loader.__class__.__name__, url)
                 return result
 
-            except Exception as e:
-                logger.info("[{}] Failed to load URL: {}, got error: {}", loader.__class__.__name__, url, e)
-
-        raise Exception(f"Failed to load URL: {url}")
+        raise LoaderError(url)

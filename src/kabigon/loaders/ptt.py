@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 
+from kabigon.core.exception import InvalidURLError
 from kabigon.core.loader import Loader
 
 from .httpx import HttpxLoader
@@ -7,7 +8,7 @@ from .httpx import HttpxLoader
 
 def check_ptt_url(url: str) -> None:
     if urlparse(url).netloc != "www.ptt.cc":
-        raise ValueError(f"URL must be from ptt.cc, got {url}")
+        raise InvalidURLError(url, "PTT")
 
 
 class PttLoader(Loader):

@@ -1,3 +1,4 @@
+from kabigon.core.exception import InvalidURLError
 from kabigon.core.loader import Loader
 
 from .httpx import HttpxLoader
@@ -6,7 +7,7 @@ from .ytdlp import YtdlpLoader
 
 def check_reel_url(url: str) -> None:
     if not url.startswith("https://www.instagram.com/reel"):
-        raise ValueError(f"URL is not an Instagram Reel: {url}")
+        raise InvalidURLError(url, "Instagram Reel")
 
 
 class ReelLoader(Loader):

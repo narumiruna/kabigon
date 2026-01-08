@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
+from kabigon.core.exception import InvalidURLError
 from kabigon.core.loader import Loader
 
 from .playwright import PlaywrightLoader
@@ -23,7 +24,7 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
 
 def check_x_url(url: str) -> None:
     if urlparse(url).netloc not in TWITTER_DOMAINS:
-        raise ValueError(f"URL is not a Twitter URL: {url}")
+        raise InvalidURLError(url, "Twitter/X")
 
 
 class TwitterLoader(Loader):

@@ -2,6 +2,8 @@ import os
 
 from firecrawl import FirecrawlApp
 
+from kabigon.core.exception import ConfigurationError
+from kabigon.core.exception import LoaderError
 from kabigon.core.loader import Loader
 
 
@@ -11,7 +13,7 @@ class FirecrawlLoader(Loader):
 
         api_key = os.getenv("FIRECRAWL_API_KEY")
         if not api_key:
-            raise ValueError("FIRECRAWL_API_KEY is not set.")
+            raise ConfigurationError("FIRECRAWL_API_KEY is not set.")  # noqa: TRY003
 
         self.app = FirecrawlApp(api_key=api_key)
 
@@ -23,6 +25,6 @@ class FirecrawlLoader(Loader):
         )
 
         if not result.success:
-            raise Exception(f"Failed to load URL: {url}, got: {result.error}")
+            raise LoaderError(url)
 
         return result.markdown

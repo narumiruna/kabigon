@@ -2,6 +2,7 @@ from urllib.parse import urlparse
 
 from playwright.async_api import async_playwright
 
+from kabigon.core.exception import InvalidURLError
 from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
@@ -27,7 +28,7 @@ def check_truthsocial_url(url: str) -> None:
     """
     netloc = urlparse(url).netloc
     if netloc not in TRUTHSOCIAL_DOMAINS:
-        raise ValueError(f"URL is not a Truth Social URL: {url}")
+        raise InvalidURLError(url, "Truth Social")
 
 
 class TruthSocialLoader(Loader):
