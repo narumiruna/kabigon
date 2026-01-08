@@ -6,7 +6,7 @@ from typing import Any
 import httpx
 from pypdf import PdfReader
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
 
 DEFAULT_HEADERS = {
     "Accept-Language": "zh-TW,zh;q=0.9,ja;q=0.8,en-US;q=0.7,en;q=0.6",

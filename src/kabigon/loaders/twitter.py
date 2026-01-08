@@ -1,7 +1,8 @@
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
+
 from .playwright import PlaywrightLoader
 
 TWITTER_DOMAINS = [

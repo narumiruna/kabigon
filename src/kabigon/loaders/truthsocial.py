@@ -2,7 +2,8 @@ from urllib.parse import urlparse
 
 from playwright.async_api import async_playwright
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
+
 from .utils import html_to_markdown
 
 TRUTHSOCIAL_DOMAINS = [

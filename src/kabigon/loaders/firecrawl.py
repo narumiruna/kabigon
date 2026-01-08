@@ -2,7 +2,7 @@ import os
 
 from firecrawl import FirecrawlApp
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
 
 
 class FirecrawlLoader(Loader):

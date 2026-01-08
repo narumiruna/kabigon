@@ -1,4 +1,5 @@
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
+
 from .httpx import HttpxLoader
 from .ytdlp import YtdlpLoader
 

@@ -1,6 +1,6 @@
 from loguru import logger
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
 
 
 class Compose(Loader):

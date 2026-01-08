@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 
-from ..core.loader import Loader
+from kabigon.core.loader import Loader
+
 from .httpx import HttpxLoader
 
 

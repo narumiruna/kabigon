@@ -3,8 +3,8 @@ from urllib.parse import urlparse
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from ..core.exception import KabigonError
-from ..core.loader import Loader
+from kabigon.core.exception import KabigonError
+from kabigon.core.loader import Loader
 
 DEFAULT_LANGUAGES = ["zh-TW", "zh-Hant", "zh", "zh-Hans", "ja", "en", "ko"]
 ALLOWED_SCHEMES = {
