@@ -43,6 +43,7 @@ line-length = 120
 select = [
   "ANN",  # flake8-annotations
   "ASYNC",  # flake8-async
+  "DTZ",  # flake8-datetimez
   "B",  # flake8-bugbear
   "C",  # flake8-comprehensions
   "E",  # pycodestyle errors
