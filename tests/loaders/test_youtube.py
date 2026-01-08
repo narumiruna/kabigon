@@ -61,7 +61,7 @@ def test_parse_video_id_unsupported_scheme() -> None:
 
 def test_parse_video_id_unsupported_netloc() -> None:
     """Test that UnsupportedURLNetlocError is raised for unsupported domains."""
-    with pytest.raises(UnsupportedURLNetlocError, match="unsupported URL netloc: example.com"):
+    with pytest.raises(UnsupportedURLNetlocError, match=r"unsupported URL netloc: example.com"):
         parse_video_id("https://example.com/watch?v=dQw4w9WgXcQ")
 
 
