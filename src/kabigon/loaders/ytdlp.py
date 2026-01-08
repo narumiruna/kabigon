@@ -56,6 +56,6 @@ class YtdlpLoader(Loader):
             result = self.model.transcribe(audio)
         finally:
             # Clean up the audio file
-            os.remove(path)
+            Path(path).unlink()
 
         return result.get("text", "")

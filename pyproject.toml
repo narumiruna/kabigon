@@ -56,6 +56,7 @@ select = [
   "TID",  # flake8-tidy-imports
   "UP",  # pyupgrade
   "W",  # pycodestyle warnings
+  "PTH",  # flake8-use-pathlib
 ]
 
 [tool.ruff.lint.per-file-ignores]
