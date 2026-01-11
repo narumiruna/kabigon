@@ -1,5 +1,6 @@
 from .compose import Compose
 from .firecrawl import FirecrawlLoader
+from .github import GitHubLoader
 from .httpx import HttpxLoader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
@@ -15,6 +16,7 @@ from .ytdlp import YtdlpLoader
 __all__ = [
     "Compose",
     "FirecrawlLoader",
+    "GitHubLoader",
     "HttpxLoader",
     "PDFLoader",
     "PlaywrightLoader",
