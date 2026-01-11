@@ -143,7 +143,7 @@ asyncio.run(main())
 | Truth Social | `TruthSocialLoader` | Extracts Truth Social posts |
 | Reddit | `RedditLoader` | Extracts Reddit posts and comments |
 | Instagram Reels | `ReelLoader` | Audio transcription + metadata |
-| GitHub | `GitHubLoader` | Fetches file content (supports `github.com/.../blob/...` URLs) |
+| GitHub | `GitHubLoader` | Fetches GitHub web pages and file content (supports repo URLs + `github.com/.../blob/...`) |
 | PDF | `PDFLoader` | Extracts text from PDF files (URL or local) |
 | PTT | `PttLoader` | Taiwan PTT forum posts |
 | Generic Web | `PlaywrightLoader` | Browser-based scraping for any website |
