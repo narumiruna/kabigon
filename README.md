@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/narumiruna/kabigon/branch/main/graph/badge.svg)](https://codecov.io/gh/narumiruna/kabigon)
 
-A URL content loader library that extracts content from various sources (YouTube, Instagram Reels, Twitter/X, Reddit, Truth Social, PDFs, web pages) and converts them to text/markdown format.
+A URL content loader library that extracts content from various sources (YouTube, Instagram Reels, Twitter/X, Reddit, Truth Social, GitHub files, PDFs, web pages) and converts them to text/markdown format.
 
 ## Features
 
-✨ **Multi-Platform Support**: YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, PDFs, and generic web pages
+✨ **Multi-Platform Support**: YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub files, PDFs, and generic web pages
 
 🔄 **Async-First Design**: Built with async/await for efficient parallel processing
 
@@ -51,6 +51,7 @@ kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 kabigon https://x.com/elonmusk/status/123456789
 kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
 kabigon https://reddit.com/r/python/comments/xyz/...
+kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
 kabigon https://example.com/document.pdf
 ```
 
@@ -142,6 +143,7 @@ asyncio.run(main())
 | Truth Social | `TruthSocialLoader` | Extracts Truth Social posts |
 | Reddit | `RedditLoader` | Extracts Reddit posts and comments |
 | Instagram Reels | `ReelLoader` | Audio transcription + metadata |
+| GitHub | `GitHubLoader` | Fetches file content (supports `github.com/.../blob/...` URLs) |
 | PDF | `PDFLoader` | Extracts text from PDF files (URL or local) |
 | PTT | `PttLoader` | Taiwan PTT forum posts |
 | Generic Web | `PlaywrightLoader` | Browser-based scraping for any website |
