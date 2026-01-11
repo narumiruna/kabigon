@@ -20,7 +20,7 @@ def test_get_default_loader() -> None:
     """Test that _get_default_loader returns a Compose instance."""
     loader = kabigon.api._get_default_loader()
     assert isinstance(loader, loaders.Compose)
-    assert len(loader.loaders) == 10  # Should have all default loaders
+    assert len(loader.loaders) == 11  # Should have all default loaders
 
 
 def test_load_url_invalid_url() -> None:
