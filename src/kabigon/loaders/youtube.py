@@ -6,7 +6,37 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from kabigon.core.exception import KabigonError
 from kabigon.core.loader import Loader
 
-DEFAULT_LANGUAGES = ["zh-TW", "zh-Hant", "zh", "zh-Hans", "ja", "en", "ko"]
+DEFAULT_LANGUAGES = [
+    # 中文
+    "zh-TW",
+    "zh-Hant",
+    "zh",
+    "zh-Hans",
+    # 日韓英
+    "ja",
+    "ko",
+    "en",
+    # 歐洲主要語言
+    "fr",  # French
+    "de",  # German
+    "es",  # Spanish
+    "it",  # Italian
+    "pt",  # Portuguese
+    "pt-BR",  # Portuguese (Brazil)
+    "nl",  # Dutch
+    "sv",  # Swedish
+    "pl",  # Polish
+    # 東南亞
+    "th",  # Thai
+    "vi",  # Vietnamese
+    "id",  # Indonesian
+    "ms",  # Malay
+    "fil",  # Filipino / Tagalog
+    # 其他常見
+    "ru",  # Russian
+    "ar",  # Arabic
+    "hi",  # Hindi
+]
 ALLOWED_SCHEMES = {
     "http",
     "https",
