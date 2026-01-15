@@ -556,9 +556,10 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.14.2"
+version = "0.14.3"
 source = { editable = "." }
 dependencies = [
+    { name = "charset-normalizer" },
     { name = "firecrawl-py" },
     { name = "httpx" },
     { name = "loguru" },
@@ -583,6 +584,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "charset-normalizer", specifier = ">=3.0.0" },
     { name = "firecrawl-py", specifier = ">=2.4.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "loguru", specifier = ">=0.7.3" },
