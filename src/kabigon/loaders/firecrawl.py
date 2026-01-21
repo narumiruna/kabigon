@@ -18,7 +18,7 @@ class FirecrawlLoader(Loader):
         self.app = FirecrawlApp(api_key=api_key)
 
     def load_sync(self, url: str) -> str:
-        result = self.app.scrape_url(  # ty:ignore[possibly-missing-attribute]
+        result = self.app.scrape_url(
             url,
             formats=["markdown"],
             timeout=self.timeout,
