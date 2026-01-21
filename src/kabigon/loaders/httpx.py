@@ -15,14 +15,14 @@ class HttpxLoader(Loader):
         self.headers = headers
 
     async def load(self, url: str) -> str:
-        logger.debug(f"[HttpxLoader] Fetching URL: {url}")
+        logger.debug("[HttpxLoader] Fetching URL: %s", url)
 
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(url, headers=self.headers, follow_redirects=True)
                 response.raise_for_status()
         except httpx.HTTPError as e:
-            logger.warning(f"[HttpxLoader] HTTP error: {e}")
+            logger.warning("[HttpxLoader] HTTP error: %s", e)
             raise LoaderContentError(
                 "HttpxLoader",
                 url,
@@ -31,5 +31,5 @@ class HttpxLoader(Loader):
             ) from e
 
         result = html_to_markdown(response.content)
-        logger.debug(f"[HttpxLoader] Successfully converted to markdown ({len(result)} chars)")
+        logger.debug("[HttpxLoader] Successfully converted to markdown (%s chars)", len(result))
         return result

@@ -68,7 +68,7 @@ class TruthSocialLoader(Loader):
             LoaderNotApplicableError: If URL is not from Truth Social
             LoaderTimeoutError: If page loading times out
         """
-        logger.debug(f"[TruthSocialLoader] Processing URL: {url}")
+        logger.debug("[TruthSocialLoader] Processing URL: %s", url)
         check_truthsocial_url(url)
 
         async with async_playwright() as p:
@@ -81,7 +81,7 @@ class TruthSocialLoader(Loader):
                 logger.debug("[TruthSocialLoader] Page loaded successfully")
             except TimeoutError as e:
                 await browser.close()
-                logger.warning(f"[TruthSocialLoader] Timeout after {self.timeout / 1000}s: {url}")
+                logger.warning("[TruthSocialLoader] Timeout after %ss: %s", self.timeout / 1000, url)
                 raise LoaderTimeoutError(
                     "TruthSocialLoader",
                     url,
@@ -93,5 +93,5 @@ class TruthSocialLoader(Loader):
             await browser.close()
 
             result = html_to_markdown(content)
-            logger.debug(f"[TruthSocialLoader] Successfully extracted content ({len(result)} chars)")
+            logger.debug("[TruthSocialLoader] Successfully extracted content (%s chars)", len(result))
             return result

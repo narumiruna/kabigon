@@ -79,11 +79,11 @@ class TwitterLoader(Loader):
                     task.cancel()
 
     async def load(self, url: str) -> str:
-        logger.debug(f"[TwitterLoader] Processing URL: {url}")
+        logger.debug("[TwitterLoader] Processing URL: %s", url)
         check_x_url(url)
 
         url = replace_domain(url)
-        logger.debug(f"[TwitterLoader] Normalized URL: {url}")
+        logger.debug("[TwitterLoader] Normalized URL: %s", url)
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -102,7 +102,7 @@ class TwitterLoader(Loader):
                 await page.goto(url, timeout=self.timeout, wait_until="domcontentloaded")
             except TimeoutError as e:
                 await browser.close()
-                logger.warning(f"[TwitterLoader] Timeout during page load: {e}")
+                logger.warning("[TwitterLoader] Timeout during page load: %s", e)
                 raise LoaderTimeoutError(
                     "TwitterLoader",
                     url,
@@ -131,5 +131,5 @@ class TwitterLoader(Loader):
 
             await browser.close()
             result = html_to_markdown(content)
-            logger.debug(f"[TwitterLoader] Successfully converted to markdown ({len(result)} chars)")
+            logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
             return result

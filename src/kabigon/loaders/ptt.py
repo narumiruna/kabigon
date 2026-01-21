@@ -29,9 +29,9 @@ class PttLoader(Loader):
         )
 
     async def load(self, url: str) -> str:
-        logger.debug(f"[PttLoader] Processing URL: {url}")
+        logger.debug("[PttLoader] Processing URL: %s", url)
         check_ptt_url(url)
 
         result = await self.httpx_loader.load(url)
-        logger.debug(f"[PttLoader] Successfully loaded content ({len(result)} chars)")
+        logger.debug("[PttLoader] Successfully loaded content (%s chars)", len(result))
         return result

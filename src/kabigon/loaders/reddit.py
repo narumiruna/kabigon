@@ -82,10 +82,10 @@ class RedditLoader(Loader):
             LoaderNotApplicableError: If URL is not from Reddit
             LoaderTimeoutError: If page loading times out
         """
-        logger.debug(f"[RedditLoader] Processing URL: {url}")
+        logger.debug("[RedditLoader] Processing URL: %s", url)
         check_reddit_url(url)
         url = convert_to_old_reddit(url)
-        logger.debug(f"[RedditLoader] Converted to old Reddit: {url}")
+        logger.debug("[RedditLoader] Converted to old Reddit: %s", url)
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -97,7 +97,7 @@ class RedditLoader(Loader):
                 logger.debug("[RedditLoader] Page loaded successfully")
             except TimeoutError as e:
                 await browser.close()
-                logger.warning(f"[RedditLoader] Timeout after {self.timeout / 1000}s: {url}")
+                logger.warning("[RedditLoader] Timeout after %ss: %s", self.timeout / 1000, url)
                 raise LoaderTimeoutError(
                     "RedditLoader",
                     url,
@@ -109,5 +109,5 @@ class RedditLoader(Loader):
             await browser.close()
 
             result = html_to_markdown(content)
-            logger.debug(f"[RedditLoader] Successfully extracted content ({len(result)} chars)")
+            logger.debug("[RedditLoader] Successfully extracted content (%s chars)", len(result))
             return result

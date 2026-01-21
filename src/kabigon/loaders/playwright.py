@@ -24,7 +24,12 @@ class PlaywrightLoader(Loader):
         self.browser_headless = browser_headless
 
     async def load(self, url: str) -> str:
-        logger.debug(f"[PlaywrightLoader] Loading URL: {url} (timeout={self.timeout}, wait_until={self.wait_until})")
+        logger.debug(
+            "[PlaywrightLoader] Loading URL: %s (timeout=%s, wait_until=%s)",
+            url,
+            self.timeout,
+            self.wait_until,
+        )
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=self.browser_headless)
@@ -37,7 +42,7 @@ class PlaywrightLoader(Loader):
             except TimeoutError as e:
                 await browser.close()
                 timeout_seconds = (self.timeout or 0) / 1000 if self.timeout else 30
-                logger.warning(f"[PlaywrightLoader] Timeout after {timeout_seconds}s: {url}")
+                logger.warning("[PlaywrightLoader] Timeout after %ss: %s", timeout_seconds, url)
                 raise LoaderTimeoutError(
                     "PlaywrightLoader",
                     url,
@@ -49,5 +54,5 @@ class PlaywrightLoader(Loader):
             await browser.close()
 
             result = html_to_markdown(content)
-            logger.debug(f"[PlaywrightLoader] Successfully extracted content ({len(result)} chars)")
+            logger.debug("[PlaywrightLoader] Successfully extracted content (%s chars)", len(result))
             return result

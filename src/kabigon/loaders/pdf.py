@@ -21,23 +21,24 @@ DEFAULT_HEADERS = {
 
 class PDFLoader(Loader):
     async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
-        logger.debug(f"[PDFLoader] Processing: {url_or_file}")
+        logger.debug("[PDFLoader] Processing: %s", url_or_file)
 
         if not url_or_file.startswith("http"):
             # Local file
-            logger.debug(f"[PDFLoader] Reading local file: {url_or_file}")
+            logger.debug("[PDFLoader] Reading local file: %s", url_or_file)
             try:
                 result = read_pdf_content(url_or_file)
-                logger.debug(f"[PDFLoader] Successfully read local PDF ({len(result)} chars)")
-                return result
             except Exception as e:
-                logger.warning(f"[PDFLoader] Failed to read local PDF: {e}")
+                logger.warning("[PDFLoader] Failed to read local PDF: %s", e)
                 raise LoaderContentError(
                     "PDFLoader",
                     url_or_file,
                     f"Failed to read local PDF: {e}",
                     "Check that the file exists and is a valid PDF."
                 ) from e
+            else:
+                logger.debug("[PDFLoader] Successfully read local PDF (%s chars)", len(result))
+                return result
 
         # Remote URL
         async with httpx.AsyncClient() as client:
@@ -45,7 +46,7 @@ class PDFLoader(Loader):
                 resp = await client.get(url_or_file, headers=DEFAULT_HEADERS, follow_redirects=True)
                 resp.raise_for_status()
             except httpx.HTTPError as e:
-                logger.warning(f"[PDFLoader] HTTP error: {e}")
+                logger.warning("[PDFLoader] HTTP error: %s", e)
                 raise LoaderContentError(
                     "PDFLoader",
                     url_or_file,
@@ -55,7 +56,7 @@ class PDFLoader(Loader):
 
             content_type = resp.headers.get("content-type", "")
             if "application/pdf" not in content_type:
-                logger.debug(f"[PDFLoader] Not a PDF (content-type: {content_type})")
+                logger.debug("[PDFLoader] Not a PDF (content-type: %s)", content_type)
                 raise LoaderNotApplicableError(
                     "PDFLoader",
                     url_or_file,
@@ -64,16 +65,17 @@ class PDFLoader(Loader):
 
             try:
                 result = read_pdf_content(io.BytesIO(resp.content))
-                logger.debug(f"[PDFLoader] Successfully read remote PDF ({len(result)} chars)")
-                return result
             except Exception as e:
-                logger.warning(f"[PDFLoader] Failed to parse PDF: {e}")
+                logger.warning("[PDFLoader] Failed to parse PDF: %s", e)
                 raise LoaderContentError(
                     "PDFLoader",
                     url_or_file,
                     f"Failed to parse PDF: {e}",
                     "The PDF may be corrupted or use unsupported features."
                 ) from e
+            else:
+                logger.debug("[PDFLoader] Successfully read remote PDF (%s chars)", len(result))
+                return result
 
 
 def read_pdf_content(f: str | Path | IO[Any]) -> str:

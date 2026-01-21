@@ -158,20 +158,20 @@ class YoutubeLoader(Loader):
         self.languages = languages or DEFAULT_LANGUAGES
 
     def load_sync(self, url: str) -> str:
-        logger.debug(f"[YoutubeLoader] Processing URL: {url}")
+        logger.debug("[YoutubeLoader] Processing URL: %s", url)
 
         try:
             video_id = parse_video_id(url)
         except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as e:
-            logger.debug(f"[YoutubeLoader] URL validation failed: {e}")
+            logger.debug("[YoutubeLoader] URL validation failed: %s", e)
             raise LoaderNotApplicableError("YoutubeLoader", url, str(e)) from e
 
-        logger.debug(f"[YoutubeLoader] Extracted video ID: {video_id}")
+        logger.debug("[YoutubeLoader] Extracted video ID: %s", video_id)
 
         try:
             fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
         except Exception as e:
-            logger.warning(f"[YoutubeLoader] Failed to fetch transcript for {video_id}: {e}")
+            logger.warning("[YoutubeLoader] Failed to fetch transcript for %s: %s", video_id, e)
             raise LoaderContentError(
                 "YoutubeLoader",
                 url,
@@ -187,7 +187,7 @@ class YoutubeLoader(Loader):
 
         result = "\n".join(lines)
         if not result:
-            logger.warning(f"[YoutubeLoader] Empty transcript for {video_id}")
+            logger.warning("[YoutubeLoader] Empty transcript for %s", video_id)
             raise LoaderContentError(
                 "YoutubeLoader",
                 url,
@@ -195,5 +195,5 @@ class YoutubeLoader(Loader):
                 "The video may not have any captions."
             )
 
-        logger.debug(f"[YoutubeLoader] Successfully extracted {len(lines)} transcript lines")
+        logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))
         return result
