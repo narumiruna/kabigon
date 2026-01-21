@@ -38,5 +38,5 @@
 
 ## Configuration & Secrets
 
-- Do not commit credentials. Common env vars: `FIRECRAWL_API_KEY`, `FFMPEG_PATH`, `LOGURU_LEVEL`.
+- Do not commit credentials. Common env vars: `FIRECRAWL_API_KEY`, `FFMPEG_PATH`.
 - For browser-based loaders, install Playwright once: `playwright install chromium`.

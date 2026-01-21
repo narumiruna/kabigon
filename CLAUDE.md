@@ -144,7 +144,6 @@ results = await asyncio.gather(*[loader.load(url) for url in urls])
 - `markdownify`: HTML to Markdown conversion
 - `firecrawl-py`: Firecrawl API client
 - `typer` + `rich`: CLI interface
-- `loguru`: Logging
 
 ### Dev Dependencies
 - `pytest` + `pytest-cov`: Testing
@@ -152,7 +151,6 @@ results = await asyncio.gather(*[loader.load(url) for url in urls])
 - `ty`: Type checking
 
 ### Environment Variables
-- `LOGURU_LEVEL`: Set logging level (default: INFO)
 - `FFMPEG_PATH`: Custom FFmpeg location for yt-dlp
 
 ## Code Conventions

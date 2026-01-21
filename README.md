@@ -212,21 +212,6 @@ Some websites may show CAPTCHAs or block automated access. For Reddit, kabigon a
 - Use a custom user agent
 - Implement retry logic with exponential backoff
 
-### Logging and debugging
-
-Enable debug logging to see what's happening:
-```bash
-export LOGURU_LEVEL=DEBUG
-kabigon <url>
-```
-
-Or in Python:
-```python
-import os
-os.environ["LOGURU_LEVEL"] = "DEBUG"
-import kabigon
-```
-
 ## Development
 
 ### Setup
