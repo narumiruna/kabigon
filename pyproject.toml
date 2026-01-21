@@ -1,11 +1,11 @@
 [project]
-name = "kabigon"
-version = "0.14.3"
-description = ""
-readme = "README.md"
+name            = "kabigon"
+version         = "0.14.3"
+description     = ""
+readme          = "README.md"
 requires-python = ">=3.12"
-authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
-dependencies = [
+authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
+dependencies    = [
   "charset-normalizer>=3.0.0",
   "firecrawl-py>=2.4.1",
   "httpx>=0.28.1",
@@ -24,56 +24,55 @@ kabigon = "kabigon.cli:main"
 
 [dependency-groups]
 dev = [
-  "pip>=25.0.1",
-  "pytest>=8.3.3",
-  "pytest-cov>=6.0.0",
-  "ruff>=0.7.3",
-  "ty>=0.0.8",
+  "pip>=25.3",
+  "pytest>=9.0.2",
+  "pytest-cov>=7.0.0",
+  "ruff>=0.14.13",
+  "ty>=0.0.13",
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires      = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.bumpversion]
-current_version = "0.14.3"
-tag = true
-commit = true
+current_version  = "0.14.3"
+tag              = true
+commit           = true
 pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
 
 [tool.pytest]
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.ruff]
-exclude = ["build"]
 line-length = 120
 
 [tool.ruff.lint]
 select = [
-  "ANN",  # flake8-annotations
+  "ANN",    # flake8-annotations
   "ASYNC",  # flake8-async
-  "B",  # flake8-bugbear
-  "BLE",  # flake8-blind-except
-  "C",  # flake8-comprehensions
-  "DTZ",  # flake8-datetimez
-  "E",  # pycodestyle errors
-  "F",  # pyflakes
-  "LOG",  # flake8-logging
-  "G",  # flake8-logging-format
-  "FURB",  # refurb
-  "I",  # isort
-  "N",  # pep8-naming
-  "PERF",  # perflint
-  "PIE",  # flake8-pie
-  "PTH",  # flake8-use-pathlib
-  "RET",  # flake8-return
-  "RSE",  # flake8-raise
-  "RUF",  # ruff-specific rules
-  "SIM",  # flake8-simplify
-  "TID",  # flake8-tidy-imports
-  "TRY",  # tryceratops
-  "UP",  # pyupgrade
-  "W",  # pycodestyle warnings
+  "B",      # flake8-bugbear
+  "BLE",    # flake8-blind-except
+  "C",      # flake8-comprehensions
+  "DTZ",    # flake8-datetimez
+  "E",      # pycodestyle errors
+  "F",      # pyflakes
+  "LOG",    # flake8-logging
+  "G",      # flake8-logging-format
+  "FURB",   # refurb
+  "I",      # isort
+  "N",      # pep8-naming
+  "PERF",   # perflint
+  "PIE",    # flake8-pie
+  "PTH",    # flake8-use-pathlib
+  "RET",    # flake8-return
+  "RSE",    # flake8-raise
+  "RUF",    # ruff-specific rules
+  "SIM",    # flake8-simplify
+  "TID",    # flake8-tidy-imports
+  "TRY",    # tryceratops
+  "UP",     # pyupgrade
+  "W",      # pycodestyle warnings
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -81,3 +80,7 @@ select = [
 
 [tool.ruff.lint.isort]
 force-single-line = true
+
+[tool.tombi.format.rules]
+key-value-equals-sign-alignment = true
+trailing-comment-alignment      = true

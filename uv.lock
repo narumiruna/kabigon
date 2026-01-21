@@ -621,11 +621,11 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pip", specifier = ">=25.0.1" },
-    { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "ruff", specifier = ">=0.7.3" },
-    { name = "ty", specifier = ">=0.0.8" },
+    { name = "pip", specifier = ">=25.3" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "ruff", specifier = ">=0.14.13" },
+    { name = "ty", specifier = ">=0.0.13" },
 ]
 
 [[package]]
