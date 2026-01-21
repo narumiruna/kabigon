@@ -1,12 +1,8 @@
 """Tests for custom exception classes."""
 
-import pytest
-
-from kabigon.core.exception import (
-    LoaderContentError,
-    LoaderNotApplicableError,
-    LoaderTimeoutError,
-)
+from kabigon.core.exception import LoaderContentError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.exception import LoaderTimeoutError
 
 
 def test_loader_not_applicable_error():
@@ -61,9 +57,7 @@ def test_loader_timeout_error_default_suggestion():
 
 def test_loader_content_error():
     """Test LoaderContentError exception."""
-    error = LoaderContentError(
-        "TestLoader", "https://example.com", "Empty content", "Check the URL"
-    )
+    error = LoaderContentError("TestLoader", "https://example.com", "Empty content", "Check the URL")
 
     assert error.loader_name == "TestLoader"
     assert error.url == "https://example.com"

@@ -47,7 +47,7 @@ class PlaywrightLoader(Loader):
                     "PlaywrightLoader",
                     url,
                     timeout_seconds,
-                    "The page took too long to load. Try increasing the timeout or using a faster wait_until option."
+                    "The page took too long to load. Try increasing the timeout or using a faster wait_until option.",
                 ) from e
 
             content = await page.content()

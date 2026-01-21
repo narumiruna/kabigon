@@ -34,9 +34,7 @@ def check_truthsocial_url(url: str) -> None:
     netloc = urlparse(url).netloc
     if netloc not in TRUTHSOCIAL_DOMAINS:
         raise LoaderNotApplicableError(
-            "TruthSocialLoader",
-            url,
-            f"Not a Truth Social URL. Expected domains: {', '.join(TRUTHSOCIAL_DOMAINS)}"
+            "TruthSocialLoader", url, f"Not a Truth Social URL. Expected domains: {', '.join(TRUTHSOCIAL_DOMAINS)}"
         )
 
 
@@ -86,7 +84,7 @@ class TruthSocialLoader(Loader):
                     "TruthSocialLoader",
                     url,
                     self.timeout / 1000,
-                    "Truth Social pages require JavaScript and can be slow. Try increasing the timeout."
+                    "Truth Social pages require JavaScript and can be slow. Try increasing the timeout.",
                 ) from e
 
             content = await page.content()

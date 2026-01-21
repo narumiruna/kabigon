@@ -34,7 +34,7 @@ class PDFLoader(Loader):
                     "PDFLoader",
                     url_or_file,
                     f"Failed to read local PDF: {e}",
-                    "Check that the file exists and is a valid PDF."
+                    "Check that the file exists and is a valid PDF.",
                 ) from e
             else:
                 logger.debug("[PDFLoader] Successfully read local PDF (%s chars)", len(result))
@@ -48,19 +48,14 @@ class PDFLoader(Loader):
             except httpx.HTTPError as e:
                 logger.warning("[PDFLoader] HTTP error: %s", e)
                 raise LoaderContentError(
-                    "PDFLoader",
-                    url_or_file,
-                    f"HTTP error: {e}",
-                    "Check that the URL is accessible and valid."
+                    "PDFLoader", url_or_file, f"HTTP error: {e}", "Check that the URL is accessible and valid."
                 ) from e
 
             content_type = resp.headers.get("content-type", "")
             if "application/pdf" not in content_type:
                 logger.debug("[PDFLoader] Not a PDF (content-type: %s)", content_type)
                 raise LoaderNotApplicableError(
-                    "PDFLoader",
-                    url_or_file,
-                    f"Not a PDF file (content-type: {content_type})"
+                    "PDFLoader", url_or_file, f"Not a PDF file (content-type: {content_type})"
                 )
 
             try:
@@ -71,7 +66,7 @@ class PDFLoader(Loader):
                     "PDFLoader",
                     url_or_file,
                     f"Failed to parse PDF: {e}",
-                    "The PDF may be corrupted or use unsupported features."
+                    "The PDF may be corrupted or use unsupported features.",
                 ) from e
             else:
                 logger.debug("[PDFLoader] Successfully read remote PDF (%s chars)", len(result))

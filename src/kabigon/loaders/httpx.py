@@ -24,10 +24,7 @@ class HttpxLoader(Loader):
         except httpx.HTTPError as e:
             logger.warning("[HttpxLoader] HTTP error: %s", e)
             raise LoaderContentError(
-                "HttpxLoader",
-                url,
-                f"HTTP request failed: {e}",
-                "Check that the URL is valid and accessible."
+                "HttpxLoader", url, f"HTTP request failed: {e}", "Check that the URL is valid and accessible."
             ) from e
 
         result = html_to_markdown(response.content)

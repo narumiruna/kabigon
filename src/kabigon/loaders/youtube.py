@@ -176,7 +176,7 @@ class YoutubeLoader(Loader):
                 "YoutubeLoader",
                 url,
                 f"Failed to fetch transcript: {e}",
-                "The video may not have captions available, or captions may be disabled."
+                "The video may not have captions available, or captions may be disabled.",
             ) from e
 
         lines = []
@@ -189,10 +189,7 @@ class YoutubeLoader(Loader):
         if not result:
             logger.warning("[YoutubeLoader] Empty transcript for %s", video_id)
             raise LoaderContentError(
-                "YoutubeLoader",
-                url,
-                "Transcript is empty",
-                "The video may not have any captions."
+                "YoutubeLoader", url, "Transcript is empty", "The video may not have any captions."
             )
 
         logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))

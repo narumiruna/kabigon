@@ -36,9 +36,7 @@ def check_reddit_url(url: str) -> None:
     netloc = urlparse(url).netloc
     if netloc not in REDDIT_DOMAINS:
         raise LoaderNotApplicableError(
-            "RedditLoader",
-            url,
-            f"Not a Reddit URL. Expected domains: {', '.join(REDDIT_DOMAINS)}"
+            "RedditLoader", url, f"Not a Reddit URL. Expected domains: {', '.join(REDDIT_DOMAINS)}"
         )
 
 
@@ -102,7 +100,7 @@ class RedditLoader(Loader):
                     "RedditLoader",
                     url,
                     self.timeout / 1000,
-                    "Reddit pages can be slow to load. Try increasing the timeout."
+                    "Reddit pages can be slow to load. Try increasing the timeout.",
                 ) from e
 
             content = await page.content()

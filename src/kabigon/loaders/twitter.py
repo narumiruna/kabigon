@@ -47,9 +47,7 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
 def check_x_url(url: str) -> None:
     if urlparse(url).netloc not in TWITTER_DOMAINS:
         raise LoaderNotApplicableError(
-            "TwitterLoader",
-            url,
-            f"Not a Twitter/X URL. Expected domains: {', '.join(TWITTER_DOMAINS)}"
+            "TwitterLoader", url, f"Not a Twitter/X URL. Expected domains: {', '.join(TWITTER_DOMAINS)}"
         )
 
 
@@ -107,7 +105,7 @@ class TwitterLoader(Loader):
                     "TwitterLoader",
                     url,
                     self.timeout / 1000,
-                    "Twitter/X pages can be slow. Try increasing the timeout or check if the page requires login."
+                    "Twitter/X pages can be slow. Try increasing the timeout or check if the page requires login.",
                 ) from e
 
             with contextlib.suppress(TimeoutError):

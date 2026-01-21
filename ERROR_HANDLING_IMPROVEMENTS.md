@@ -18,7 +18,7 @@ Three new custom exception classes in `kabigon.core.exception`:
 - **Purpose**: Indicates that a URL doesn't match a loader's expected format
 - **Attributes**: `loader_name`, `url`, `reason`
 - **Usage**: Raised when a loader cannot handle a specific URL type
-- **Example**: 
+- **Example**:
   ```python
   raise LoaderNotApplicableError(
       "YoutubeLoader",

@@ -11,11 +11,7 @@ logger = logging.getLogger(__name__)
 
 def check_ptt_url(url: str) -> None:
     if urlparse(url).netloc != "www.ptt.cc":
-        raise LoaderNotApplicableError(
-            "PttLoader",
-            url,
-            "Not a PTT URL. Expected domain: www.ptt.cc"
-        )
+        raise LoaderNotApplicableError("PttLoader", url, "Not a PTT URL. Expected domain: www.ptt.cc")
 
 
 class PttLoader(Loader):
