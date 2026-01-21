@@ -1,3 +1,5 @@
+all: lint type test
+
 lint:
 	uv run ruff check .
 
