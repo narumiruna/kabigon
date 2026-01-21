@@ -40,3 +40,14 @@
 
 - Do not commit credentials. Common env vars: `FIRECRAWL_API_KEY`, `FFMPEG_PATH`.
 - For browser-based loaders, install Playwright once: `playwright install chromium`.
+
+## Documentation
+
+- Language MUST be concise and precise.
+- Design and structure MUST NOT introduce unnecessary complexity.
+- Scope and responsibility boundaries MUST be explicit.
+- Each document MUST have a single, well-defined purpose.
+- Rules MUST be stated in enforceable terms and avoid ambiguity.
+- Foundational rules MUST NOT be duplicated across documents.
+- Each document MUST be less than 600 lines long.
+- Use Markdown for all documentation files.
