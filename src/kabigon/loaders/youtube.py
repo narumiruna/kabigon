@@ -1,10 +1,15 @@
+import logging
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from kabigon.core.exception import KabigonError
+from kabigon.core.exception import LoaderContentError
+from kabigon.core.exception import LoaderNotApplicableError
 from kabigon.core.loader import Loader
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_LANGUAGES = [
     # 中文
@@ -153,13 +158,39 @@ class YoutubeLoader(Loader):
         self.languages = languages or DEFAULT_LANGUAGES
 
     def load_sync(self, url: str) -> str:
-        video_id = parse_video_id(url)
+        logger.debug("[YoutubeLoader] Processing URL: %s", url)
 
-        fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
+        try:
+            video_id = parse_video_id(url)
+        except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as e:
+            logger.debug("[YoutubeLoader] URL validation failed: %s", e)
+            raise LoaderNotApplicableError("YoutubeLoader", url, str(e)) from e
+
+        logger.debug("[YoutubeLoader] Extracted video ID: %s", video_id)
+
+        try:
+            fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
+        except Exception as e:
+            logger.warning("[YoutubeLoader] Failed to fetch transcript for %s: %s", video_id, e)
+            raise LoaderContentError(
+                "YoutubeLoader",
+                url,
+                f"Failed to fetch transcript: {e}",
+                "The video may not have captions available, or captions may be disabled.",
+            ) from e
 
         lines = []
         for snippet in fetched.snippets:
             text = str(snippet.text).strip()
             if text:
                 lines.append(text)
-        return "\n".join(lines)
+
+        result = "\n".join(lines)
+        if not result:
+            logger.warning("[YoutubeLoader] Empty transcript for %s", video_id)
+            raise LoaderContentError(
+                "YoutubeLoader", url, "Transcript is empty", "The video may not have any captions."
+            )
+
+        logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))
+        return result

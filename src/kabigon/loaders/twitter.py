@@ -11,7 +11,8 @@ from playwright.async_api import Route
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.core.exception import InvalidURLError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.exception import LoaderTimeoutError
 from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
@@ -45,7 +46,9 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
 
 def check_x_url(url: str) -> None:
     if urlparse(url).netloc not in TWITTER_DOMAINS:
-        raise InvalidURLError(url, "Twitter/X")
+        raise LoaderNotApplicableError(
+            "TwitterLoader", url, f"Not a Twitter/X URL. Expected domains: {', '.join(TWITTER_DOMAINS)}"
+        )
 
 
 class TwitterLoader(Loader):
@@ -74,9 +77,11 @@ class TwitterLoader(Loader):
                     task.cancel()
 
     async def load(self, url: str) -> str:
+        logger.debug("[TwitterLoader] Processing URL: %s", url)
         check_x_url(url)
 
         url = replace_domain(url)
+        logger.debug("[TwitterLoader] Normalized URL: %s", url)
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -94,7 +99,14 @@ class TwitterLoader(Loader):
             try:
                 await page.goto(url, timeout=self.timeout, wait_until="domcontentloaded")
             except TimeoutError as e:
-                logger.warning("TimeoutError: {}, (url: {}, timeout: {})", e, url, self.timeout)
+                await browser.close()
+                logger.warning("[TwitterLoader] Timeout during page load: %s", e)
+                raise LoaderTimeoutError(
+                    "TwitterLoader",
+                    url,
+                    self.timeout / 1000,
+                    "Twitter/X pages can be slow. Try increasing the timeout or check if the page requires login.",
+                ) from e
 
             with contextlib.suppress(TimeoutError):
                 await self._wait_for_any_selector(
@@ -107,10 +119,15 @@ class TwitterLoader(Loader):
                 tweet_articles = page.locator("article").filter(has=page.locator('[data-testid="tweetText"]'))
                 if await tweet_articles.count() > 0:
                     content = await tweet_articles.nth(0).evaluate("el => el.outerHTML")
+                    logger.debug("[TwitterLoader] Extracted tweet article content")
                 else:
                     content = await page.content()
+                    logger.debug("[TwitterLoader] Using full page content")
             except (PlaywrightError, TimeoutError):
                 content = await page.content()
+                logger.debug("[TwitterLoader] Fallback to full page content after error")
 
             await browser.close()
-            return html_to_markdown(content)
+            result = html_to_markdown(content)
+            logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
+            return result

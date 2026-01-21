@@ -1,5 +1,6 @@
 import pytest
 
+from kabigon.core.exception import LoaderNotApplicableError
 from kabigon.loaders.truthsocial import TruthSocialLoader
 from kabigon.loaders.truthsocial import check_truthsocial_url
 
@@ -25,8 +26,8 @@ def test_check_truthsocial_url(url: str) -> None:
     ],
 )
 def test_check_truthsocial_url_error(url: str) -> None:
-    """Test that non-Truth Social URLs raise ValueError."""
-    with pytest.raises(ValueError, match="not a Truth Social URL"):
+    """Test that non-Truth Social URLs raise LoaderNotApplicableError."""
+    with pytest.raises(LoaderNotApplicableError, match="Not a Truth Social URL"):
         check_truthsocial_url(url)
 
 
