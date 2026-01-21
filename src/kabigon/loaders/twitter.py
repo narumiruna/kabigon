@@ -1,9 +1,9 @@
 import asyncio
 import contextlib
+import logging
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-from loguru import logger
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
 from playwright.async_api import Request
@@ -16,6 +16,7 @@ from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
 
+logger = logging.getLogger(__name__)
 TWITTER_DOMAINS = [
     "twitter.com",
     "x.com",

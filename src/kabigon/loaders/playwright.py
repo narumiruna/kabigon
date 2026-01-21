@@ -1,12 +1,14 @@
+import logging
 from typing import Literal
 
-from loguru import logger
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
 from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
+
+logger = logging.getLogger(__name__)
 
 
 class PlaywrightLoader(Loader):

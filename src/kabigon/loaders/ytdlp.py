@@ -1,12 +1,14 @@
+import logging
 import os
 import uuid
 from pathlib import Path
 
 import yt_dlp
-from loguru import logger
 
 from kabigon.core.exception import WhisperNotInstalledError
 from kabigon.core.loader import Loader
+
+logger = logging.getLogger(__name__)
 
 
 def download_audio(url: str, outtmpl: str | None = None) -> None:

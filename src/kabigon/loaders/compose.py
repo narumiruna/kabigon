@@ -1,7 +1,9 @@
-from loguru import logger
+import logging
 
 from kabigon.core.exception import LoaderError
 from kabigon.core.loader import Loader
+
+logger = logging.getLogger(__name__)
 
 
 class Compose(Loader):
