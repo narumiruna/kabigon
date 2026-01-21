@@ -23,10 +23,6 @@ dependencies = [
 [project.scripts]
 kabigon = "kabigon.cli:main"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [dependency-groups]
 dev = [
   "pip>=25.0.1",
@@ -35,6 +31,19 @@ dev = [
   "ruff>=0.7.3",
   "ty>=0.0.8",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.bumpversion]
+current_version = "0.14.3"
+tag = true
+commit = true
+pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
+
+[tool.pytest]
+filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.ruff]
 exclude = ["build"]
@@ -50,6 +59,7 @@ select = [
   "DTZ",  # flake8-datetimez
   "E",  # pycodestyle errors
   "F",  # pyflakes
+  "G",  # flake8-logging-format
   "FURB",  # refurb
   "I",  # isort
   "N",  # pep8-naming
@@ -71,12 +81,3 @@ select = [
 
 [tool.ruff.lint.isort]
 force-single-line = true
-
-[tool.pytest.ini_options]
-filterwarnings = ["ignore::DeprecationWarning"]
-
-[tool.bumpversion]
-current_version = "0.14.3"
-tag = true
-commit = true
-pre_commit_hooks = ["uv lock --upgrade", "git add uv.lock"]
