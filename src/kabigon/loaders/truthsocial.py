@@ -1,11 +1,16 @@
+import logging
 from urllib.parse import urlparse
 
+from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.core.exception import InvalidURLError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.exception import LoaderTimeoutError
 from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
+
+logger = logging.getLogger(__name__)
 
 TRUTHSOCIAL_DOMAINS = [
     "truthsocial.com",
@@ -24,11 +29,15 @@ def check_truthsocial_url(url: str) -> None:
         url: The URL to check
 
     Raises:
-        ValueError: If URL is not from Truth Social
+        LoaderNotApplicableError: If URL is not from Truth Social
     """
     netloc = urlparse(url).netloc
     if netloc not in TRUTHSOCIAL_DOMAINS:
-        raise InvalidURLError(url, "Truth Social")
+        raise LoaderNotApplicableError(
+            "TruthSocialLoader",
+            url,
+            f"Not a Truth Social URL. Expected domains: {', '.join(TRUTHSOCIAL_DOMAINS)}"
+        )
 
 
 class TruthSocialLoader(Loader):
@@ -56,16 +65,33 @@ class TruthSocialLoader(Loader):
             Loaded content as markdown
 
         Raises:
-            ValueError: If URL is not from Truth Social
+            LoaderNotApplicableError: If URL is not from Truth Social
+            LoaderTimeoutError: If page loading times out
         """
+        logger.debug(f"[TruthSocialLoader] Processing URL: {url}")
         check_truthsocial_url(url)
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(user_agent=USER_AGENT)
             page = await context.new_page()
-            await page.goto(url, timeout=self.timeout, wait_until="networkidle")
+
+            try:
+                await page.goto(url, timeout=self.timeout, wait_until="networkidle")
+                logger.debug("[TruthSocialLoader] Page loaded successfully")
+            except TimeoutError as e:
+                await browser.close()
+                logger.warning(f"[TruthSocialLoader] Timeout after {self.timeout / 1000}s: {url}")
+                raise LoaderTimeoutError(
+                    "TruthSocialLoader",
+                    url,
+                    self.timeout / 1000,
+                    "Truth Social pages require JavaScript and can be slow. Try increasing the timeout."
+                ) from e
+
             content = await page.content()
             await browser.close()
 
-            return html_to_markdown(content)
+            result = html_to_markdown(content)
+            logger.debug(f"[TruthSocialLoader] Successfully extracted content ({len(result)} chars)")
+            return result

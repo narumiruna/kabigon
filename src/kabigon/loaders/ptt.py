@@ -1,14 +1,21 @@
+import logging
 from urllib.parse import urlparse
 
-from kabigon.core.exception import InvalidURLError
+from kabigon.core.exception import LoaderNotApplicableError
 from kabigon.core.loader import Loader
 
 from .httpx import HttpxLoader
 
+logger = logging.getLogger(__name__)
+
 
 def check_ptt_url(url: str) -> None:
     if urlparse(url).netloc != "www.ptt.cc":
-        raise InvalidURLError(url, "PTT")
+        raise LoaderNotApplicableError(
+            "PttLoader",
+            url,
+            "Not a PTT URL. Expected domain: www.ptt.cc"
+        )
 
 
 class PttLoader(Loader):
@@ -22,6 +29,9 @@ class PttLoader(Loader):
         )
 
     async def load(self, url: str) -> str:
+        logger.debug(f"[PttLoader] Processing URL: {url}")
         check_ptt_url(url)
 
-        return await self.httpx_loader.load(url)
+        result = await self.httpx_loader.load(url)
+        logger.debug(f"[PttLoader] Successfully loaded content ({len(result)} chars)")
+        return result
