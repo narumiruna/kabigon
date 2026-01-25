@@ -47,8 +47,10 @@ playwright install chromium
 kabigon <url>
 
 # Examples
+kabigon --list
+kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
+kabigon --loader twitter https://x.com/elonmusk/status/123456789
 kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
-kabigon https://x.com/elonmusk/status/123456789
 kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
 kabigon https://reddit.com/r/python/comments/xyz/...
 kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
