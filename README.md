@@ -35,8 +35,14 @@ A URL content loader library that extracts content from various sources (YouTube
 ## Installation
 
 ```shell
-pip install kabigon
-playwright install chromium
+uv tool install kabigon
+# or just
+uvx kabigon <url>
+
+# Install Playwright browsers
+uvx playwright install chromium
+# or
+uvx playwright install chrome
 ```
 
 ## Usage
@@ -44,17 +50,17 @@ playwright install chromium
 ### CLI
 
 ```shell
-kabigon <url>
+uvx kabigon <url>
 
 # Examples
-kabigon --list
-kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
-kabigon --loader twitter https://x.com/elonmusk/status/123456789
-kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
-kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
-kabigon https://reddit.com/r/python/comments/xyz/...
-kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
-kabigon https://example.com/document.pdf
+uvx kabigon --list
+uvx kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
+uvx kabigon --loader twitter https://x.com/elonmusk/status/123456789
+uvx kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
+uvx kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
+uvx kabigon https://reddit.com/r/python/comments/xyz/...
+uvx kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
+uvx kabigon https://example.com/document.pdf
 ```
 
 ### Python API - Sync
