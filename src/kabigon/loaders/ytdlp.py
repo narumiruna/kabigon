@@ -31,7 +31,7 @@ def download_audio(url: str, outtmpl: str | None = None) -> None:
     if ffmpeg_path is not None:
         ydl_opts["ffmpeg_location"] = ffmpeg_path
 
-    logger.info("Downloading audio from URL: {} with options: {}", url, ydl_opts)
+    logger.info("Downloading audio from URL: %s with options: %s", url, ydl_opts)
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
@@ -53,7 +53,7 @@ class YtdlpLoader(Loader):
 
         try:
             audio = self.load_audio(path)
-            logger.info("Transcribing audio file: {}", path)
+            logger.info("Transcribing audio file: %s", path)
             result = self.model.transcribe(audio)
         finally:
             # Clean up the audio file
