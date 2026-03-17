@@ -1,3 +1,4 @@
+from .cnn import CNNLoader
 from .compose import Compose
 from .firecrawl import FirecrawlLoader
 from .github import GitHubLoader
@@ -14,6 +15,7 @@ from .youtube_ytdlp import YoutubeYtdlpLoader
 from .ytdlp import YtdlpLoader
 
 __all__ = [
+    "CNNLoader",
     "Compose",
     "FirecrawlLoader",
     "GitHubLoader",

@@ -21,6 +21,7 @@ class LoaderSpec:
 LOADER_SPECS: list[LoaderSpec] = [
     LoaderSpec("playwright", "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
     LoaderSpec("httpx", "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
+    LoaderSpec("cnn", "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
     LoaderSpec("firecrawl", "Firecrawl-based web extraction", lambda: loaders.FirecrawlLoader()),
     LoaderSpec("youtube", "Extracts YouTube video transcripts", lambda: loaders.YoutubeLoader()),
     LoaderSpec(

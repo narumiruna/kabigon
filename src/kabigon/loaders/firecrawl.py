@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from firecrawl import FirecrawlApp
 
@@ -15,10 +16,10 @@ class FirecrawlLoader(Loader):
         if not api_key:
             raise FirecrawlAPIKeyNotSetError
 
-        self.app = FirecrawlApp(api_key=api_key)
+        self.app: Any = FirecrawlApp(api_key=api_key)
 
     def load_sync(self, url: str) -> str:
-        result = self.app.scrape_url(  # ty:ignore[possibly-missing-attribute]
+        result = self.app.scrape_url(
             url,
             formats=["markdown"],
             timeout=self.timeout,
