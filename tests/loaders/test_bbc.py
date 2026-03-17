@@ -1,5 +1,6 @@
-import pytest
 from typing import ClassVar
+
+import pytest
 
 from kabigon.core.exception import LoaderNotApplicableError
 from kabigon.loaders import bbc as bbc_module
