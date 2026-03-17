@@ -18,6 +18,7 @@ def _get_default_loader() -> loaders.Compose:
             loaders.YoutubeYtdlpLoader(),
             loaders.PDFLoader(),
             loaders.GitHubLoader(),
+            loaders.BBCLoader(),
             loaders.CNNLoader(),
             loaders.PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
             loaders.PlaywrightLoader(timeout=10_000),

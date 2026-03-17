@@ -1,37 +1,36 @@
+import pytest
 from typing import ClassVar
 
-import pytest
-
 from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.loaders import cnn as cnn_module
-from kabigon.loaders.cnn import CNNLoader
-from kabigon.loaders.cnn import check_cnn_url
-from kabigon.loaders.cnn import extract_article_body_from_json_ld
-from kabigon.loaders.cnn import extract_cnn_main_html
+from kabigon.loaders import bbc as bbc_module
+from kabigon.loaders.bbc import BBCLoader
+from kabigon.loaders.bbc import check_bbc_url
+from kabigon.loaders.bbc import extract_article_body_from_json_ld
+from kabigon.loaders.bbc import extract_bbc_main_html
 
 
 @pytest.mark.parametrize(
     "url",
     [
-        "https://edition.cnn.com/2026/03/16/tech/nvidia-jensen-huang-ai-agents",
-        "https://www.cnn.com/2026/03/16/tech/example",
-        "https://cnn.com/world/live-news/example",
+        "https://www.bbc.com/news/articles/c70k29914q4o",
+        "https://bbc.com/news/world-123",
+        "https://www.bbc.com/sport/football/articles/example",
     ],
 )
-def test_check_cnn_url(url: str) -> None:
-    check_cnn_url(url)
+def test_check_bbc_url(url: str) -> None:
+    check_bbc_url(url)
 
 
 @pytest.mark.parametrize(
     "url",
     [
         "https://example.com/news",
-        "https://bbc.com/news/world-123",
+        "https://edition.cnn.com/2026/03/16/tech/example",
     ],
 )
-def test_check_cnn_url_error(url: str) -> None:
-    with pytest.raises(LoaderNotApplicableError, match="Not a CNN URL"):
-        check_cnn_url(url)
+def test_check_bbc_url_error(url: str) -> None:
+    with pytest.raises(LoaderNotApplicableError, match="Not a BBC URL"):
+        check_bbc_url(url)
 
 
 def test_extract_article_body_from_json_ld() -> None:
@@ -49,7 +48,7 @@ def test_extract_article_body_from_json_ld() -> None:
     assert result == "Line 1\nLine 2"
 
 
-def test_extract_cnn_main_html_prefers_article() -> None:
+def test_extract_bbc_main_html_prefers_article() -> None:
     html = """
     <html>
       <body>
@@ -59,18 +58,18 @@ def test_extract_cnn_main_html_prefers_article() -> None:
       </body>
     </html>
     """
-    extracted = extract_cnn_main_html(html)
+    extracted = extract_bbc_main_html(html)
     assert "<article>" in extracted
     assert "Body" in extracted
     assert "Nav" not in extracted
 
 
-def test_cnn_loader_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_bbc_loader_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch) -> None:
     html = """
     <html>
       <head>
         <script type="application/ld+json">
-          {"@type":"NewsArticle","articleBody":"CNN body paragraph"}
+          {"@type":"NewsArticle","articleBody":"BBC body paragraph"}
         </script>
       </head>
       <body>
@@ -97,8 +96,8 @@ def test_cnn_loader_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch) -> Non
         async def get(self, url: str, headers: dict[str, str], follow_redirects: bool):
             return MockResponse()
 
-    monkeypatch.setattr(cnn_module.httpx, "AsyncClient", MockAsyncClient)
+    monkeypatch.setattr(bbc_module.httpx, "AsyncClient", MockAsyncClient)
 
-    loader = CNNLoader()
-    result = loader.load_sync("https://edition.cnn.com/2026/03/16/tech/nvidia-jensen-huang-ai-agents")
-    assert result == "CNN body paragraph"
+    loader = BBCLoader()
+    result = loader.load_sync("https://www.bbc.com/news/articles/c70k29914q4o")
+    assert result == "BBC body paragraph"

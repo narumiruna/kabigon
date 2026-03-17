@@ -2,6 +2,7 @@ import logging
 
 from .api import load_url
 from .api import load_url_sync
+from .loaders import BBCLoader
 from .loaders import CNNLoader
 from .loaders import Compose
 from .loaders import FirecrawlLoader
@@ -19,6 +20,7 @@ from .loaders import YoutubeYtdlpLoader
 from .loaders import YtdlpLoader
 
 __all__ = [
+    "BBCLoader",
     "CNNLoader",
     "Compose",
     "FirecrawlLoader",

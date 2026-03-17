@@ -152,6 +152,7 @@ asyncio.run(main())
 | Reddit | `RedditLoader` | Extracts Reddit posts and comments |
 | Instagram Reels | `ReelLoader` | Audio transcription + metadata |
 | GitHub | `GitHubLoader` | Fetches GitHub web pages and file content (supports repo URLs + `github.com/.../blob/...`) |
+| BBC | `BBCLoader` | BBC article extraction with article-aware parsing |
 | CNN | `CNNLoader` | CNN article extraction with article-aware parsing |
 | PDF | `PDFLoader` | Extracts text from PDF files (URL or local) |
 | PTT | `PttLoader` | Taiwan PTT forum posts |
