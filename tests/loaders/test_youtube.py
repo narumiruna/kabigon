@@ -41,6 +41,8 @@ def test_check_youtube_url_error(url: str) -> None:
         ("http://youtu.be/dQw4w9WgXcQ", "dQw4w9WgXcQ"),
         # Mobile URLs
         ("https://m.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ"),
+        # YouTube Music URLs
+        ("https://music.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ"),
         # No-cookie URLs
         ("https://www.youtube-nocookie.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ"),
         # vid.plus URLs
