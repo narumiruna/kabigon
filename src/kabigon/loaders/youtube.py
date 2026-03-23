@@ -49,6 +49,7 @@ ALLOWED_SCHEMES = {
 ALLOWED_NETLOCS = {
     "youtu.be",
     "m.youtube.com",
+    "music.youtube.com",
     "youtube.com",
     "www.youtube.com",
     "www.youtube-nocookie.com",
@@ -83,6 +84,7 @@ def parse_video_id(url: str) -> str:
     - https://www.youtube.com/watch?v=VIDEO_ID
     - https://youtu.be/VIDEO_ID
     - https://m.youtube.com/watch?v=VIDEO_ID
+    - https://music.youtube.com/watch?v=VIDEO_ID
     - https://www.youtube-nocookie.com/watch?v=VIDEO_ID
     - https://vid.plus/VIDEO_ID
 
