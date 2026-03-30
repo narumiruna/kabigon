@@ -2,9 +2,7 @@ import asyncio
 import contextlib
 import logging
 from urllib.parse import urlparse
-from urllib.parse import urlsplit
 from urllib.parse import urlunparse
-from urllib.parse import urlunsplit
 
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
@@ -22,9 +20,7 @@ from .utils import html_to_markdown
 logger = logging.getLogger(__name__)
 TWITTER_DOMAINS = [
     "twitter.com",
-    "www.twitter.com",
     "x.com",
-    "www.x.com",
     "fxtwitter.com",
     "vxtwitter.com",
     "fixvx.com",
@@ -48,27 +44,11 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
     return str(urlunparse(urlparse(url)._replace(netloc=new_domain)))
 
 
-def normalize_twitter_url(url: str) -> str:
-    """Normalize X/Twitter URLs for stable extraction."""
-    replaced = replace_domain(url)
-    parsed = urlsplit(replaced)
-    # Drop tracking query params such as ?s=46 and fragments from shared links.
-    return str(urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", "")))
-
-
 def check_x_url(url: str) -> None:
     if urlparse(url).netloc not in TWITTER_DOMAINS:
         raise LoaderNotApplicableError(
             "TwitterLoader", url, f"Not a Twitter/X URL. Expected domains: {', '.join(TWITTER_DOMAINS)}"
         )
-
-
-def sanitize_twitter_markdown(content: str) -> str:
-    """Remove common UI noise leaked from X page markup."""
-    noise_tokens = {"PCF_LABEL_NONE"}
-    lines = content.splitlines()
-    cleaned_lines = [line for line in lines if line.strip() not in noise_tokens]
-    return "\n".join(cleaned_lines)
 
 
 class TwitterLoader(Loader):
@@ -100,7 +80,7 @@ class TwitterLoader(Loader):
         logger.debug("[TwitterLoader] Processing URL: %s", url)
         check_x_url(url)
 
-        url = normalize_twitter_url(url)
+        url = replace_domain(url)
         logger.debug("[TwitterLoader] Normalized URL: %s", url)
 
         async with async_playwright() as p:
@@ -149,6 +129,5 @@ class TwitterLoader(Loader):
 
             await browser.close()
             result = html_to_markdown(content)
-            result = sanitize_twitter_markdown(result)
             logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
             return result
