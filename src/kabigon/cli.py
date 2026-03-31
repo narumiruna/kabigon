@@ -1,21 +1,25 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import NoReturn
 
 import typer
 
 from kabigon import loaders
 from kabigon.api import load_url_sync
-from kabigon.loader_registry import LoaderSpec
-from kabigon.loader_registry import get_cli_loader_specs
+from kabigon.core.loader import Loader
+from kabigon.loader_registry import get_cli_loader_defs
 
-LOADER_SPECS: list[LoaderSpec] = get_cli_loader_specs()
+LoaderFactory = Callable[[], Loader]
+LoaderDef = tuple[str, str, LoaderFactory]
+
+LOADER_DEFS: list[LoaderDef] = get_cli_loader_defs()
 
 app = typer.Typer(add_completion=False)
 
 
-def _loader_registry() -> dict[str, LoaderSpec]:
-    return {spec.name: spec for spec in LOADER_SPECS}
+def _loader_registry() -> dict[str, LoaderFactory]:
+    return {name: factory for name, _description, factory in LOADER_DEFS}
 
 
 def _exit_with_error(message: str) -> NoReturn:
@@ -37,15 +41,15 @@ def _parse_loader_names(raw: str) -> list[str]:
 
 def _load_with_loader_names(names: list[str], url: str) -> str:
     registry = _loader_registry()
-    loaders_chain = [registry[name].factory() for name in names]
+    loaders_chain = [registry[name]() for name in names]
     if len(loaders_chain) == 1:
         return loaders_chain[0].load_sync(url)
     return loaders.Compose(loaders_chain).load_sync(url)
 
 
 def _print_loader_list() -> None:
-    for spec in LOADER_SPECS:
-        typer.echo(f"{spec.name} - {spec.description}")
+    for name, description, _factory in LOADER_DEFS:
+        typer.echo(f"{name} - {description}")
 
 
 @app.callback(invoke_without_command=True)

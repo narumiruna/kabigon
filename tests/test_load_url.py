@@ -1,8 +1,9 @@
 import pytest
 
 import kabigon
-from kabigon import loaders
-from kabigon.loader_registry import DEFAULT_PIPELINE_STEP_NAMES
+from kabigon.pipelines import DEFAULT_FALLBACK_LOADERS
+from kabigon.retrieval.orchestrator import resolve_execution_plan_loader_names
+from kabigon.retrieval.orchestrator import resolve_targeted_loader_names
 
 
 def test_load_url_function_exists() -> None:
@@ -17,25 +18,30 @@ def test_load_url_async_function_exists() -> None:
     assert callable(kabigon.api.load_url)
 
 
-def test_get_default_loader() -> None:
-    """Test that _get_default_loader returns a Compose instance."""
-    loader = kabigon.api._get_default_loader()
-    assert isinstance(loader, loaders.Compose)
-    assert len(loader.loaders) == 13  # Should have all default loaders
+def test_resolve_targeted_loader_names_for_url_youtube_url() -> None:
+    targeted = resolve_targeted_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    assert targeted == ["youtube", "youtube-ytdlp"]
 
 
-def test_build_pipeline_ids_youtube_url_is_targeted_then_fallback() -> None:
-    pipeline_ids = kabigon.api._build_pipeline_ids("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+def test_build_execution_plan_for_url_youtube_is_targeted_then_fallback() -> None:
+    execution_plan = resolve_execution_plan_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
-    assert pipeline_ids[:2] == ["youtube", "youtube-ytdlp"]
-    assert "playwright-networkidle" in pipeline_ids
-    assert "playwright-fast" in pipeline_ids
-    assert len(pipeline_ids) == len(set(pipeline_ids))
+    assert execution_plan[:2] == ["youtube", "youtube-ytdlp"]
+    assert "playwright-networkidle" in execution_plan
+    assert "playwright-fast" in execution_plan
+    assert len(execution_plan) == len(set(execution_plan))
 
 
-def test_build_pipeline_ids_unknown_url_uses_default_order() -> None:
-    pipeline_ids = kabigon.api._build_pipeline_ids("https://example.com/hello")
-    assert pipeline_ids == DEFAULT_PIPELINE_STEP_NAMES
+def test_build_execution_plan_for_url_unknown_uses_default_order() -> None:
+    execution_plan = resolve_execution_plan_loader_names("https://example.com/hello")
+    assert execution_plan == list(DEFAULT_FALLBACK_LOADERS)
+
+
+def test_targeted_loaders_are_prefix_of_execution_plan() -> None:
+    url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    targeted = resolve_targeted_loader_names(url)
+    execution_plan = resolve_execution_plan_loader_names(url)
+    assert execution_plan[: len(targeted)] == targeted
 
 
 def test_load_url_invalid_url() -> None:
