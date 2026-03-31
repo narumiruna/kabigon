@@ -1,13 +1,14 @@
+import asyncio
 import logging
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from kabigon.core.exception import KabigonError
-from kabigon.core.exception import LoaderContentError
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import KabigonError
+from kabigon.domain.errors import LoaderContentError
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.domain.loader import Loader
 
 logger = logging.getLogger(__name__)
 
@@ -196,3 +197,6 @@ class YoutubeLoader(Loader):
 
         logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))
         return result
+
+    async def load(self, url: str) -> str:
+        return await asyncio.to_thread(self.load_sync, url)

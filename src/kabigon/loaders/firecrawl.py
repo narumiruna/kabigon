@@ -1,11 +1,12 @@
+import asyncio
 import os
 from typing import Any
 
 from firecrawl import FirecrawlApp
 
-from kabigon.core.exception import FirecrawlAPIKeyNotSetError
-from kabigon.core.exception import LoaderError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import FirecrawlAPIKeyNotSetError
+from kabigon.domain.errors import LoaderError
+from kabigon.domain.loader import Loader
 
 
 class FirecrawlLoader(Loader):
@@ -29,3 +30,6 @@ class FirecrawlLoader(Loader):
             raise LoaderError(url)
 
         return result.markdown
+
+    async def load(self, url: str) -> str:
+        return await asyncio.to_thread(self.load_sync, url)

@@ -1,7 +1,9 @@
 import pytest
 
 import kabigon
-from kabigon import loaders
+from kabigon.application.routing import DEFAULT_FALLBACK_LOADERS
+from kabigon.application.service import resolve_execution_plan_loader_names
+from kabigon.application.service import resolve_targeted_loader_names
 
 
 def test_load_url_function_exists() -> None:
@@ -16,11 +18,30 @@ def test_load_url_async_function_exists() -> None:
     assert callable(kabigon.api.load_url)
 
 
-def test_get_default_loader() -> None:
-    """Test that _get_default_loader returns a Compose instance."""
-    loader = kabigon.api._get_default_loader()
-    assert isinstance(loader, loaders.Compose)
-    assert len(loader.loaders) == 13  # Should have all default loaders
+def test_resolve_targeted_loader_names_for_url_youtube_url() -> None:
+    targeted = resolve_targeted_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    assert targeted == ["youtube", "youtube-ytdlp"]
+
+
+def test_build_execution_plan_for_url_youtube_is_targeted_then_fallback() -> None:
+    execution_plan = resolve_execution_plan_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
+    assert execution_plan[:2] == ["youtube", "youtube-ytdlp"]
+    assert "playwright-networkidle" in execution_plan
+    assert "playwright-fast" in execution_plan
+    assert len(execution_plan) == len(set(execution_plan))
+
+
+def test_build_execution_plan_for_url_unknown_uses_default_order() -> None:
+    execution_plan = resolve_execution_plan_loader_names("https://example.com/hello")
+    assert execution_plan == list(DEFAULT_FALLBACK_LOADERS)
+
+
+def test_targeted_loaders_are_prefix_of_execution_plan() -> None:
+    url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    targeted = resolve_targeted_loader_names(url)
+    execution_plan = resolve_execution_plan_loader_names(url)
+    assert execution_plan[: len(targeted)] == targeted
 
 
 def test_load_url_invalid_url() -> None:

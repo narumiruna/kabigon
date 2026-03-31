@@ -1,6 +1,6 @@
 import pytest
 
-from kabigon.core.exception import InvalidURLError
+from kabigon.domain.errors import InvalidURLError
 from kabigon.loaders.github import check_github_url
 from kabigon.loaders.github import extract_main_html
 from kabigon.loaders.github import to_raw_github_url
@@ -36,6 +36,24 @@ def test_extract_main_html_falls_back_to_article() -> None:
     """
     extracted = extract_main_html(html)
     assert "Article body" in extracted
+
+
+def test_extract_main_html_ignores_script_and_style_tags() -> None:
+    html = """
+    <html>
+      <body>
+        <main>
+          <script>var secret = 1;</script>
+          <style>.hidden { display: none; }</style>
+          <p>Visible content</p>
+        </main>
+      </body>
+    </html>
+    """
+    extracted = extract_main_html(html)
+    assert "Visible content" in extracted
+    assert "secret" not in extracted
+    assert "hidden" not in extracted
 
 
 def test_extract_main_html_falls_back_to_full_html() -> None:

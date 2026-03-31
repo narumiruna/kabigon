@@ -2,8 +2,8 @@ import logging
 
 import httpx
 
-from kabigon.core.exception import LoaderContentError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import LoaderContentError
+from kabigon.domain.loader import Loader
 
 from .utils import html_to_markdown
 

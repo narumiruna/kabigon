@@ -1,17 +1,15 @@
 import logging
-from urllib.parse import urlparse
 
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.loader import Loader
+from kabigon.domain.loader import Loader
 
 from .httpx import HttpxLoader
+from .url_match import ensure_host_in
 
 logger = logging.getLogger(__name__)
 
 
 def check_ptt_url(url: str) -> None:
-    if urlparse(url).netloc != "www.ptt.cc":
-        raise LoaderNotApplicableError("PttLoader", url, "Not a PTT URL. Expected domain: www.ptt.cc")
+    ensure_host_in(url, ["www.ptt.cc"], loader_name="PttLoader", source_name="PTT")
 
 
 class PttLoader(Loader):
