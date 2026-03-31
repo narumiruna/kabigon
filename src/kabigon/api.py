@@ -1,36 +1,43 @@
 from . import loaders
+from .core.loader import Loader
+from .loader_registry import DEFAULT_PIPELINE_STEP_NAMES
+from .loader_registry import LOADER_SPECS_BY_NAME
+from .routing import route_url_to_pipeline_names
 
 
 def _get_default_loader() -> loaders.Compose:
-    """Get the default loader composition used by CLI.
+    """Get the default fallback loader composition.
 
     Returns:
-        Compose: Default loader chain with all available loaders
+        Compose: Default loader chain used as routed fallback
     """
-    return loaders.Compose(
-        [
-            loaders.PttLoader(),
-            loaders.TwitterLoader(),
-            loaders.TruthSocialLoader(),
-            loaders.RedditLoader(),
-            loaders.YoutubeLoader(),
-            loaders.ReelLoader(),
-            loaders.YoutubeYtdlpLoader(),
-            loaders.PDFLoader(),
-            loaders.GitHubLoader(),
-            loaders.BBCLoader(),
-            loaders.CNNLoader(),
-            loaders.PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
-            loaders.PlaywrightLoader(timeout=10_000),
-        ]
-    )
+    loader_chain = _build_loaders(DEFAULT_PIPELINE_STEP_NAMES)
+    return loaders.Compose(loader_chain)
+
+
+def _build_pipeline_ids(url: str) -> list[str]:
+    targeted = route_url_to_pipeline_names(url)
+    fallback = [name for name in DEFAULT_PIPELINE_STEP_NAMES if name not in targeted]
+    return [*targeted, *fallback]
+
+
+def _build_loaders(step_names: list[str]) -> list[Loader]:
+    return [LOADER_SPECS_BY_NAME[name].factory() for name in step_names]
+
+
+def _get_loader_for_url(url: str) -> Loader:
+    pipeline = _build_pipeline_ids(url)
+    loader_chain = _build_loaders(pipeline)
+    if len(loader_chain) == 1:
+        return loader_chain[0]
+    return loaders.Compose(loader_chain)
 
 
 def load_url_sync(url: str) -> str:
-    """Load content from a URL using the default loader chain.
+    """Load content from a URL using routed pipeline + default fallback.
 
-    This is a convenience function that uses the same loader chain as the CLI.
-    It tries each loader in sequence until one succeeds.
+    The function first routes URL types (for example YouTube -> YouTube loaders),
+    then appends the remaining default fallback loaders without duplicates.
 
     Args:
         url: The URL to load content from
@@ -46,14 +53,14 @@ def load_url_sync(url: str) -> str:
         >>> text = kabigon.load_url_sync("https://example.com")
         >>> print(text)
     """
-    loader = _get_default_loader()
+    loader = _get_loader_for_url(url)
     return loader.load_sync(url)
 
 
 async def load_url(url: str) -> str:
-    """Asynchronously load content from a URL using the default loader chain.
+    """Asynchronously load content from a URL using routed pipeline + default fallback.
 
-    This is an async version of load_url() that can be used in async contexts.
+    This is an async version of load_url_sync() for async contexts.
 
     Args:
         url: The URL to load content from
@@ -72,5 +79,5 @@ async def load_url(url: str) -> str:
         ...     print(text)
         >>> asyncio.run(main())
     """
-    loader = _get_default_loader()
+    loader = _get_loader_for_url(url)
     return await loader.load(url)

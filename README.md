@@ -13,7 +13,7 @@ A URL content loader library that extracts content from various sources (YouTube
 
 🔄 **Async-First Design**: Built with async/await for efficient parallel processing
 
-🎯 **Smart Fallback**: Automatically tries multiple extraction strategies until one succeeds
+🎯 **Smart Routing + Fallback**: Routes URLs to source-specific pipelines first, then tries deduplicated fallback loaders
 
 🚀 **Simple API**: Single-line usage with sensible defaults, or full control with custom loader chains
 
@@ -62,6 +62,9 @@ uvx kabigon https://reddit.com/r/python/comments/xyz/...
 uvx kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
 uvx kabigon https://example.com/document.pdf
 ```
+
+By default (without `--loader`), Kabigon routes the URL to a source-specific pipeline first (for example YouTube),
+then runs the remaining default fallback loaders without repeating already-attempted loaders.
 
 ### Python API - Sync
 

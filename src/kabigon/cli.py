@@ -1,44 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
 from typing import NoReturn
 
 import typer
 
 from kabigon import loaders
 from kabigon.api import load_url_sync
-from kabigon.core.loader import Loader
+from kabigon.loader_registry import LoaderSpec
+from kabigon.loader_registry import get_cli_loader_specs
 
-
-@dataclass(frozen=True)
-class LoaderSpec:
-    name: str
-    description: str
-    factory: Callable[[], Loader]
-
-
-LOADER_SPECS: list[LoaderSpec] = [
-    LoaderSpec("playwright", "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
-    LoaderSpec("httpx", "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
-    LoaderSpec("bbc", "BBC article extraction with article-aware parsing", lambda: loaders.BBCLoader()),
-    LoaderSpec("cnn", "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
-    LoaderSpec("firecrawl", "Firecrawl-based web extraction", lambda: loaders.FirecrawlLoader()),
-    LoaderSpec("youtube", "Extracts YouTube video transcripts", lambda: loaders.YoutubeLoader()),
-    LoaderSpec(
-        "youtube-ytdlp",
-        "YouTube audio transcription via yt-dlp + Whisper",
-        lambda: loaders.YoutubeYtdlpLoader(),
-    ),
-    LoaderSpec("ytdlp", "Audio transcription via yt-dlp + Whisper", lambda: loaders.YtdlpLoader()),
-    LoaderSpec("twitter", "Extracts Twitter/X post content", lambda: loaders.TwitterLoader()),
-    LoaderSpec("truthsocial", "Extracts Truth Social posts", lambda: loaders.TruthSocialLoader()),
-    LoaderSpec("reddit", "Extracts Reddit posts and comments", lambda: loaders.RedditLoader()),
-    LoaderSpec("ptt", "Taiwan PTT forum posts", lambda: loaders.PttLoader()),
-    LoaderSpec("reel", "Instagram Reels audio transcription + metadata", lambda: loaders.ReelLoader()),
-    LoaderSpec("github", "Fetches GitHub pages and file content", lambda: loaders.GitHubLoader()),
-    LoaderSpec("pdf", "Extracts text from PDF files", lambda: loaders.PDFLoader()),
-]
+LOADER_SPECS: list[LoaderSpec] = get_cli_loader_specs()
 
 app = typer.Typer(add_completion=False)
 

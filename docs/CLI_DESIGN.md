@@ -4,6 +4,11 @@
 ## Default pipeline
 kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
+# Default behavior
+# 1) Route URL to source-specific pipeline first
+# 2) If needed, continue with remaining default fallback loaders
+# 3) Already-attempted loaders are not repeated
+
 # List supported loaders
 kabigon --list
 
