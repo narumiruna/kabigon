@@ -5,8 +5,8 @@ from collections.abc import Callable
 import pytest
 from typer.testing import CliRunner
 
-from kabigon.domain.loader import Loader
-from kabigon.interface import cli
+from kabigon import cli
+from kabigon.core.loader import Loader
 
 
 class DummyLoader(Loader):
@@ -20,16 +20,16 @@ class DummyLoader(Loader):
         return self.result
 
 
-def make_defs(*defs: tuple[str, str, Callable[[], Loader]]) -> list[tuple[str, str, Callable[[], Loader]]]:
-    return list(defs)
+def make_specs(*specs: tuple[str, str, Callable[[], Loader]]) -> list[cli.LoaderSpec]:
+    return [cli.LoaderSpec(name=name, description=desc, factory=factory) for name, desc, factory in specs]
 
 
 def test_cli_list_outputs_loaders(monkeypatch: pytest.MonkeyPatch) -> None:
-    specs = make_defs(
+    specs = make_specs(
         ("alpha", "Alpha loader", lambda: DummyLoader("alpha")),
         ("beta", "Beta loader", lambda: DummyLoader("beta")),
     )
-    monkeypatch.setattr(cli, "LOADER_DEFS", specs)
+    monkeypatch.setattr(cli, "LOADER_SPECS", specs)
 
     runner = CliRunner()
     result = runner.invoke(cli.app, ["--list"])
@@ -52,11 +52,11 @@ def test_cli_loader_compose_order(monkeypatch: pytest.MonkeyPatch) -> None:
             calls.append("second")
             return "ok"
 
-    specs = make_defs(
+    specs = make_specs(
         ("first", "First loader", lambda: FirstLoader()),
         ("second", "Second loader", lambda: SecondLoader()),
     )
-    monkeypatch.setattr(cli, "LOADER_DEFS", specs)
+    monkeypatch.setattr(cli, "LOADER_SPECS", specs)
 
     runner = CliRunner()
     result = runner.invoke(cli.app, ["--loader", "first,second", "https://example.com"])

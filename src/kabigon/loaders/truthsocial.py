@@ -1,12 +1,13 @@
 import logging
+from urllib.parse import urlparse
 
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.loader import Loader
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.exception import LoaderTimeoutError
+from kabigon.core.loader import Loader
 
-from .url_match import ensure_host_in
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,11 @@ def check_truthsocial_url(url: str) -> None:
     Raises:
         LoaderNotApplicableError: If URL is not from Truth Social
     """
-    ensure_host_in(url, TRUTHSOCIAL_DOMAINS, loader_name="TruthSocialLoader", source_name="Truth Social")
+    netloc = urlparse(url).netloc
+    if netloc not in TRUTHSOCIAL_DOMAINS:
+        raise LoaderNotApplicableError(
+            "TruthSocialLoader", url, f"Not a Truth Social URL. Expected domains: {', '.join(TRUTHSOCIAL_DOMAINS)}"
+        )
 
 
 class TruthSocialLoader(Loader):

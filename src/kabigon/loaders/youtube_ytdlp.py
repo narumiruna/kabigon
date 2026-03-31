@@ -1,13 +1,6 @@
-import asyncio
+from kabigon.core.loader import Loader
 
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.loader import Loader
-
-from .youtube import NoVideoIDFoundError
-from .youtube import UnsupportedURLNetlocError
-from .youtube import UnsupportedURLSchemeError
-from .youtube import VideoIDError
-from .youtube import parse_video_id
+from .youtube import check_youtube_url
 from .ytdlp import YtdlpLoader
 
 
@@ -16,11 +9,5 @@ class YoutubeYtdlpLoader(Loader):
         self.ytdlp_loader = YtdlpLoader()
 
     def load_sync(self, url: str) -> str:
-        try:
-            parse_video_id(url)
-        except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as e:
-            raise LoaderNotApplicableError("YoutubeYtdlpLoader", url, str(e)) from e
+        check_youtube_url(url)
         return self.ytdlp_loader.load_sync(url)
-
-    async def load(self, url: str) -> str:
-        return await asyncio.to_thread(self.load_sync, url)

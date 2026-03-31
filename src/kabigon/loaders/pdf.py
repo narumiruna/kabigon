@@ -7,9 +7,9 @@ from typing import Any
 import httpx
 from pypdf import PdfReader
 
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.loader import Loader
+from kabigon.core.exception import LoaderContentError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.loader import Loader
 
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,41 @@
 import logging
 
-from .api import available_loaders
-from .api import explain_plan
 from .api import load_url
 from .api import load_url_sync
+from .loaders import BBCLoader
+from .loaders import CNNLoader
+from .loaders import Compose
+from .loaders import FirecrawlLoader
+from .loaders import GitHubLoader
+from .loaders import HttpxLoader
+from .loaders import PDFLoader
+from .loaders import PlaywrightLoader
+from .loaders import PttLoader
+from .loaders import RedditLoader
+from .loaders import ReelLoader
+from .loaders import TruthSocialLoader
+from .loaders import TwitterLoader
+from .loaders import YoutubeLoader
+from .loaders import YoutubeYtdlpLoader
+from .loaders import YtdlpLoader
 
 __all__ = [
-    "available_loaders",
-    "explain_plan",
+    "BBCLoader",
+    "CNNLoader",
+    "Compose",
+    "FirecrawlLoader",
+    "GitHubLoader",
+    "HttpxLoader",
+    "PDFLoader",
+    "PlaywrightLoader",
+    "PttLoader",
+    "RedditLoader",
+    "ReelLoader",
+    "TruthSocialLoader",
+    "TwitterLoader",
+    "YoutubeLoader",
+    "YoutubeYtdlpLoader",
+    "YtdlpLoader",
     "load_url",
     "load_url_sync",
 ]

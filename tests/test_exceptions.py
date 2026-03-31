@@ -1,8 +1,8 @@
 """Tests for custom exception classes."""
 
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.errors import LoaderTimeoutError
+from kabigon.core.exception import LoaderContentError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.exception import LoaderTimeoutError
 
 
 def test_loader_not_applicable_error():
@@ -84,7 +84,7 @@ def test_loader_content_error_without_suggestion():
 
 def test_exception_inheritance():
     """Test that custom exceptions inherit from KabigonError."""
-    from kabigon.domain.errors import KabigonError
+    from kabigon.core.exception import KabigonError
 
     error1 = LoaderNotApplicableError("Test", "url")
     error2 = LoaderTimeoutError("Test", "url", 10.0)

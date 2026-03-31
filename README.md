@@ -13,7 +13,7 @@ A URL content loader library that extracts content from various sources (YouTube
 
 🔄 **Async-First Design**: Built with async/await for efficient parallel processing
 
-🎯 **Smart Routing + Fallback**: Routes URLs to source-specific pipelines first, then tries deduplicated fallback loaders
+🎯 **Smart Fallback**: Automatically tries multiple extraction strategies until one succeeds
 
 🚀 **Simple API**: Single-line usage with sensible defaults, or full control with custom loader chains
 
@@ -63,20 +63,10 @@ uvx kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wi
 uvx kabigon https://example.com/document.pdf
 ```
 
-By default (without `--loader`), Kabigon routes the URL to a source-specific pipeline first (for example YouTube),
-then runs the remaining default fallback loaders without repeating already-attempted loaders.
-
 ### Python API - Sync
 
 ```python
 import kabigon
-from kabigon.loaders import Compose
-from kabigon.loaders import PDFLoader
-from kabigon.loaders import PlaywrightLoader
-from kabigon.loaders import RedditLoader
-from kabigon.loaders import TruthSocialLoader
-from kabigon.loaders import TwitterLoader
-from kabigon.loaders import YoutubeLoader
 
 url = "https://www.google.com.tw"
 
@@ -85,17 +75,17 @@ content = kabigon.load_url_sync(url)
 print(content)
 
 # Or use specific loader
-content = PlaywrightLoader().load_sync(url)
+content = kabigon.PlaywrightLoader().load_sync(url)
 print(content)
 
 # With multiple loaders (tries each in order)
-loader = Compose([
-    TwitterLoader(),
-    TruthSocialLoader(),
-    YoutubeLoader(),
-    RedditLoader(),
-    PDFLoader(),
-    PlaywrightLoader(),  # Fallback for generic URLs
+loader = kabigon.Compose([
+    kabigon.TwitterLoader(),
+    kabigon.TruthSocialLoader(),
+    kabigon.YoutubeLoader(),
+    kabigon.RedditLoader(),
+    kabigon.PDFLoader(),
+    kabigon.PlaywrightLoader(),  # Fallback for generic URLs
 ])
 content = loader.load_sync(url)
 print(content)
@@ -106,12 +96,6 @@ print(content)
 ```python
 import asyncio
 import kabigon
-from kabigon.loaders import Compose
-from kabigon.loaders import PlaywrightLoader
-from kabigon.loaders import RedditLoader
-from kabigon.loaders import TruthSocialLoader
-from kabigon.loaders import TwitterLoader
-from kabigon.loaders import YoutubeLoader
 
 async def main():
     url = "https://www.google.com.tw"
@@ -121,7 +105,7 @@ async def main():
     print(content)
 
     # Or use specific loader
-    loader = PlaywrightLoader()
+    loader = kabigon.PlaywrightLoader()
     content = await loader.load(url)
     print(content)
 
@@ -133,12 +117,12 @@ async def main():
         "https://reddit.com/r/python/comments/xyz",
     ]
 
-    loader = Compose([
-        TwitterLoader(),
-        TruthSocialLoader(),
-        YoutubeLoader(),
-        RedditLoader(),
-        PlaywrightLoader(),
+    loader = kabigon.Compose([
+        kabigon.TwitterLoader(),
+        kabigon.TruthSocialLoader(),
+        kabigon.YoutubeLoader(),
+        kabigon.RedditLoader(),
+        kabigon.PlaywrightLoader(),
     ])
 
     # Parallel processing with automatic loader selection
@@ -226,9 +210,7 @@ export FFMPEG_PATH=/path/to/ffmpeg
 **Solution**: Increase timeout for slow-loading pages:
 ```python
 # Increase timeout to 60 seconds
-from kabigon.loaders import PlaywrightLoader
-
-loader = PlaywrightLoader(timeout=60_000)
+loader = kabigon.PlaywrightLoader(timeout=60_000)
 content = loader.load_sync(url)
 ```
 

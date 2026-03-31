@@ -4,8 +4,8 @@ from typing import Literal
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.loader import Loader
+from kabigon.core.exception import LoaderTimeoutError
+from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
 
@@ -17,10 +17,10 @@ class PlaywrightLoader(Loader):
         self,
         timeout: float | None = 0,
         wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
-        browser_headless: bool = True,
+        browser_headless: bool = False,
     ) -> None:
         self.timeout = timeout
-        self.wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = wait_until
+        self.wait_until = wait_until
         self.browser_headless = browser_headless
 
     async def load(self, url: str) -> str:
@@ -33,18 +33,14 @@ class PlaywrightLoader(Loader):
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=self.browser_headless)
-            context = None
-            content = ""
+            context = await browser.new_context()
+            page = await context.new_page()
 
             try:
-                context = await browser.new_context()
-                page = await context.new_page()
-                if self.wait_until is None:
-                    await page.goto(url, timeout=self.timeout)
-                else:
-                    await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
+                await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
                 logger.debug("[PlaywrightLoader] Successfully loaded page")
             except TimeoutError as e:
+                await browser.close()
                 timeout_seconds = (self.timeout or 0) / 1000 if self.timeout else 30
                 logger.warning("[PlaywrightLoader] Timeout after %ss: %s", timeout_seconds, url)
                 raise LoaderTimeoutError(
@@ -53,13 +49,9 @@ class PlaywrightLoader(Loader):
                     timeout_seconds,
                     "The page took too long to load. Try increasing the timeout or using a faster wait_until option.",
                 ) from e
-            else:
-                content = await page.content()
 
-            finally:
-                if context is not None:
-                    await context.close()
-                await browser.close()
+            content = await page.content()
+            await browser.close()
 
             result = html_to_markdown(content)
             logger.debug("[PlaywrightLoader] Successfully extracted content (%s chars)", len(result))

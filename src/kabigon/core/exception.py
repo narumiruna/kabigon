@@ -5,15 +5,9 @@ class KabigonError(Exception):
 class LoaderError(KabigonError):
     """Raised when all loaders fail to load a URL."""
 
-    def __init__(self, url: str, details: list[str] | None = None) -> None:
+    def __init__(self, url: str) -> None:
         self.url = url
-        self.details = details or []
-
-        message = f"Failed to load URL: {url}"
-        if self.details:
-            joined = "\n  - ".join(self.details)
-            message = f"{message}\n\nAttempted loaders:\n  - {joined}"
-        super().__init__(message)
+        super().__init__(f"Failed to load URL: {url}")
 
 
 class InvalidURLError(KabigonError, ValueError):
@@ -48,7 +42,11 @@ class WhisperNotInstalledError(MissingDependencyError):
 
 
 class LoaderNotApplicableError(KabigonError):
-    """Raised when a URL is not applicable to a specific loader."""
+    """Raised when a URL is not applicable to a specific loader.
+
+    This exception indicates that the loader cannot handle this type of URL,
+    and the next loader in the chain should be tried.
+    """
 
     def __init__(self, loader_name: str, url: str, reason: str | None = None) -> None:
         self.loader_name = loader_name
@@ -62,7 +60,11 @@ class LoaderNotApplicableError(KabigonError):
 
 
 class LoaderTimeoutError(KabigonError):
-    """Raised when a loader operation times out."""
+    """Raised when a loader operation times out.
+
+    This exception indicates that the loader took too long to complete.
+    Users may want to retry with a longer timeout or check their network connection.
+    """
 
     def __init__(self, loader_name: str, url: str, timeout: float, suggestion: str | None = None) -> None:
         self.loader_name = loader_name
@@ -79,7 +81,11 @@ class LoaderTimeoutError(KabigonError):
 
 
 class LoaderContentError(KabigonError):
-    """Raised when content extraction fails."""
+    """Raised when content extraction fails.
+
+    This exception indicates that the loader successfully accessed the URL
+    but failed to extract meaningful content.
+    """
 
     def __init__(self, loader_name: str, url: str, reason: str, suggestion: str | None = None) -> None:
         self.loader_name = loader_name

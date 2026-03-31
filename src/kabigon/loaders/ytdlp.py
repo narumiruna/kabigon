@@ -1,22 +1,18 @@
-import asyncio
-import contextlib
 import logging
 import os
 import uuid
 from pathlib import Path
-from typing import Any
-from typing import cast
 
 import yt_dlp
 
-from kabigon.domain.errors import WhisperNotInstalledError
-from kabigon.domain.loader import Loader
+from kabigon.core.exception import WhisperNotInstalledError
+from kabigon.core.loader import Loader
 
 logger = logging.getLogger(__name__)
 
 
 def download_audio(url: str, outtmpl: str | None = None) -> None:
-    ydl_opts: dict[str, Any] = {
+    ydl_opts = {
         "format": "bestaudio/best",
         "postprocessors": [
             {
@@ -25,6 +21,7 @@ def download_audio(url: str, outtmpl: str | None = None) -> None:
                 "preferredquality": "192",
             }
         ],
+        "match_filter": yt_dlp.match_filter_func(["!is_live"]),
     }
 
     if outtmpl is not None:
@@ -35,7 +32,7 @@ def download_audio(url: str, outtmpl: str | None = None) -> None:
         ydl_opts["ffmpeg_location"] = ffmpeg_path
 
     logger.info("Downloading audio from URL: %s with options: %s", url, ydl_opts)
-    with yt_dlp.YoutubeDL(cast(Any, ydl_opts)) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 
@@ -53,7 +50,6 @@ class YtdlpLoader(Loader):
         outtmpl = uuid.uuid4().hex[:20]
         path = str(Path(outtmpl).with_suffix(".mp3"))
         download_audio(url, outtmpl=outtmpl)
-        result: dict[str, Any] = {"text": ""}
 
         try:
             audio = self.load_audio(path)
@@ -61,13 +57,6 @@ class YtdlpLoader(Loader):
             result = self.model.transcribe(audio)
         finally:
             # Clean up the audio file
-            with contextlib.suppress(OSError):
-                Path(path).unlink(missing_ok=True)
+            Path(path).unlink()
 
-        text = result.get("text", "")
-        if isinstance(text, str):
-            return text
-        return "\n".join(str(item) for item in text)
-
-    async def load(self, url: str) -> str:
-        return await asyncio.to_thread(self.load_sync, url)
+        return result.get("text", "")

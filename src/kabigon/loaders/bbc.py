@@ -1,20 +1,42 @@
 from __future__ import annotations
 
+import json
 import logging
+import re
+from collections.abc import Mapping
+from html.parser import HTMLParser
+from typing import cast
+from urllib.parse import urlparse
 
 import httpx
 
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.loader import Loader
+from kabigon.core.exception import LoaderContentError
+from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.core.loader import Loader
 
-from .html_extractors import extract_article_body_from_json_ld
-from .html_extractors import extract_first_tag_subtree
-from .url_match import ensure_domain_suffix
 from .utils import html_to_markdown
+from .utils import normalize_whitespace
 
 logger = logging.getLogger(__name__)
 
 BBC_DOMAIN_SUFFIX = "bbc.com"
+
+_VOID_TAGS = {
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+}
 
 _IGNORED_TAGS = {
     "script",
@@ -23,13 +45,121 @@ _IGNORED_TAGS = {
     "svg",
 }
 
+_JSON_LD_PATTERN = re.compile(
+    r"<script[^>]*type=['\"]application/ld\+json['\"][^>]*>(?P<json>.*?)</script>",
+    re.IGNORECASE | re.DOTALL,
+)
+
 
 def check_bbc_url(url: str) -> None:
-    ensure_domain_suffix(url, BBC_DOMAIN_SUFFIX, loader_name="BBCLoader", source_name="BBC")
+    host = urlparse(url).netloc.lower()
+    if host == BBC_DOMAIN_SUFFIX or host.endswith(f".{BBC_DOMAIN_SUFFIX}"):
+        return
+    raise LoaderNotApplicableError("BBCLoader", url, "Not a BBC URL. Expected domain ending with bbc.com")
+
+
+class _SubtreeHTMLExtractor(HTMLParser):
+    def __init__(self, root_tag: str) -> None:
+        super().__init__(convert_charrefs=True)
+        self.root_tag = root_tag
+        self._capturing = False
+        self._depth = 0
+        self._ignored_depth = 0
+        self._out: list[str] = []
+
+    def get_html(self) -> str:
+        return "".join(self._out).strip()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == self.root_tag and not self._capturing:
+            self._capturing = True
+            self._depth = 1
+            self._out.append(self.get_starttag_text() or f"<{tag}>")
+            return
+
+        if not self._capturing:
+            return
+
+        if tag in _IGNORED_TAGS:
+            self._ignored_depth += 1
+            return
+
+        self._out.append(self.get_starttag_text() or f"<{tag}>")
+        if tag not in _VOID_TAGS:
+            self._depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if not self._capturing:
+            return
+
+        if self._ignored_depth:
+            if tag in _IGNORED_TAGS:
+                self._ignored_depth -= 1
+            return
+
+        self._out.append(f"</{tag}>")
+        if tag not in _VOID_TAGS:
+            self._depth -= 1
+
+        if self._depth <= 0:
+            self._capturing = False
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if not self._capturing:
+            return
+        if self._ignored_depth or tag in _IGNORED_TAGS:
+            return
+        self._out.append(self.get_starttag_text() or f"<{tag} />")
+
+    def handle_data(self, data: str) -> None:
+        if not self._capturing or self._ignored_depth:
+            return
+        self._out.append(data)
+
+
+def _find_article_body(data: object) -> str | None:
+    if isinstance(data, Mapping):
+        mapping = cast(Mapping[str, object], data)
+        article_body = mapping.get("articleBody")
+        if isinstance(article_body, str) and article_body.strip():
+            return article_body
+        for value in mapping.values():
+            found = _find_article_body(value)
+            if found:
+                return found
+        return None
+
+    if isinstance(data, list):
+        for item in data:
+            found = _find_article_body(item)
+            if found:
+                return found
+    return None
+
+
+def extract_article_body_from_json_ld(html: str) -> str | None:
+    for match in _JSON_LD_PATTERN.finditer(html):
+        payload = match.group("json").strip()
+        if not payload:
+            continue
+        try:
+            parsed = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        article_body = _find_article_body(parsed)
+        if article_body:
+            return normalize_whitespace(article_body)
+    return None
 
 
 def extract_bbc_main_html(html: str) -> str:
-    return extract_first_tag_subtree(html, ("article", "main"), ignored_tags=_IGNORED_TAGS)
+    for tag in ("article", "main"):
+        parser = _SubtreeHTMLExtractor(tag)
+        parser.feed(html)
+        extracted = parser.get_html()
+        if extracted:
+            return extracted
+    return html
 
 
 class BBCLoader(Loader):
