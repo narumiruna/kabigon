@@ -38,6 +38,24 @@ def test_extract_main_html_falls_back_to_article() -> None:
     assert "Article body" in extracted
 
 
+def test_extract_main_html_ignores_script_and_style_tags() -> None:
+    html = """
+    <html>
+      <body>
+        <main>
+          <script>var secret = 1;</script>
+          <style>.hidden { display: none; }</style>
+          <p>Visible content</p>
+        </main>
+      </body>
+    </html>
+    """
+    extracted = extract_main_html(html)
+    assert "Visible content" in extracted
+    assert "secret" not in extracted
+    assert "hidden" not in extracted
+
+
 def test_extract_main_html_falls_back_to_full_html() -> None:
     html = "<html><body><div>Only body</div></body></html>"
     extracted = extract_main_html(html)
