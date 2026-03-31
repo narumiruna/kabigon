@@ -5,9 +5,15 @@ class KabigonError(Exception):
 class LoaderError(KabigonError):
     """Raised when all loaders fail to load a URL."""
 
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, details: list[str] | None = None) -> None:
         self.url = url
-        super().__init__(f"Failed to load URL: {url}")
+        self.details = details or []
+
+        message = f"Failed to load URL: {url}"
+        if self.details:
+            joined = "\n  - ".join(self.details)
+            message = f"{message}\n\nAttempted loaders:\n  - {joined}"
+        super().__init__(message)
 
 
 class InvalidURLError(KabigonError, ValueError):

@@ -52,8 +52,10 @@ class Compose(Loader):
             return result
 
         # All loaders failed - create detailed error message
-        error_details = "\n  - ".join(errors)
-        detailed_message = f"Failed to load URL: {url}\n\nAttempted loaders:\n  - {error_details}"
-        logger.error(detailed_message)
+        if errors:
+            error_details = "\n  - ".join(errors)
+            logger.error("Failed to load URL: %s\n\nAttempted loaders:\n  - %s", url, error_details)
+        else:
+            logger.error("Failed to load URL: %s", url)
 
-        raise LoaderError(url)
+        raise LoaderError(url, details=errors)

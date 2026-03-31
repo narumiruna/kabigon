@@ -1,9 +1,12 @@
 import asyncio
+from abc import ABC
+from abc import abstractmethod
 
 
-class Loader:
+class Loader(ABC):
     def load_sync(self, url: str) -> str:
         return asyncio.run(self.load(url))
 
+    @abstractmethod
     async def load(self, url: str) -> str:
-        return await asyncio.to_thread(self.load_sync, url)
+        raise NotImplementedError

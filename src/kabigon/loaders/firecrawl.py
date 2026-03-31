@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Any
 
@@ -29,3 +30,6 @@ class FirecrawlLoader(Loader):
             raise LoaderError(url)
 
         return result.markdown
+
+    async def load(self, url: str) -> str:
+        return await asyncio.to_thread(self.load_sync, url)

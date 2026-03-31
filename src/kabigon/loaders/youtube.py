@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
@@ -196,3 +197,6 @@ class YoutubeLoader(Loader):
 
         logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))
         return result
+
+    async def load(self, url: str) -> str:
+        return await asyncio.to_thread(self.load_sync, url)
