@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from urllib.parse import urlparse
 
 import httpx
 
@@ -11,6 +10,7 @@ from kabigon.domain.loader import Loader
 
 from .html_extractors import extract_article_body_from_json_ld
 from .html_extractors import extract_first_tag_subtree
+from .url_match import host_matches_domain_suffix
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,7 @@ _IGNORED_TAGS = {
 
 
 def check_bbc_url(url: str) -> None:
-    host = urlparse(url).netloc.lower()
-    if host == BBC_DOMAIN_SUFFIX or host.endswith(f".{BBC_DOMAIN_SUFFIX}"):
+    if host_matches_domain_suffix(url, BBC_DOMAIN_SUFFIX):
         return
     raise LoaderNotApplicableError("BBCLoader", url, "Not a BBC URL. Expected domain ending with bbc.com")
 
