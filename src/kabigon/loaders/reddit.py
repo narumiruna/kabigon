@@ -5,10 +5,10 @@ from urllib.parse import urlunparse
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.domain.errors import LoaderTimeoutError
 from kabigon.domain.loader import Loader
 
+from .url_match import ensure_host_in
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -33,11 +33,7 @@ def check_reddit_url(url: str) -> None:
     Raises:
         LoaderNotApplicableError: If URL is not from Reddit
     """
-    netloc = urlparse(url).netloc
-    if netloc not in REDDIT_DOMAINS:
-        raise LoaderNotApplicableError(
-            "RedditLoader", url, f"Not a Reddit URL. Expected domains: {', '.join(REDDIT_DOMAINS)}"
-        )
+    ensure_host_in(url, REDDIT_DOMAINS, loader_name="RedditLoader", source_name="Reddit")
 
 
 def convert_to_old_reddit(url: str) -> str:

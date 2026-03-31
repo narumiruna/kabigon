@@ -2,6 +2,8 @@ import pytest
 
 from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.loaders.url_match import ensure_domain_suffix
+from kabigon.loaders.url_match import ensure_host_in
+from kabigon.loaders.url_match import host_in
 from kabigon.loaders.url_match import host_matches_domain_suffix
 
 
@@ -47,4 +49,31 @@ def test_ensure_domain_suffix_raises_not_applicable_error() -> None:
             "bbc.com",
             loader_name="BBCLoader",
             source_name="BBC",
+        )
+
+
+def test_host_in_matches_allowed_hosts() -> None:
+    assert host_in("https://x.com/user/status/1", ["twitter.com", "x.com"])
+
+
+def test_host_in_rejects_non_allowed_hosts() -> None:
+    assert not host_in("https://example.com", ["twitter.com", "x.com"])
+
+
+def test_ensure_host_in_accepts_allowed_host() -> None:
+    ensure_host_in(
+        "https://x.com/user/status/1",
+        ["twitter.com", "x.com"],
+        loader_name="TwitterLoader",
+        source_name="Twitter/X",
+    )
+
+
+def test_ensure_host_in_raises_not_applicable_error() -> None:
+    with pytest.raises(LoaderNotApplicableError, match="Not a Twitter/X URL"):
+        ensure_host_in(
+            "https://example.com",
+            ["twitter.com", "x.com"],
+            loader_name="TwitterLoader",
+            source_name="Twitter/X",
         )
