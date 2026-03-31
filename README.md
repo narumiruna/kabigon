@@ -5,309 +5,318 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/narumiruna/kabigon/branch/main/graph/badge.svg)](https://codecov.io/gh/narumiruna/kabigon)
 
-A URL content loader library that extracts content from various sources (YouTube, Instagram Reels, Twitter/X, Reddit, Truth Social, GitHub files, PDFs, web pages) and converts them to text/markdown format.
+A Python library that extracts content from URLs and converts the result to text or markdown. Feed it a YouTube video, a tweet, a Reddit thread, a PDF, or any web page — kabigon picks the right loader automatically.
 
 ## Features
 
-✨ **Multi-Platform Support**: YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub files, PDFs, and generic web pages
-
-🔄 **Async-First Design**: Built with async/await for efficient parallel processing
-
-🎯 **Smart Routing + Fallback**: Routes URLs to source-specific pipelines first, then tries deduplicated fallback loaders
-
-🚀 **Simple API**: Single-line usage with sensible defaults, or full control with custom loader chains
-
-🔌 **Extensible**: Easy to add new loaders for additional platforms
+- **Smart routing** — recognises YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, BBC, CNN, PDFs, and generic web pages, then selects the best extraction pipeline
+- **Automatic fallback** — if the primary loader fails, remaining loaders are tried in order without repeating work
+- **Async-first** — built on `async`/`await`; a synchronous wrapper is provided for convenience
+- **Single-line API** — `kabigon.load_url_sync(url)` is all you need to get started
+- **Extensible** — add a new loader by subclassing `Loader` and implementing one method
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
-  - [CLI](#cli)
-  - [Python API - Sync](#python-api---sync)
-  - [Python API - Async](#python-api---async)
+- [Quick Start](#quick-start)
+- [CLI](#cli)
+- [Python API](#python-api)
 - [Supported Sources](#supported-sources)
-- [Examples](#examples)
+- [Architecture](#architecture)
+- [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
 - [License](#license)
 
 ## Installation
 
-```shell
+```bash
+# Install as a CLI tool
 uv tool install kabigon
-# or just
-uvx kabigon <url>
 
-# Install Playwright browsers
-uvx playwright install chromium
-# or
-uvx playwright install chrome
+# Or run directly without installing
+uvx kabigon <url>
 ```
 
-## Usage
+After installation, install a browser for Playwright (required for generic web scraping):
 
-### CLI
-
-```shell
-uvx kabigon <url>
-
-# Examples
-uvx kabigon --list
-uvx kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
-uvx kabigon --loader twitter https://x.com/elonmusk/status/123456789
-uvx kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
-uvx kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
-uvx kabigon https://reddit.com/r/python/comments/xyz/...
-uvx kabigon https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
-uvx kabigon https://example.com/document.pdf
+```bash
+playwright install chromium
 ```
 
-By default (without `--loader`), Kabigon routes the URL to a source-specific pipeline first (for example YouTube),
-then runs the remaining default fallback loaders without repeating already-attempted loaders.
-
-### Python API - Sync
+## Quick Start
 
 ```python
 import kabigon
-from kabigon.loaders import Compose
-from kabigon.loaders import PDFLoader
-from kabigon.loaders import PlaywrightLoader
-from kabigon.loaders import RedditLoader
-from kabigon.loaders import TruthSocialLoader
-from kabigon.loaders import TwitterLoader
-from kabigon.loaders import YoutubeLoader
 
-url = "https://www.google.com.tw"
-
-# Simplest usage - automatically uses the best loader
-content = kabigon.load_url_sync(url)
-print(content)
-
-# Or use specific loader
-content = PlaywrightLoader().load_sync(url)
-print(content)
-
-# With multiple loaders (tries each in order)
-loader = Compose([
-    TwitterLoader(),
-    TruthSocialLoader(),
-    YoutubeLoader(),
-    RedditLoader(),
-    PDFLoader(),
-    PlaywrightLoader(),  # Fallback for generic URLs
-])
-content = loader.load_sync(url)
-print(content)
+# One line to load any URL
+text = kabigon.load_url_sync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+print(text)
 ```
 
-### Python API - Async
+## CLI
+
+```bash
+# Load content from a URL (auto-selects the best loader)
+kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+# List all available loaders
+kabigon --list
+
+# Use a specific loader (or a comma-separated chain)
+kabigon --loader youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ
+kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
+```
+
+Without `--loader`, kabigon routes the URL to a source-specific pipeline first, then falls back to the remaining default loaders without repeating already-attempted ones.
+
+More examples:
+
+```bash
+kabigon https://x.com/elonmusk/status/123456789
+kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
+kabigon https://reddit.com/r/python/comments/xyz/...
+kabigon https://github.com/user/repo/blob/main/README.md
+kabigon https://example.com/document.pdf
+```
+
+## Python API
+
+### Sync
+
+```python
+import kabigon
+
+# Automatic loader selection
+text = kabigon.load_url_sync("https://www.google.com")
+print(text)
+```
+
+### Async
 
 ```python
 import asyncio
 import kabigon
-from kabigon.loaders import Compose
-from kabigon.loaders import PlaywrightLoader
-from kabigon.loaders import RedditLoader
-from kabigon.loaders import TruthSocialLoader
-from kabigon.loaders import TwitterLoader
-from kabigon.loaders import YoutubeLoader
 
-async def main():
-    url = "https://www.google.com.tw"
+async def main() -> None:
+    text = await kabigon.load_url("https://www.google.com")
+    print(text)
 
-    # Simplest usage - automatically uses the best loader
-    content = await kabigon.load_url(url)
-    print(content)
-
-    # Or use specific loader
-    loader = PlaywrightLoader()
-    content = await loader.load(url)
-    print(content)
-
-    # Batch processing multiple URLs in parallel
+    # Parallel batch loading
     urls = [
-        "https://x.com/user1/status/123",
-        "https://truthsocial.com/@user/posts/456",
+        "https://x.com/user/status/123",
         "https://youtube.com/watch?v=abc",
         "https://reddit.com/r/python/comments/xyz",
     ]
-
-    loader = Compose([
-        TwitterLoader(),
-        TruthSocialLoader(),
-        YoutubeLoader(),
-        RedditLoader(),
-        PlaywrightLoader(),
-    ])
-
-    # Parallel processing with automatic loader selection
     results = await asyncio.gather(*[kabigon.load_url(url) for url in urls])
-    for url, content in zip(urls, results):
+    for url, content in zip(urls, results, strict=True):
         print(f"{url}: {len(content)} chars")
 
 asyncio.run(main())
 ```
 
-### API Comparison
+### Custom Loader Chains
 
-| Usage | Simplest | Custom Loader Chain |
-|-------|----------|---------------------|
+Use `Compose` to build a custom pipeline that tries loaders in order:
+
+```python
+from kabigon.loaders import Compose, TwitterLoader, YoutubeLoader, PlaywrightLoader
+
+loader = Compose([
+    TwitterLoader(),
+    YoutubeLoader(),
+    PlaywrightLoader(),  # generic fallback
+])
+text = loader.load_sync("https://x.com/user/status/123")
+```
+
+### Utility Functions
+
+```python
+import kabigon
+
+# Show which loaders kabigon would use for a URL
+plan = kabigon.explain_plan("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+print(plan)
+
+# List all registered loader names
+loaders = kabigon.available_loaders()
+print(loaders)
+```
+
+### API Summary
+
+| Style | One-liner | Custom chain |
+|-------|-----------|--------------|
 | **Sync** | `kabigon.load_url_sync(url)` | `loader.load_sync(url)` |
 | **Async** | `await kabigon.load_url(url)` | `await loader.load(url)` |
-| **Batch Async** | `await asyncio.gather(*[kabigon.load_url(url) for url in urls])` | `await asyncio.gather(*[loader.load(url) for url in urls])` |
+| **Batch** | `await asyncio.gather(*[kabigon.load_url(u) for u in urls])` | `await asyncio.gather(*[loader.load(u) for u in urls])` |
 
 ## Supported Sources
 
-| Source | Loader | Description |
-|--------|--------|-------------|
-| YouTube | `YoutubeLoader` | Extracts video transcripts |
-| YouTube | `YoutubeYtdlpLoader` | Audio transcription via yt-dlp + Whisper |
-| Twitter/X | `TwitterLoader` | Extracts tweet content |
-| Truth Social | `TruthSocialLoader` | Extracts Truth Social posts |
-| Reddit | `RedditLoader` | Extracts Reddit posts and comments |
-| Instagram Reels | `ReelLoader` | Audio transcription + metadata |
-| GitHub | `GitHubLoader` | Fetches GitHub web pages and file content (supports repo URLs + `github.com/.../blob/...`) |
-| BBC | `BBCLoader` | BBC article extraction with article-aware parsing |
-| CNN | `CNNLoader` | CNN article extraction with article-aware parsing |
-| PDF | `PDFLoader` | Extracts text from PDF files (URL or local) |
-| PTT | `PttLoader` | Taiwan PTT forum posts |
-| Generic Web | `PlaywrightLoader` | Browser-based scraping for any website |
-| Generic Web | `HttpxLoader` | Simple HTTP requests with markdown conversion |
+| Source | Loader | Notes |
+|--------|--------|-------|
+| YouTube | `YoutubeLoader` | Transcript extraction via `youtube-transcript-api` |
+| YouTube | `YoutubeYtdlpLoader` | Audio download + Whisper transcription |
+| Twitter / X | `TwitterLoader` | Supports `x.com`, `fxtwitter.com`, `vxtwitter.com`, and others |
+| Truth Social | `TruthSocialLoader` | Post content extraction |
+| Reddit | `RedditLoader` | Posts and comments; auto-redirects to `old.reddit.com` |
+| Instagram Reels | `ReelLoader` | Audio transcription via yt-dlp + Whisper |
+| GitHub | `GitHubLoader` | File content from `github.com/.../blob/...` and `raw.githubusercontent.com` |
+| BBC | `BBCLoader` | Article-aware HTML parsing |
+| CNN | `CNNLoader` | Article-aware HTML parsing |
+| PDF | `PDFLoader` | Text extraction from remote or local PDF files |
+| PTT | `PttLoader` | Taiwan PTT (BBS) forum posts |
+| Generic web | `PlaywrightLoader` | Full browser rendering via Playwright |
+| Generic web | `HttpxLoader` | Lightweight HTTP fetch + HTML-to-markdown |
+| Generic web | `FirecrawlLoader` | Web extraction via the [Firecrawl](https://firecrawl.dev) API |
+| Audio / Video | `YtdlpLoader` | Generic audio transcription via yt-dlp + Whisper |
 
-## Examples
+## Architecture
 
-See the [`examples/`](examples/) directory for more usage examples:
+kabigon follows a layered architecture:
 
-- [`simple_usage.py`](examples/simple_usage.py) - Basic single-line usage
-- [`async_usage.py`](examples/async_usage.py) - Async usage and parallel batch processing
-- [`twitter.py`](examples/twitter.py) - Twitter/X post extraction
-- [`truthsocial.py`](examples/truthsocial.py) - Truth Social post extraction
-- [`read_reddit.py`](examples/read_reddit.py) - Reddit post and comments extraction
-- [`ptt.py`](examples/ptt.py) - PTT forum post extraction
-- [`fetch_billgertz_tweet.py`](examples/fetch_billgertz_tweet.py) - Real-world Twitter scraping example
+```
+Interface (CLI)  →  Application (routing, strategy, planning)  →  Domain (Loader ABC, models, errors)
+                                                                ↓
+                                                          Loaders (concrete implementations)
+```
+
+**Request flow:**
+
+1. The URL enters via the CLI or `load_url()`.
+2. `routing.py` matches the URL against known patterns (YouTube, Twitter, …) to select a source-specific pipeline.
+3. `strategy.py` + `planner.py` build a `LoaderPlan` — the primary loaders followed by fallback loaders (de-duplicated).
+4. `executor.py` instantiates the loaders; `Compose` runs them in sequence and returns the first successful result.
+
+To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a routing rule if the loader handles a specific domain.
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `FFMPEG_PATH` | Custom path to the FFmpeg binary (used by Whisper / yt-dlp audio transcription) |
+| `FIRECRAWL_API_KEY` | API key for the [Firecrawl](https://firecrawl.dev) loader |
+
+### Docker
+
+A `Dockerfile` is provided for containerised usage:
+
+```bash
+docker build -t kabigon .
+
+# "kabigon" after the image name is the CLI command
+docker run --rm kabigon kabigon https://example.com
+```
+
+The image includes Playwright with Chromium and uses `xvfb-run` for headless browser rendering.
 
 ## Troubleshooting
 
 ### Playwright browser not installed
 
-**Error**: `Executable doesn't exist at /path/to/chromium`
+```
+Executable doesn't exist at /path/to/chromium
+```
 
-**Solution**: Install Playwright browsers after installing kabigon:
+Install the browser after installing kabigon:
+
 ```bash
 playwright install chromium
 ```
 
-### FFmpeg not found (for audio transcription)
+### FFmpeg not found
 
-**Error**: `ffmpeg not found`
+```
+ffmpeg not found
+```
 
-**Solution**: Install FFmpeg for your platform:
+Install FFmpeg:
+
 ```bash
-# Ubuntu/Debian
+# Ubuntu / Debian
 sudo apt-get install ffmpeg
 
 # macOS
 brew install ffmpeg
-
-# Windows
-# Download from https://ffmpeg.org/download.html
 ```
 
-Or set custom FFmpeg path:
+Or point to a custom binary:
+
 ```bash
 export FFMPEG_PATH=/path/to/ffmpeg
 ```
 
 ### Timeout errors
 
-**Error**: `Timeout 30000ms exceeded`
+```
+Timeout 30000ms exceeded
+```
 
-**Solution**: Increase timeout for slow-loading pages:
+Increase the timeout for slow-loading pages:
+
 ```python
-# Increase timeout to 60 seconds
 from kabigon.loaders import PlaywrightLoader
 
 loader = PlaywrightLoader(timeout=60_000)
-content = loader.load_sync(url)
+text = loader.load_sync(url)
 ```
 
-### CAPTCHA or rate limiting
+### CAPTCHA / rate limiting
 
-Some websites may show CAPTCHAs or block automated access. For Reddit, kabigon automatically uses `old.reddit.com` to avoid CAPTCHAs. For other sites, you may need to:
-
-- Add delays between requests
-- Use a custom user agent
-- Implement retry logic with exponential backoff
+Some websites block automated access. kabigon automatically uses `old.reddit.com` for Reddit to avoid CAPTCHAs. For other sites, consider adding delays between requests or implementing retry logic.
 
 ## Development
 
 ### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/narumiruna/kabigon.git
 cd kabigon
-
-# Install dependencies with uv
 uv sync
-
-# Install Playwright browsers
 playwright install chromium
 ```
 
 ### Testing
 
 ```bash
-# Run all tests with coverage
+# Full suite with coverage
 uv run pytest -v -s --cov=src tests
 
-# Run specific test file
+# Single file
 uv run pytest -v -s tests/loaders/test_youtube.py
-```
 
-Current test coverage: **69%** (37 tests passing)
+# Single test
+uv run pytest -v -s tests/loaders/test_youtube.py::test_name
+```
 
 ### Linting and Type Checking
 
 ```bash
-# Run linter
-uv run ruff check .
-
-# Run type checker
-uv run ty check .
-
-# Auto-fix linting issues
-uv run ruff check --fix .
-
-# Format code
-uv run ruff format .
+uv run ruff check .       # lint
+uv run ruff format .      # format
+uv run ty check .         # type check
+uv run ruff check --fix . # auto-fix lint issues
 ```
 
 ### Building and Publishing
 
 ```bash
-# Build wheel
 uv build -f wheel
-
-# Publish to PyPI
 uv publish
 ```
 
-### Contributing
+### Adding a New Loader
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-When adding a new loader:
-1. Create a new file in `src/kabigon/loaders/`
-2. Inherit from the `Loader` base class
-3. Implement `async def load(url: str) -> str`
-4. Add domain validation
-5. Add tests in `tests/loaders/`
-6. Update documentation
-
-See [`CLAUDE.md`](CLAUDE.md) for detailed development guidelines.
+1. Create `src/kabigon/loaders/<source>.py` and subclass `Loader`.
+2. Implement `async def load(self, url: str) -> str`.
+3. Export the class from `src/kabigon/loaders/__init__.py`.
+4. Register the loader in `src/kabigon/infrastructure/registry.py`.
+5. Add a URL-matching rule in `src/kabigon/application/routing.py` (if domain-specific).
+6. Add tests in `tests/loaders/`.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+[MIT](LICENSE)
