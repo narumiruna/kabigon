@@ -1,7 +1,5 @@
 import logging
-from typing import Any
 from typing import Literal
-from typing import cast
 
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
@@ -41,7 +39,10 @@ class PlaywrightLoader(Loader):
             try:
                 context = await browser.new_context()
                 page = await context.new_page()
-                await page.goto(url, timeout=self.timeout, wait_until=cast(Any, self.wait_until))
+                if self.wait_until is None:
+                    await page.goto(url, timeout=self.timeout)
+                else:
+                    await page.goto(url, timeout=self.timeout, wait_until=self.wait_until)
                 logger.debug("[PlaywrightLoader] Successfully loaded page")
             except TimeoutError as e:
                 timeout_seconds = (self.timeout or 0) / 1000 if self.timeout else 30

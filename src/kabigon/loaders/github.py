@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from html.parser import HTMLParser
 from urllib.parse import urlparse
 
 import httpx
@@ -8,27 +7,11 @@ import httpx
 from kabigon.domain.errors import InvalidURLError
 from kabigon.domain.loader import Loader
 
+from .html_extractors import extract_first_tag_subtree
 from .utils import html_to_markdown
 
 GITHUB_HOST = "github.com"
 RAW_GITHUB_HOST = "raw.githubusercontent.com"
-
-_VOID_TAGS = {
-    "area",
-    "base",
-    "br",
-    "col",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-}
 
 _IGNORED_TAGS = {
     "script",
@@ -73,74 +56,9 @@ def to_raw_github_url(url: str) -> str:
     return f"https://{RAW_GITHUB_HOST}/{owner}/{repo}/{ref}/{path}"
 
 
-class _SubtreeHTMLExtractor(HTMLParser):
-    def __init__(self, root_tag: str) -> None:
-        super().__init__(convert_charrefs=True)
-        self.root_tag = root_tag
-        self._capturing = False
-        self._depth = 0
-        self._ignored_depth = 0
-        self._out: list[str] = []
-
-    def get_html(self) -> str:
-        return "".join(self._out).strip()
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag == self.root_tag and not self._capturing:
-            self._capturing = True
-            self._depth = 1
-            self._out.append(self.get_starttag_text() or f"<{tag}>")
-            return
-
-        if not self._capturing:
-            return
-
-        if tag in _IGNORED_TAGS:
-            self._ignored_depth += 1
-            return
-
-        self._out.append(self.get_starttag_text() or f"<{tag}>")
-        if tag not in _VOID_TAGS:
-            self._depth += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        if not self._capturing:
-            return
-
-        if self._ignored_depth:
-            if tag in _IGNORED_TAGS:
-                self._ignored_depth -= 1
-            return
-
-        self._out.append(f"</{tag}>")
-        if tag not in _VOID_TAGS:
-            self._depth -= 1
-
-        if self._depth <= 0:
-            self._capturing = False
-
-    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if not self._capturing:
-            return
-        if self._ignored_depth or tag in _IGNORED_TAGS:
-            return
-        self._out.append(self.get_starttag_text() or f"<{tag} />")
-
-    def handle_data(self, data: str) -> None:
-        if not self._capturing or self._ignored_depth:
-            return
-        self._out.append(data)
-
-
 def extract_main_html(html: str) -> str:
     """Extract GitHub's primary content area without site-specific selectors."""
-    for tag in ("main", "article"):
-        parser = _SubtreeHTMLExtractor(tag)
-        parser.feed(html)
-        extracted = parser.get_html()
-        if extracted:
-            return extracted
-    return html
+    return extract_first_tag_subtree(html, ("main", "article"), ignored_tags=_IGNORED_TAGS)
 
 
 class GitHubLoader(Loader):
