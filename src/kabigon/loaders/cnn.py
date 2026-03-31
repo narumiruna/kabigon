@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 
 import httpx
 
-from kabigon.core.exception import LoaderContentError
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import LoaderContentError
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.domain.loader import Loader
 
 from .utils import html_to_markdown
 from .utils import normalize_whitespace

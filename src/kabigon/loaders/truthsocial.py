@@ -4,9 +4,9 @@ from urllib.parse import urlparse
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.exception import LoaderTimeoutError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.domain.errors import LoaderTimeoutError
+from kabigon.domain.loader import Loader
 
 from .utils import html_to_markdown
 

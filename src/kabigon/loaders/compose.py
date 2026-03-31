@@ -1,10 +1,10 @@
 import logging
 
-from kabigon.core.exception import LoaderContentError
-from kabigon.core.exception import LoaderError
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.exception import LoaderTimeoutError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import LoaderContentError
+from kabigon.domain.errors import LoaderError
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.domain.errors import LoaderTimeoutError
+from kabigon.domain.loader import Loader
 
 logger = logging.getLogger(__name__)
 

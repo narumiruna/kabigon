@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from kabigon.core.models import ContentType
-from kabigon.pipelines import resolve_pipeline_name
+from kabigon.application.routing import resolve_pipeline_name
+from kabigon.domain.models import ContentType
 
 PIPELINE_CONTENT_TYPE: dict[str, ContentType] = {
     "youtube": ContentType.YOUTUBE_VIDEO,

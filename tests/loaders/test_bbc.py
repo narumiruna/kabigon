@@ -2,7 +2,7 @@ from typing import ClassVar
 
 import pytest
 
-from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.loaders import bbc as bbc_module
 from kabigon.loaders.bbc import BBCLoader
 from kabigon.loaders.bbc import check_bbc_url

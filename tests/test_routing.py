@@ -1,4 +1,4 @@
-from kabigon.pipelines import resolve_targeted_loader_names
+from kabigon.application.routing import resolve_targeted_loader_names
 
 
 def test_route_url_to_pipeline_names_youtube() -> None:

@@ -1,12 +1,12 @@
 import pytest
 
-from kabigon.retrieval import strategy as strategy_module
-from kabigon.retrieval.classifier import classify_pipeline_name
-from kabigon.retrieval.classifier import classify_url
-from kabigon.retrieval.models import ContentType
-from kabigon.retrieval.planner import build_loader_plan
-from kabigon.retrieval.strategy import build_retrieval_context
-from kabigon.retrieval.strategy import build_strategy
+from kabigon.application import strategy as strategy_module
+from kabigon.application.classification import classify_pipeline_name
+from kabigon.application.classification import classify_url
+from kabigon.application.planner import build_loader_plan
+from kabigon.application.strategy import build_retrieval_context
+from kabigon.application.strategy import build_strategy
+from kabigon.domain.models import ContentType
 
 
 def test_classify_url_youtube() -> None:
@@ -38,23 +38,18 @@ def test_build_strategy_youtube_primary_loaders() -> None:
 
 
 def test_build_strategy_resolves_routing_once(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls = {"pipeline": 0, "targeted": 0}
+    calls = {"route": 0}
 
-    def fake_resolve_pipeline_name(url: str) -> str | None:
-        calls["pipeline"] += 1
-        return "youtube"
+    def fake_resolve_route(url: str) -> tuple[str | None, tuple[str, ...]]:
+        calls["route"] += 1
+        return "youtube", ("youtube", "youtube-ytdlp")
 
-    def fake_resolve_targeted_loader_names(url: str) -> list[str]:
-        calls["targeted"] += 1
-        return ["youtube", "youtube-ytdlp"]
-
-    monkeypatch.setattr(strategy_module, "resolve_pipeline_name", fake_resolve_pipeline_name)
-    monkeypatch.setattr(strategy_module, "resolve_targeted_loader_names", fake_resolve_targeted_loader_names)
+    monkeypatch.setattr(strategy_module, "resolve_route", fake_resolve_route)
 
     strategy = build_strategy("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
     assert strategy.content_type == ContentType.YOUTUBE_VIDEO
     assert strategy.primary_loaders == ("youtube", "youtube-ytdlp")
-    assert calls == {"pipeline": 1, "targeted": 1}
+    assert calls == {"route": 1}
 
 
 def test_build_loader_plan_deduplicates_primary_and_fallback() -> None:

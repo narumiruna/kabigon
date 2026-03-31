@@ -1,10 +1,10 @@
 import pytest
 
-from kabigon.retrieval import orchestrator as orchestrator_module
-from kabigon.retrieval.models import ContentType
-from kabigon.retrieval.models import LoaderPlan
-from kabigon.retrieval.models import RetrievalContext
-from kabigon.retrieval.models import RetrievalStrategy
+from kabigon.application import service as orchestrator_module
+from kabigon.domain.models import ContentType
+from kabigon.domain.models import LoaderPlan
+from kabigon.domain.models import RetrievalContext
+from kabigon.domain.models import RetrievalStrategy
 
 
 def test_resolve_loader_plan_uses_single_context_path(monkeypatch: pytest.MonkeyPatch) -> None:

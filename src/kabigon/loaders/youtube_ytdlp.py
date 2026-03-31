@@ -1,4 +1,4 @@
-from kabigon.core.loader import Loader
+from kabigon.domain.loader import Loader
 
 from .youtube import check_youtube_url
 from .ytdlp import YtdlpLoader

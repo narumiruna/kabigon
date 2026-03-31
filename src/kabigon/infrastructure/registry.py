@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from collections.abc import Sequence
 
-from . import loaders
-from .core.loader import Loader
+import kabigon.loaders as loaders
+from kabigon.domain.loader import Loader
 
 LoaderFactory = Callable[[], Loader]
 LoaderDef = tuple[str, str, LoaderFactory]
@@ -41,8 +41,8 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
     ("ytdlp", "Audio transcription via yt-dlp + Whisper", lambda: loaders.YtdlpLoader()),
 )
 
-LOADER_FACTORY_BY_NAME: dict[str, LoaderFactory] = {name: factory for name, _description, factory in LOADER_DEFS}
-LOADER_DESCRIPTION_BY_NAME: dict[str, str] = {name: description for name, description, _factory in LOADER_DEFS}
+_LOADER_FACTORY_BY_NAME: dict[str, LoaderFactory] = {name: factory for name, _description, factory in LOADER_DEFS}
+_LOADER_DESCRIPTION_BY_NAME: dict[str, str] = {name: description for name, description, _factory in LOADER_DEFS}
 
 CLI_VISIBLE_LOADER_NAMES: tuple[str, ...] = (
     "playwright",
@@ -64,12 +64,18 @@ CLI_VISIBLE_LOADER_NAMES: tuple[str, ...] = (
 
 
 def get_loader_factory(name: str) -> LoaderFactory:
-    return LOADER_FACTORY_BY_NAME[name]
+    return _LOADER_FACTORY_BY_NAME[name]
 
 
 def get_loader_descriptions(names: Sequence[str]) -> list[tuple[str, str]]:
-    return [(name, LOADER_DESCRIPTION_BY_NAME[name]) for name in names]
+    return [(name, _LOADER_DESCRIPTION_BY_NAME[name]) for name in names]
 
 
 def get_cli_loader_defs() -> list[LoaderDef]:
-    return [(name, LOADER_DESCRIPTION_BY_NAME[name], LOADER_FACTORY_BY_NAME[name]) for name in CLI_VISIBLE_LOADER_NAMES]
+    return [
+        (name, _LOADER_DESCRIPTION_BY_NAME[name], _LOADER_FACTORY_BY_NAME[name]) for name in CLI_VISIBLE_LOADER_NAMES
+    ]
+
+
+def list_loader_names() -> list[str]:
+    return [name for name, _description, _factory in LOADER_DEFS]

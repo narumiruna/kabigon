@@ -1,8 +1,8 @@
 import logging
 from urllib.parse import urlparse
 
-from kabigon.core.exception import LoaderNotApplicableError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.domain.loader import Loader
 
 from .httpx import HttpxLoader
 

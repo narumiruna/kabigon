@@ -42,11 +42,7 @@ class WhisperNotInstalledError(MissingDependencyError):
 
 
 class LoaderNotApplicableError(KabigonError):
-    """Raised when a URL is not applicable to a specific loader.
-
-    This exception indicates that the loader cannot handle this type of URL,
-    and the next loader in the chain should be tried.
-    """
+    """Raised when a URL is not applicable to a specific loader."""
 
     def __init__(self, loader_name: str, url: str, reason: str | None = None) -> None:
         self.loader_name = loader_name
@@ -60,11 +56,7 @@ class LoaderNotApplicableError(KabigonError):
 
 
 class LoaderTimeoutError(KabigonError):
-    """Raised when a loader operation times out.
-
-    This exception indicates that the loader took too long to complete.
-    Users may want to retry with a longer timeout or check their network connection.
-    """
+    """Raised when a loader operation times out."""
 
     def __init__(self, loader_name: str, url: str, timeout: float, suggestion: str | None = None) -> None:
         self.loader_name = loader_name
@@ -81,11 +73,7 @@ class LoaderTimeoutError(KabigonError):
 
 
 class LoaderContentError(KabigonError):
-    """Raised when content extraction fails.
-
-    This exception indicates that the loader successfully accessed the URL
-    but failed to extract meaningful content.
-    """
+    """Raised when content extraction fails."""
 
     def __init__(self, loader_name: str, url: str, reason: str, suggestion: str | None = None) -> None:
         self.loader_name = loader_name

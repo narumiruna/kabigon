@@ -1,6 +1,6 @@
 import pytest
 
-from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.loaders.truthsocial import TruthSocialLoader
 from kabigon.loaders.truthsocial import check_truthsocial_url
 

@@ -1,9 +1,9 @@
 import pytest
 
 import kabigon
-from kabigon.pipelines import DEFAULT_FALLBACK_LOADERS
-from kabigon.retrieval.orchestrator import resolve_execution_plan_loader_names
-from kabigon.retrieval.orchestrator import resolve_targeted_loader_names
+from kabigon.application.routing import DEFAULT_FALLBACK_LOADERS
+from kabigon.application.service import resolve_execution_plan_loader_names
+from kabigon.application.service import resolve_targeted_loader_names
 
 
 def test_load_url_function_exists() -> None:

@@ -4,7 +4,7 @@ from collections.abc import Callable
 from urllib.parse import urlparse
 
 Matcher = Callable[[str], bool]
-PipelineDef = tuple[str, Matcher, tuple[str, ...]]
+RouteDef = tuple[str, Matcher, tuple[str, ...]]
 
 
 def _host(url: str) -> str:
@@ -80,7 +80,7 @@ def _is_pdf_url(url: str) -> bool:
     return _is_pdf_path(url)
 
 
-PIPELINES: tuple[PipelineDef, ...] = (
+ROUTES: tuple[RouteDef, ...] = (
     ("ptt", _is_ptt_url, ("ptt",)),
     ("twitter", _is_twitter_url, ("twitter",)),
     ("truthsocial", _is_truthsocial_url, ("truthsocial",)),
@@ -92,7 +92,6 @@ PIPELINES: tuple[PipelineDef, ...] = (
     ("cnn", _is_cnn_url, ("cnn",)),
     ("pdf", _is_pdf_url, ("pdf",)),
 )
-
 
 DEFAULT_FALLBACK_LOADERS: tuple[str, ...] = (
     "ptt",
@@ -111,15 +110,18 @@ DEFAULT_FALLBACK_LOADERS: tuple[str, ...] = (
 )
 
 
-def resolve_pipeline_name(url: str) -> str | None:
-    for pipeline_name, matcher, _loaders in PIPELINES:
+def resolve_route(url: str) -> tuple[str | None, tuple[str, ...]]:
+    for pipeline_name, matcher, loaders in ROUTES:
         if matcher(url):
-            return pipeline_name
-    return None
+            return pipeline_name, loaders
+    return None, ()
+
+
+def resolve_pipeline_name(url: str) -> str | None:
+    pipeline_name, _loaders = resolve_route(url)
+    return pipeline_name
 
 
 def resolve_targeted_loader_names(url: str) -> list[str]:
-    for _pipeline_name, matcher, loaders in PIPELINES:
-        if matcher(url):
-            return list(loaders)
-    return []
+    _pipeline_name, loaders = resolve_route(url)
+    return list(loaders)

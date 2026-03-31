@@ -1,5 +1,5 @@
-from kabigon.core.exception import InvalidURLError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import InvalidURLError
+from kabigon.domain.loader import Loader
 
 from .httpx import HttpxLoader
 from .ytdlp import YtdlpLoader

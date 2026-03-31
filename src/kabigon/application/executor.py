@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from kabigon import loaders
-from kabigon.core.loader import Loader
-from kabigon.core.models import LoaderPlan
-from kabigon.loader_registry import get_loader_factory
+from kabigon.domain.loader import Loader
+from kabigon.domain.models import LoaderPlan
+from kabigon.infrastructure.registry import get_loader_factory
+from kabigon.loaders.compose import Compose
 
 
 def instantiate_loaders(loader_names: tuple[str, ...]) -> list[Loader]:
@@ -14,4 +14,4 @@ def build_loader(plan: LoaderPlan) -> Loader:
     loader_chain = instantiate_loaders(plan.loader_names)
     if len(loader_chain) == 1:
         return loader_chain[0]
-    return loaders.Compose(loader_chain)
+    return Compose(loader_chain)

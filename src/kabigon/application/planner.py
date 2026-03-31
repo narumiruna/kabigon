@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from kabigon.core.models import LoaderPlan
-from kabigon.core.models import RetrievalStrategy
+from kabigon.domain.models import LoaderPlan
+from kabigon.domain.models import RetrievalStrategy
 
 
 def _merge_unique_loaders(primary: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
-    seen = set()
+    seen: set[str] = set()
     ordered: list[str] = []
 
     for loader_name in primary:

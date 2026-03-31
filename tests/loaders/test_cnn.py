@@ -2,7 +2,7 @@ from typing import ClassVar
 
 import pytest
 
-from kabigon.core.exception import LoaderNotApplicableError
+from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.loaders import cnn as cnn_module
 from kabigon.loaders.cnn import CNNLoader
 from kabigon.loaders.cnn import check_cnn_url

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import yt_dlp
 
-from kabigon.core.exception import WhisperNotInstalledError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import WhisperNotInstalledError
+from kabigon.domain.loader import Loader
 
 logger = logging.getLogger(__name__)
 

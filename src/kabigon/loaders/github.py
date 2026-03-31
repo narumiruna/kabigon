@@ -5,8 +5,8 @@ from urllib.parse import urlparse
 
 import httpx
 
-from kabigon.core.exception import InvalidURLError
-from kabigon.core.loader import Loader
+from kabigon.domain.errors import InvalidURLError
+from kabigon.domain.loader import Loader
 
 from .utils import html_to_markdown
 

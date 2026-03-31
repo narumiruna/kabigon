@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from kabigon.core.models import RetrievalContext
-from kabigon.core.models import RetrievalStrategy
-from kabigon.pipelines import resolve_pipeline_name
-from kabigon.pipelines import resolve_targeted_loader_names
+from kabigon.domain.models import RetrievalContext
+from kabigon.domain.models import RetrievalStrategy
 
-from .classifier import classify_pipeline_name
+from .classification import classify_pipeline_name
+from .routing import resolve_route
 
 
 def build_retrieval_context(url: str) -> RetrievalContext:
-    pipeline_name = resolve_pipeline_name(url)
-    targeted_loaders = tuple(resolve_targeted_loader_names(url))
+    pipeline_name, targeted_loaders = resolve_route(url)
     content_type = classify_pipeline_name(pipeline_name)
 
     return RetrievalContext(
