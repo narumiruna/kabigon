@@ -1,5 +1,7 @@
 import pytest
 
+from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.loaders.url_match import ensure_domain_suffix
 from kabigon.loaders.url_match import host_matches_domain_suffix
 
 
@@ -27,3 +29,22 @@ def test_host_matches_domain_suffix(url: str, suffix: str) -> None:
 )
 def test_host_matches_domain_suffix_false(url: str, suffix: str) -> None:
     assert not host_matches_domain_suffix(url, suffix)
+
+
+def test_ensure_domain_suffix_accepts_matching_host() -> None:
+    ensure_domain_suffix(
+        "https://www.bbc.com/news",
+        "bbc.com",
+        loader_name="BBCLoader",
+        source_name="BBC",
+    )
+
+
+def test_ensure_domain_suffix_raises_not_applicable_error() -> None:
+    with pytest.raises(LoaderNotApplicableError, match="Not a BBC URL"):
+        ensure_domain_suffix(
+            "https://example.com/news",
+            "bbc.com",
+            loader_name="BBCLoader",
+            source_name="BBC",
+        )
