@@ -11,6 +11,7 @@ from kabigon.infrastructure.registry import list_loader_names
 from .executor import build_loader
 from .planner import build_loader_plan
 from .routing import DEFAULT_FALLBACK_LOADERS
+from .routing import resolve_pipeline_requirements
 from .strategy import build_retrieval_context
 from .strategy import build_strategy_from_context
 
@@ -73,4 +74,5 @@ def explain_plan(url: str) -> dict[str, object]:
         "content_type": result.context.content_type,
         "targeted_loaders": list(result.context.targeted_loaders),
         "execution_plan": list(result.plan.loader_names),
+        "requirements": list(resolve_pipeline_requirements(result.context.pipeline_name)),
     }

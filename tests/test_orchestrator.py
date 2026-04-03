@@ -87,3 +87,10 @@ def test_public_resolvers_delegate_to_single_resolve(monkeypatch: pytest.MonkeyP
     ]
 
     assert calls["count"] == 5
+
+
+def test_explain_plan_includes_openai_web_requirements() -> None:
+    plan = orchestrator_module.explain_plan("https://openai.com/pricing")
+    assert plan["pipeline"] == "openai_web"
+    assert plan["targeted_loaders"] == ["firecrawl"]
+    assert plan["requirements"] == ["FIRECRAWL_API_KEY"]

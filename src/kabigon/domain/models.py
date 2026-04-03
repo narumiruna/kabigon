@@ -15,6 +15,7 @@ class ContentType(StrEnum):
 
 class FallbackPolicy(StrEnum):
     REMAINING_DEFAULT = "remaining_default"
+    NO_FALLBACK = "no_fallback"
 
 
 @dataclass(frozen=True)

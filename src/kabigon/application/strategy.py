@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from kabigon.domain.models import FallbackPolicy
 from kabigon.domain.models import RetrievalContext
 from kabigon.domain.models import RetrievalStrategy
 
@@ -20,9 +21,14 @@ def build_retrieval_context(url: str) -> RetrievalContext:
 
 
 def build_strategy_from_context(context: RetrievalContext) -> RetrievalStrategy:
+    fallback_policy = FallbackPolicy.REMAINING_DEFAULT
+    if context.pipeline_name == "openai_web":
+        fallback_policy = FallbackPolicy.NO_FALLBACK
+
     return RetrievalStrategy(
         content_type=context.content_type,
         primary_loaders=context.targeted_loaders,
+        fallback_policy=fallback_policy,
     )
 
 
