@@ -20,16 +20,27 @@ class FirecrawlLoader(Loader):
         self.app: Any = FirecrawlApp(api_key=api_key)
 
     def load_sync(self, url: str) -> str:
-        result = self.app.scrape_url(
-            url,
-            formats=["markdown"],
-            timeout=self.timeout,
-        )
+        scrape_kwargs = {
+            "formats": ["markdown"],
+            "timeout": self.timeout,
+        }
+        if hasattr(self.app, "scrape_url"):
+            result = self.app.scrape_url(url, **scrape_kwargs)
+        elif hasattr(self.app, "scrape"):
+            result = self.app.scrape(url, **scrape_kwargs)
+        else:
+            raise LoaderError(url, ["Firecrawl SDK does not expose scrape methods"])
 
-        if not result.success:
-            raise LoaderError(url)
+        success = getattr(result, "success", None)
+        if success is False:
+            raise LoaderError(url, ["Firecrawl scrape returned unsuccessful result"])
 
-        return result.markdown
+        markdown = getattr(result, "markdown", None)
+        if markdown is None and isinstance(result, dict):
+            markdown = result.get("markdown")
+        if not isinstance(markdown, str):
+            raise LoaderError(url, ["Firecrawl scrape result did not include markdown"])
+        return markdown
 
     async def load(self, url: str) -> str:
         return await asyncio.to_thread(self.load_sync, url)

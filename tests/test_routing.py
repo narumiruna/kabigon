@@ -24,3 +24,23 @@ def test_route_url_to_pipeline_names_non_http_is_pdf() -> None:
 def test_route_url_to_pipeline_names_github_pdf_prefers_github_rule() -> None:
     names = resolve_targeted_loader_names("https://github.com/a/b/blob/main/demo.pdf")
     assert names == ["github"]
+
+
+def test_route_url_to_pipeline_names_openai_web() -> None:
+    names = resolve_targeted_loader_names("https://openai.com/pricing")
+    assert names == ["firecrawl", "playwright-fast"]
+
+
+def test_route_url_to_pipeline_names_platform_openai_web() -> None:
+    names = resolve_targeted_loader_names("https://platform.openai.com/docs/pricing")
+    assert names == ["firecrawl", "playwright-fast"]
+
+
+def test_route_url_to_pipeline_names_help_openai_web() -> None:
+    names = resolve_targeted_loader_names("https://help.openai.com/en/articles/20001106-codex-rate-card")
+    assert names == ["firecrawl", "playwright-fast"]
+
+
+def test_route_url_to_pipeline_names_developers_openai_is_not_openai_web() -> None:
+    names = resolve_targeted_loader_names("https://developers.openai.com/codex/pricing")
+    assert names == []

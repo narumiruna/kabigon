@@ -74,6 +74,10 @@ def _is_cnn_url(url: str) -> bool:
     return host == "cnn.com" or host.endswith(".cnn.com")
 
 
+def _is_openai_web_url(url: str) -> bool:
+    return _host(url) in {"openai.com", "www.openai.com", "help.openai.com", "platform.openai.com"}
+
+
 def _is_pdf_url(url: str) -> bool:
     if not _is_http_url(url):
         return True
@@ -90,6 +94,7 @@ ROUTES: tuple[RouteDef, ...] = (
     ("github", _is_github_url, ("github",)),
     ("bbc", _is_bbc_url, ("bbc",)),
     ("cnn", _is_cnn_url, ("cnn",)),
+    ("openai_web", _is_openai_web_url, ("firecrawl", "playwright-fast")),
     ("pdf", _is_pdf_url, ("pdf",)),
 )
 
