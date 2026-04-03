@@ -7,6 +7,7 @@ from kabigon.application.planner import build_loader_plan
 from kabigon.application.strategy import build_retrieval_context
 from kabigon.application.strategy import build_strategy
 from kabigon.domain.models import ContentType
+from kabigon.domain.models import FallbackPolicy
 
 
 def test_classify_url_youtube() -> None:
@@ -35,6 +36,14 @@ def test_build_strategy_youtube_primary_loaders() -> None:
     strategy = build_strategy("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
     assert strategy.content_type == ContentType.YOUTUBE_VIDEO
     assert strategy.primary_loaders == ("youtube", "youtube-ytdlp")
+    assert strategy.fallback_policy == FallbackPolicy.REMAINING_DEFAULT
+
+
+def test_build_strategy_openai_web_disables_fallback() -> None:
+    strategy = build_strategy("https://openai.com/pricing")
+    assert strategy.content_type == ContentType.GENERIC_WEB
+    assert strategy.primary_loaders == ("firecrawl",)
+    assert strategy.fallback_policy == FallbackPolicy.NO_FALLBACK
 
 
 def test_build_strategy_resolves_routing_once(monkeypatch: pytest.MonkeyPatch) -> None:

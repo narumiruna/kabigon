@@ -94,9 +94,13 @@ ROUTES: tuple[RouteDef, ...] = (
     ("github", _is_github_url, ("github",)),
     ("bbc", _is_bbc_url, ("bbc",)),
     ("cnn", _is_cnn_url, ("cnn",)),
-    ("openai_web", _is_openai_web_url, ("firecrawl", "playwright-fast")),
+    ("openai_web", _is_openai_web_url, ("firecrawl",)),
     ("pdf", _is_pdf_url, ("pdf",)),
 )
+
+PIPELINE_REQUIREMENTS: dict[str, tuple[str, ...]] = {
+    "openai_web": ("FIRECRAWL_API_KEY",),
+}
 
 DEFAULT_FALLBACK_LOADERS: tuple[str, ...] = (
     "ptt",
@@ -130,3 +134,9 @@ def resolve_pipeline_name(url: str) -> str | None:
 def resolve_targeted_loader_names(url: str) -> list[str]:
     _pipeline_name, loaders = resolve_route(url)
     return list(loaders)
+
+
+def resolve_pipeline_requirements(pipeline_name: str | None) -> tuple[str, ...]:
+    if pipeline_name is None:
+        return ()
+    return PIPELINE_REQUIREMENTS.get(pipeline_name, ())

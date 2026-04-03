@@ -37,7 +37,7 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
     ),
     ("playwright", "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
     ("httpx", "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
-    ("firecrawl", "Firecrawl-based web extraction", lambda: loaders.FirecrawlLoader()),
+    ("firecrawl", "Firecrawl-based web extraction (requires FIRECRAWL_API_KEY)", lambda: loaders.FirecrawlLoader()),
     ("ytdlp", "Audio transcription via yt-dlp + Whisper", lambda: loaders.YtdlpLoader()),
 )
 

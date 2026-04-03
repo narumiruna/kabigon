@@ -1,3 +1,4 @@
+from kabigon.application.routing import resolve_pipeline_requirements
 from kabigon.application.routing import resolve_targeted_loader_names
 
 
@@ -28,19 +29,29 @@ def test_route_url_to_pipeline_names_github_pdf_prefers_github_rule() -> None:
 
 def test_route_url_to_pipeline_names_openai_web() -> None:
     names = resolve_targeted_loader_names("https://openai.com/pricing")
-    assert names == ["firecrawl", "playwright-fast"]
+    assert names == ["firecrawl"]
 
 
 def test_route_url_to_pipeline_names_platform_openai_web() -> None:
     names = resolve_targeted_loader_names("https://platform.openai.com/docs/pricing")
-    assert names == ["firecrawl", "playwright-fast"]
+    assert names == ["firecrawl"]
 
 
 def test_route_url_to_pipeline_names_help_openai_web() -> None:
     names = resolve_targeted_loader_names("https://help.openai.com/en/articles/20001106-codex-rate-card")
-    assert names == ["firecrawl", "playwright-fast"]
+    assert names == ["firecrawl"]
 
 
 def test_route_url_to_pipeline_names_developers_openai_is_not_openai_web() -> None:
     names = resolve_targeted_loader_names("https://developers.openai.com/codex/pricing")
     assert names == []
+
+
+def test_pipeline_requirements_openai_web() -> None:
+    requirements = resolve_pipeline_requirements("openai_web")
+    assert requirements == ("FIRECRAWL_API_KEY",)
+
+
+def test_pipeline_requirements_unknown_pipeline() -> None:
+    requirements = resolve_pipeline_requirements("unknown")
+    assert requirements == ()

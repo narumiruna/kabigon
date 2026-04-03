@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from kabigon.domain.models import FallbackPolicy
 from kabigon.domain.models import LoaderPlan
 from kabigon.domain.models import RetrievalStrategy
 
@@ -24,6 +25,9 @@ def _merge_unique_loaders(primary: tuple[str, ...], fallback: tuple[str, ...]) -
 
 
 def build_loader_plan(strategy: RetrievalStrategy, default_fallback: tuple[str, ...]) -> LoaderPlan:
+    if strategy.fallback_policy == FallbackPolicy.NO_FALLBACK:
+        return LoaderPlan(loader_names=_merge_unique_loaders(primary=strategy.primary_loaders, fallback=()))
+
     return LoaderPlan(
         loader_names=_merge_unique_loaders(
             primary=strategy.primary_loaders,
