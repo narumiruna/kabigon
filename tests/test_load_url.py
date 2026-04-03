@@ -44,6 +44,13 @@ def test_targeted_loaders_are_prefix_of_execution_plan() -> None:
     assert execution_plan[: len(targeted)] == targeted
 
 
+def test_build_execution_plan_for_openai_web_is_targeted_then_fallback() -> None:
+    execution_plan = resolve_execution_plan_loader_names("https://openai.com/pricing")
+    assert execution_plan[:2] == ["firecrawl", "playwright-fast"]
+    assert "playwright-networkidle" in execution_plan
+    assert len(execution_plan) == len(set(execution_plan))
+
+
 def test_load_url_invalid_url() -> None:
     """Test that load_url raises exception for invalid URLs."""
     # Invalid URL should fail in all loaders and raise an exception
