@@ -1,5 +1,9 @@
 import logging
+from contextlib import suppress
+from typing import Literal
 
+from playwright.async_api import Request
+from playwright.async_api import Route
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
@@ -68,9 +72,24 @@ class TruthSocialLoader(Loader):
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(user_agent=USER_AGENT)
             page = await context.new_page()
+            wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "domcontentloaded"
+
+            async def route_handler(route: Route, request: Request) -> None:
+                if request.resource_type in {"image", "media", "font"}:
+                    await route.abort()
+                    return
+                await route.continue_()
+
+            await page.route("**/*", route_handler)
 
             try:
-                await page.goto(url, timeout=self.timeout, wait_until="networkidle")
+                await page.goto(url, timeout=self.timeout, wait_until=wait_until)
+                with suppress(TimeoutError):
+                    await page.wait_for_selector(
+                        "article, .status, [data-testid='status'], [data-testid='post-content']",
+                        state="attached",
+                        timeout=min(self.timeout, 5_000),
+                    )
                 logger.debug("[TruthSocialLoader] Page loaded successfully")
             except TimeoutError as e:
                 await browser.close()
