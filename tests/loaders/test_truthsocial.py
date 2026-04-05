@@ -71,7 +71,7 @@ class FakePage:
         self.goto_timeout = 0.0
         self.selector_timeout = 0.0
 
-    async def route(self, pattern: str, handler) -> None:  # type: ignore[no-untyped-def]
+    async def route(self, pattern: str, handler) -> None:
         self.route_pattern = pattern
         self.route_handler = handler
 
@@ -127,7 +127,7 @@ class FakePlaywrightContextManager:
     async def __aenter__(self) -> FakePlaywright:
         return self._playwright
 
-    async def __aexit__(self, exc_type, exc, tb) -> bool:  # type: ignore[no-untyped-def]
+    async def __aexit__(self, exc_type, exc, tb) -> bool:
         return False
 
 
