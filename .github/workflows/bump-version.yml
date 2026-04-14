@@ -26,7 +26,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - name: Bump version
         id: bump
-        uses: callowayproject/bump-my-version@master
+        uses: callowayproject/bump-my-version@v1.3
         env:
           BUMPVERSION_TAG: "true"
         with:
