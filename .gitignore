@@ -133,3 +133,6 @@ dmypy.json
 
 # Local Claude settings
 .claude/settings.local.json
+
+# Codex CLI
+.codex
