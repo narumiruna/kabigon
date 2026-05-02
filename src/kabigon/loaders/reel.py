@@ -1,5 +1,5 @@
-from kabigon.application.source_applicability import parse_reel_target
-from kabigon.domain.loader import Loader
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import parse_reel_target
 
 from .httpx import HttpxLoader
 from .ytdlp import YtdlpLoader

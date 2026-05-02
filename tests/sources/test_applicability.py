@@ -1,20 +1,20 @@
 import pytest
 
-from kabigon.application.source_applicability import is_bbc_url
-from kabigon.application.source_applicability import is_cnn_url
-from kabigon.application.source_applicability import is_github_url
-from kabigon.application.source_applicability import is_openai_web_url
-from kabigon.application.source_applicability import is_pdf_target
-from kabigon.application.source_applicability import is_ptt_url
-from kabigon.application.source_applicability import is_reddit_url
-from kabigon.application.source_applicability import is_reel_url
-from kabigon.application.source_applicability import is_truthsocial_url
-from kabigon.application.source_applicability import is_twitter_url
-from kabigon.application.source_applicability import is_youtube_video_url
-from kabigon.application.source_applicability import parse_github_raw_content_target
-from kabigon.application.source_applicability import parse_twitter_target
-from kabigon.application.source_applicability import parse_youtube_video_target
-from kabigon.domain.errors import InvalidURLError
+from kabigon.core.errors import InvalidURLError
+from kabigon.sources.applicability import is_bbc_url
+from kabigon.sources.applicability import is_cnn_url
+from kabigon.sources.applicability import is_github_url
+from kabigon.sources.applicability import is_openai_web_url
+from kabigon.sources.applicability import is_pdf_target
+from kabigon.sources.applicability import is_ptt_url
+from kabigon.sources.applicability import is_reddit_url
+from kabigon.sources.applicability import is_reel_url
+from kabigon.sources.applicability import is_truthsocial_url
+from kabigon.sources.applicability import is_twitter_url
+from kabigon.sources.applicability import is_youtube_video_url
+from kabigon.sources.applicability import parse_github_raw_content_target
+from kabigon.sources.applicability import parse_twitter_target
+from kabigon.sources.applicability import parse_youtube_video_target
 
 
 @pytest.mark.parametrize(

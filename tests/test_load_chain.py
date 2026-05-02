@@ -1,17 +1,17 @@
 import pytest
 
-from kabigon.application.load_chain import DEFAULT_FALLBACK_LOADERS
-from kabigon.application.load_chain import explain_load_chain
-from kabigon.application.load_chain import resolve_explicit_load_chain
-from kabigon.application.load_chain import resolve_load_chain
-from kabigon.application.pipeline_catalog import ContentType
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.errors import MissingRequirementError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderError
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.errors import LoaderTimeoutError
+from kabigon.core.errors import MissingRequirementError
+from kabigon.core.loader import Loader
+from kabigon.load_chain import DEFAULT_FALLBACK_LOADERS
+from kabigon.load_chain import explain_load_chain
+from kabigon.load_chain import resolve_explicit_load_chain
+from kabigon.load_chain import resolve_load_chain
 from kabigon.loaders.firecrawl import FirecrawlLoader
+from kabigon.pipelines.catalog import ContentType
 
 
 class EmptyLoader(Loader):

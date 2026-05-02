@@ -13,6 +13,10 @@ _Avoid_: route, source handler, provider
 The module that owns the known Pipelines and exposes lookup from URL.
 _Avoid_: registry, routing table
 
+**Source**:
+A family of URLs or files with shared applicability rules and retrieval behavior, such as YouTube, GitHub, BBC, or CNN.
+_Avoid_: provider, site, backend
+
 **Loader**:
 An adapter that attempts to extract text from a URL or file.
 _Avoid_: scraper, parser, backend
@@ -50,7 +54,7 @@ _Avoid_: route matcher, loader validation, URL guard
 - A **Load chain** turns an **Execution plan** into runnable **Loaders**
 - A **Loader** is attempted within an **Execution plan**
 - A **Loader-internal fallback** stays inside one **Loader** implementation
-- **Source applicability** decides whether a **Pipeline** applies before the **Execution plan** is built
+- **Source applicability** decides whether an input belongs to a **Source** before a source-specific **Pipeline** applies
 
 ## Architecture Notes
 

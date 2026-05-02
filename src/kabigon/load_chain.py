@@ -7,18 +7,17 @@ from collections.abc import Callable
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.errors import MissingRequirementError
-from kabigon.domain.loader import Loader
-from kabigon.infrastructure.registry import get_loader_factory
-
-from .loader_names import DEFAULT_FALLBACK_LOADERS
-from .pipeline_catalog import ContentType
-from .pipeline_catalog import FallbackPolicy
-from .pipeline_catalog import match_pipeline
+from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderError
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.errors import LoaderTimeoutError
+from kabigon.core.errors import MissingRequirementError
+from kabigon.core.loader import Loader
+from kabigon.loader_registry import DEFAULT_FALLBACK_LOADERS
+from kabigon.loader_registry import get_loader_factory
+from kabigon.pipelines.catalog import ContentType
+from kabigon.pipelines.catalog import FallbackPolicy
+from kabigon.pipelines.catalog import match_pipeline
 
 LoaderFactory = Callable[[], Loader]
 _EMPTY_EXECUTION_PLAN = "Load chain execution plan cannot be empty."

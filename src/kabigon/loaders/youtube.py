@@ -3,14 +3,14 @@ import logging
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from kabigon.application.source_applicability import NoVideoIDFoundError
-from kabigon.application.source_applicability import UnsupportedURLNetlocError
-from kabigon.application.source_applicability import UnsupportedURLSchemeError
-from kabigon.application.source_applicability import VideoIDError
-from kabigon.application.source_applicability import parse_youtube_video_target
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import NoVideoIDFoundError
+from kabigon.sources.applicability import UnsupportedURLNetlocError
+from kabigon.sources.applicability import UnsupportedURLSchemeError
+from kabigon.sources.applicability import VideoIDError
+from kabigon.sources.applicability import parse_youtube_video_target
 
 logger = logging.getLogger(__name__)
 

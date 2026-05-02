@@ -1,8 +1,8 @@
 import pytest
 
-from kabigon.application.pipeline_catalog import ContentType
-from kabigon.application.pipeline_catalog import FallbackPolicy
-from kabigon.application.pipeline_catalog import match_pipeline
+from kabigon.pipelines.catalog import ContentType
+from kabigon.pipelines.catalog import FallbackPolicy
+from kabigon.pipelines.catalog import match_pipeline
 
 
 def test_match_pipeline_youtube() -> None:

@@ -1,6 +1,6 @@
 import pytest
 
-from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders.twitter import check_x_url
 from kabigon.loaders.twitter import replace_domain
 

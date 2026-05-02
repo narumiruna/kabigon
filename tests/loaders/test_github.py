@@ -1,6 +1,6 @@
 import pytest
 
-from kabigon.domain.errors import InvalidURLError
+from kabigon.core.errors import InvalidURLError
 from kabigon.loaders.github import check_github_url
 from kabigon.loaders.github import extract_main_html
 from kabigon.loaders.github import to_raw_github_url

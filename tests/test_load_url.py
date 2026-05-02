@@ -1,8 +1,8 @@
 import pytest
 
 import kabigon
-from kabigon.application.load_chain import DEFAULT_FALLBACK_LOADERS
-from kabigon.application.load_chain import explain_load_chain
+from kabigon.load_chain import DEFAULT_FALLBACK_LOADERS
+from kabigon.load_chain import explain_load_chain
 
 
 def test_load_url_function_exists() -> None:

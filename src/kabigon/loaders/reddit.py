@@ -9,10 +9,10 @@ import httpx
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.application.source_applicability import parse_reddit_target
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderTimeoutError
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import parse_reddit_target
 
 from .utils import html_to_markdown
 

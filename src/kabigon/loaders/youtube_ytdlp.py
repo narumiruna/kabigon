@@ -1,7 +1,7 @@
 import asyncio
 
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.loader import Loader
 
 from .youtube import NoVideoIDFoundError
 from .youtube import UnsupportedURLNetlocError

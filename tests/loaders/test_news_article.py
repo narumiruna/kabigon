@@ -3,7 +3,7 @@ from typing import ClassVar
 
 import pytest
 
-from kabigon.domain.errors import LoaderContentError
+from kabigon.core.errors import LoaderContentError
 from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.html_extractors import extract_article_body_from_json_ld
 from kabigon.loaders.news_article import extract_news_article_main_html

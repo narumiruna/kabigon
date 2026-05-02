@@ -4,18 +4,18 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 
-from . import loader_names
-from .source_applicability import is_bbc_url
-from .source_applicability import is_cnn_url
-from .source_applicability import is_github_url
-from .source_applicability import is_openai_web_url
-from .source_applicability import is_pdf_target
-from .source_applicability import is_ptt_url
-from .source_applicability import is_reddit_url
-from .source_applicability import is_reel_url
-from .source_applicability import is_truthsocial_url
-from .source_applicability import is_twitter_url
-from .source_applicability import is_youtube_video_url
+import kabigon.loader_registry as loader_names
+from kabigon.sources.applicability import is_bbc_url
+from kabigon.sources.applicability import is_cnn_url
+from kabigon.sources.applicability import is_github_url
+from kabigon.sources.applicability import is_openai_web_url
+from kabigon.sources.applicability import is_pdf_target
+from kabigon.sources.applicability import is_ptt_url
+from kabigon.sources.applicability import is_reddit_url
+from kabigon.sources.applicability import is_reel_url
+from kabigon.sources.applicability import is_truthsocial_url
+from kabigon.sources.applicability import is_twitter_url
+from kabigon.sources.applicability import is_youtube_video_url
 
 Matcher = Callable[[str], bool]
 
