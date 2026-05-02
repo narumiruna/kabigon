@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from kabigon.domain.loader import Loader
-from kabigon.domain.models import LoaderPlan
 from kabigon.infrastructure.registry import get_loader_factory
 from kabigon.loaders.compose import Compose
+
+from .planning import LoaderPlan
 
 
 def instantiate_loaders(loader_names: tuple[str, ...]) -> list[Loader]:

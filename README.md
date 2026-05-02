@@ -177,19 +177,19 @@ print(loaders)
 kabigon follows a layered architecture:
 
 ```
-Interface (CLI)  →  Application (routing, strategy, planning)  →  Domain (Loader ABC, models, errors)
-                                                                ↓
-                                                          Loaders (concrete implementations)
+Interface (CLI)  →  Application (pipeline catalog, planning)  →  Domain (Loader ABC, errors)
+                                                              ↓
+                                                        Loaders (concrete implementations)
 ```
 
 **Request flow:**
 
 1. The URL enters via the CLI or `load_url()`.
-2. `routing.py` matches the URL against known patterns (YouTube, Twitter, …) to select a source-specific pipeline.
-3. `strategy.py` + `planner.py` build a `LoaderPlan` — the primary loaders followed by fallback loaders (de-duplicated).
+2. `pipeline_catalog.py` matches known sources (YouTube, Twitter, …) and returns the matched pipeline metadata.
+3. `planning.py` turns that into a retrieval context and a `LoaderPlan` — targeted loaders followed by fallback loaders.
 4. `executor.py` instantiates the loaders; `Compose` runs them in sequence and returns the first successful result.
 
-To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a routing rule if the loader handles a specific domain.
+To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a pipeline entry in `application/pipeline_catalog.py` if the loader handles a specific source.
 
 ## Configuration
 

@@ -1,7 +1,7 @@
 import pytest
 
 import kabigon
-from kabigon.application.routing import DEFAULT_FALLBACK_LOADERS
+from kabigon.application.planning import DEFAULT_FALLBACK_LOADERS
 from kabigon.application.service import resolve_execution_plan_loader_names
 from kabigon.application.service import resolve_targeted_loader_names
 
@@ -47,6 +47,14 @@ def test_targeted_loaders_are_prefix_of_execution_plan() -> None:
 def test_build_execution_plan_for_openai_web_is_targeted_then_fallback() -> None:
     execution_plan = resolve_execution_plan_loader_names("https://openai.com/pricing")
     assert execution_plan == ["firecrawl"]
+
+
+def test_explain_plan_includes_openai_web_requirements() -> None:
+    plan = kabigon.explain_plan("https://openai.com/pricing")
+
+    assert plan["pipeline"] == "openai_web"
+    assert plan["targeted_loaders"] == ["firecrawl"]
+    assert plan["requirements"] == ["FIRECRAWL_API_KEY"]
 
 
 def test_load_url_invalid_url() -> None:
