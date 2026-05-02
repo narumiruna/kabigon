@@ -7,13 +7,13 @@ from collections.abc import Callable
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from kabigon import loader_registry
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderError
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.errors import MissingRequirementError
 from kabigon.core.loader import Loader
-from kabigon.loader_registry import DEFAULT_FALLBACK_LOADERS
 from kabigon.loader_registry import get_loader_factory
 from kabigon.pipelines.catalog import ContentType
 from kabigon.pipelines.catalog import FallbackPolicy
@@ -21,6 +21,22 @@ from kabigon.pipelines.catalog import match_pipeline
 
 LoaderFactory = Callable[[], Loader]
 _EMPTY_EXECUTION_PLAN = "Load chain execution plan cannot be empty."
+
+DEFAULT_FALLBACK_LOADERS = (
+    loader_registry.PTT,
+    loader_registry.TWITTER,
+    loader_registry.TRUTHSOCIAL,
+    loader_registry.REDDIT,
+    loader_registry.YOUTUBE,
+    loader_registry.REEL,
+    loader_registry.YOUTUBE_YTDLP,
+    loader_registry.PDF,
+    loader_registry.GITHUB,
+    loader_registry.BBC,
+    loader_registry.CNN,
+    loader_registry.PLAYWRIGHT_NETWORKIDLE,
+    loader_registry.PLAYWRIGHT_FAST,
+)
 
 logger = logging.getLogger(__name__)
 

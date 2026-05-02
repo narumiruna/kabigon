@@ -49,50 +49,6 @@ class _PipelineEntry:
     matches: Matcher
 
 
-def _is_ptt_url(url: str) -> bool:
-    return is_ptt_url(url)
-
-
-def _is_twitter_url(url: str) -> bool:
-    return is_twitter_url(url)
-
-
-def _is_truthsocial_url(url: str) -> bool:
-    return is_truthsocial_url(url)
-
-
-def _is_reddit_url(url: str) -> bool:
-    return is_reddit_url(url)
-
-
-def _is_youtube_url(url: str) -> bool:
-    return is_youtube_video_url(url)
-
-
-def _is_reel_url(url: str) -> bool:
-    return is_reel_url(url)
-
-
-def _is_github_url(url: str) -> bool:
-    return is_github_url(url)
-
-
-def _is_bbc_url(url: str) -> bool:
-    return is_bbc_url(url)
-
-
-def _is_cnn_url(url: str) -> bool:
-    return is_cnn_url(url)
-
-
-def _is_openai_web_url(url: str) -> bool:
-    return is_openai_web_url(url)
-
-
-def _is_pdf_url(url: str) -> bool:
-    return is_pdf_target(url)
-
-
 _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
     _PipelineEntry(
         pipeline=Pipeline(
@@ -100,7 +56,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.PTT,),
         ),
-        matches=_is_ptt_url,
+        matches=is_ptt_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -108,7 +64,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.TWITTER,),
         ),
-        matches=_is_twitter_url,
+        matches=is_twitter_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -116,7 +72,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.TRUTHSOCIAL,),
         ),
-        matches=_is_truthsocial_url,
+        matches=is_truthsocial_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -124,7 +80,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.REDDIT,),
         ),
-        matches=_is_reddit_url,
+        matches=is_reddit_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -132,7 +88,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.YOUTUBE_VIDEO,
             targeted_loaders=(loader_names.YOUTUBE, loader_names.YOUTUBE_YTDLP),
         ),
-        matches=_is_youtube_url,
+        matches=is_youtube_video_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -140,7 +96,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.REEL,),
         ),
-        matches=_is_reel_url,
+        matches=is_reel_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -148,7 +104,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.CODE_CONTENT,
             targeted_loaders=(loader_names.GITHUB,),
         ),
-        matches=_is_github_url,
+        matches=is_github_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -156,7 +112,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.NEWS_ARTICLE,
             targeted_loaders=(loader_names.BBC,),
         ),
-        matches=_is_bbc_url,
+        matches=is_bbc_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -164,7 +120,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.NEWS_ARTICLE,
             targeted_loaders=(loader_names.CNN,),
         ),
-        matches=_is_cnn_url,
+        matches=is_cnn_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -174,7 +130,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             requirements=("FIRECRAWL_API_KEY",),
             fallback_policy=FallbackPolicy.NO_FALLBACK,
         ),
-        matches=_is_openai_web_url,
+        matches=is_openai_web_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
@@ -182,7 +138,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             content_type=ContentType.DOCUMENT_PDF,
             targeted_loaders=(loader_names.PDF,),
         ),
-        matches=_is_pdf_url,
+        matches=is_pdf_target,
     ),
 )
 

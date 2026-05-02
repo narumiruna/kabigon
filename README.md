@@ -315,7 +315,7 @@ uv publish
 3. Export the class from `src/kabigon/loaders/__init__.py`.
 4. Register the loader in `src/kabigon/loader_registry.py`.
 5. Add a Pipeline catalog entry in `src/kabigon/pipelines/catalog.py` if the loader handles a specific source.
-6. Add or update Load chain and registry consistency tests when the Execution plan should change.
+6. Add or update Load chain and planning consistency tests when the Execution plan should change.
 7. Add Loader tests in `tests/loaders/`.
 
 ## License

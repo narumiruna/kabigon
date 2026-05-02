@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from collections.abc import Sequence
 
 import kabigon.loaders as loaders
 from kabigon.core.loader import Loader
@@ -26,40 +25,6 @@ PLAYWRIGHT = "playwright"
 HTTPX = "httpx"
 FIRECRAWL = "firecrawl"
 YTDLP = "ytdlp"
-
-DEFAULT_FALLBACK_LOADERS = (
-    PTT,
-    TWITTER,
-    TRUTHSOCIAL,
-    REDDIT,
-    YOUTUBE,
-    REEL,
-    YOUTUBE_YTDLP,
-    PDF,
-    GITHUB,
-    BBC,
-    CNN,
-    PLAYWRIGHT_NETWORKIDLE,
-    PLAYWRIGHT_FAST,
-)
-
-CLI_VISIBLE_LOADERS = (
-    PLAYWRIGHT,
-    HTTPX,
-    BBC,
-    CNN,
-    FIRECRAWL,
-    YOUTUBE,
-    YOUTUBE_YTDLP,
-    YTDLP,
-    TWITTER,
-    TRUTHSOCIAL,
-    REDDIT,
-    PTT,
-    REEL,
-    GITHUB,
-    PDF,
-)
 
 LOADER_DEFS: tuple[LoaderDef, ...] = (
     (PTT, "Taiwan PTT forum posts", lambda: loaders.PttLoader()),
@@ -100,21 +65,13 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
 _LOADER_FACTORY_BY_NAME: dict[str, LoaderFactory] = {name: factory for name, _description, factory in LOADER_DEFS}
 _LOADER_DESCRIPTION_BY_NAME: dict[str, str] = {name: description for name, description, _factory in LOADER_DEFS}
 
-CLI_VISIBLE_LOADER_NAMES = CLI_VISIBLE_LOADERS
-
 
 def get_loader_factory(name: str) -> LoaderFactory:
     return _LOADER_FACTORY_BY_NAME[name]
 
 
-def get_loader_descriptions(names: Sequence[str]) -> list[tuple[str, str]]:
-    return [(name, _LOADER_DESCRIPTION_BY_NAME[name]) for name in names]
-
-
-def get_cli_loader_defs() -> list[LoaderDef]:
-    return [
-        (name, _LOADER_DESCRIPTION_BY_NAME[name], _LOADER_FACTORY_BY_NAME[name]) for name in CLI_VISIBLE_LOADER_NAMES
-    ]
+def get_loader_description(name: str) -> str:
+    return _LOADER_DESCRIPTION_BY_NAME[name]
 
 
 def list_loader_names() -> list[str]:
@@ -123,10 +80,7 @@ def list_loader_names() -> list[str]:
 
 __all__ = [
     "BBC",
-    "CLI_VISIBLE_LOADERS",
-    "CLI_VISIBLE_LOADER_NAMES",
     "CNN",
-    "DEFAULT_FALLBACK_LOADERS",
     "FIRECRAWL",
     "GITHUB",
     "HTTPX",
@@ -145,8 +99,7 @@ __all__ = [
     "YTDLP",
     "LoaderDef",
     "LoaderFactory",
-    "get_cli_loader_defs",
-    "get_loader_descriptions",
+    "get_loader_description",
     "get_loader_factory",
     "list_loader_names",
 ]

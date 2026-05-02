@@ -4,22 +4,17 @@ import logging
 
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
-from playwright.async_api import Request
-from playwright.async_api import Route
 from playwright.async_api import TimeoutError
-from playwright.async_api import async_playwright
 
-from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_twitter_target
 
+from .browser import DEFAULT_BLOCKED_RESOURCE_TYPES
+from .browser import DEFAULT_BROWSER_USER_AGENT
+from .browser import fetch_browser_html
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
-
 TWEET_READY_SELECTORS = [
     'article [data-testid="tweetText"]',
     'article [data-testid="tweet"]',
@@ -65,36 +60,12 @@ class TwitterLoader(Loader):
 
     async def load(self, url: str) -> str:
         logger.debug("[TwitterLoader] Processing URL: %s", url)
-        check_x_url(url)
+        parse_twitter_target(url)
 
         url = replace_domain(url)
         logger.debug("[TwitterLoader] Normalized URL: %s", url)
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(user_agent=USER_AGENT)
-            page = await context.new_page()
-
-            async def route_handler(route: Route, request: Request) -> None:
-                if request.resource_type in {"image", "media", "font"}:
-                    await route.abort()
-                    return
-                await route.continue_()
-
-            await page.route("**/*", route_handler)
-
-            try:
-                await page.goto(url, timeout=self.timeout, wait_until="domcontentloaded")
-            except TimeoutError as e:
-                await browser.close()
-                logger.warning("[TwitterLoader] Timeout during page load: %s", e)
-                raise LoaderTimeoutError(
-                    "TwitterLoader",
-                    url,
-                    self.timeout / 1000,
-                    "Twitter/X pages can be slow. Try increasing the timeout or check if the page requires login.",
-                ) from e
-
+        async def wait_for_tweet(page: Page) -> None:
             with contextlib.suppress(TimeoutError):
                 await self._wait_for_any_selector(
                     page,
@@ -102,6 +73,7 @@ class TwitterLoader(Loader):
                     timeout_ms=min(self.timeout or self.wait_for_tweet_timeout, self.wait_for_tweet_timeout),
                 )
 
+        async def extract_tweet_content(page: Page) -> str:
             try:
                 tweet_articles = page.locator("article").filter(has=page.locator('[data-testid="tweetText"]'))
                 if await tweet_articles.count() > 0:
@@ -113,8 +85,21 @@ class TwitterLoader(Loader):
             except (PlaywrightError, TimeoutError):
                 content = await page.content()
                 logger.debug("[TwitterLoader] Fallback to full page content after error")
+            return content
 
-            await browser.close()
-            result = html_to_markdown(content)
-            logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
-            return result
+        content = await fetch_browser_html(
+            url,
+            loader_name="TwitterLoader",
+            timeout_ms=self.timeout,
+            timeout_suggestion=(
+                "Twitter/X pages can be slow. Try increasing the timeout or check if the page requires login."
+            ),
+            wait_until="domcontentloaded",
+            user_agent=DEFAULT_BROWSER_USER_AGENT,
+            block_resource_types=DEFAULT_BLOCKED_RESOURCE_TYPES,
+            after_goto=wait_for_tweet,
+            extract_content=extract_tweet_content,
+        )
+        result = html_to_markdown(content)
+        logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
+        return result

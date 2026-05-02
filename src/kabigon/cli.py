@@ -5,15 +5,37 @@ from typing import NoReturn
 
 import typer
 
+from kabigon import loader_registry
 from kabigon.api import load_url_sync
 from kabigon.core.loader import Loader
 from kabigon.load_chain import resolve_explicit_load_chain
-from kabigon.loader_registry import get_cli_loader_defs
+from kabigon.loader_registry import get_loader_description
+from kabigon.loader_registry import get_loader_factory
 
 LoaderFactory = Callable[[], Loader]
 LoaderDef = tuple[str, str, LoaderFactory]
 
-LOADER_DEFS: list[LoaderDef] = get_cli_loader_defs()
+CLI_VISIBLE_LOADERS = (
+    loader_registry.PLAYWRIGHT,
+    loader_registry.HTTPX,
+    loader_registry.BBC,
+    loader_registry.CNN,
+    loader_registry.FIRECRAWL,
+    loader_registry.YOUTUBE,
+    loader_registry.YOUTUBE_YTDLP,
+    loader_registry.YTDLP,
+    loader_registry.TWITTER,
+    loader_registry.TRUTHSOCIAL,
+    loader_registry.REDDIT,
+    loader_registry.PTT,
+    loader_registry.REEL,
+    loader_registry.GITHUB,
+    loader_registry.PDF,
+)
+
+LOADER_DEFS: list[LoaderDef] = [
+    (name, get_loader_description(name), get_loader_factory(name)) for name in CLI_VISIBLE_LOADERS
+]
 
 app = typer.Typer(add_completion=False)
 
