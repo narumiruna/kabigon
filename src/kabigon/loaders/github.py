@@ -4,14 +4,14 @@ from urllib.parse import urlparse
 
 import httpx
 
+from kabigon.application.source_applicability import RAW_GITHUB_HOST
+from kabigon.application.source_applicability import parse_github_raw_content_target
+from kabigon.application.source_applicability import parse_github_target
 from kabigon.domain.errors import InvalidURLError
 from kabigon.domain.loader import Loader
 
 from .html_extractors import extract_first_tag_subtree
 from .utils import html_to_markdown
-
-GITHUB_HOST = "github.com"
-RAW_GITHUB_HOST = "raw.githubusercontent.com"
 
 _IGNORED_TAGS = {
     "script",
@@ -25,9 +25,7 @@ _IGNORED_TAGS = {
 
 
 def check_github_url(url: str) -> None:
-    host = urlparse(url).netloc
-    if host not in {GITHUB_HOST, RAW_GITHUB_HOST}:
-        raise InvalidURLError(url, "GitHub")
+    parse_github_target(url)
 
 
 def to_raw_github_url(url: str) -> str:
@@ -37,23 +35,7 @@ def to_raw_github_url(url: str) -> str:
       - https://github.com/<owner>/<repo>/blob/<ref>/<path>
       - https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>
     """
-    parsed = urlparse(url)
-    if parsed.netloc == RAW_GITHUB_HOST:
-        return url
-
-    if parsed.netloc != GITHUB_HOST:
-        raise InvalidURLError(url, "GitHub")
-
-    parts = [p for p in parsed.path.split("/") if p]
-    if len(parts) < 5 or parts[2] != "blob":
-        raise InvalidURLError(url, "GitHub blob")
-
-    owner, repo, _, ref = parts[:4]
-    path = "/".join(parts[4:])
-    if not path:
-        raise InvalidURLError(url, "GitHub blob file")
-
-    return f"https://{RAW_GITHUB_HOST}/{owner}/{repo}/{ref}/{path}"
+    return parse_github_raw_content_target(url).raw_url or url
 
 
 def extract_main_html(html: str) -> str:

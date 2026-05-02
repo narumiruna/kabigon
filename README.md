@@ -63,12 +63,11 @@ kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 # List all available loaders
 kabigon --list
 
-# Use a specific loader (or a comma-separated chain)
+# Advanced: bypass automatic planning with a specific loader or loader chain
 kabigon --loader youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ
-kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ```
 
-Without `--loader`, kabigon routes the URL to a source-specific pipeline first, then falls back to the remaining default loaders without repeating already-attempted ones.
+By default, kabigon routes the URL to a source-specific pipeline first, then falls back to the remaining default loaders without repeating already-attempted ones. Prefer this automatic path unless you are debugging or intentionally bypassing pipeline planning.
 
 More examples:
 
@@ -115,9 +114,9 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-### Custom Loader Chains
+### Advanced Loader Chains
 
-Use `Compose` to build an explicit loader order that tries loaders in sequence:
+Most callers should use `kabigon.load_url()` or `kabigon.load_url_sync()` so pipeline planning, targeted loaders, and fallback policy stay in one place. For debugging or advanced experiments, use `Compose` to build an explicit loader order that tries loaders in sequence:
 
 ```python
 from kabigon.loaders import Compose, TwitterLoader, YoutubeLoader, PlaywrightLoader
@@ -146,8 +145,8 @@ print(loaders)
 
 ### API Summary
 
-| Style | One-liner | Custom chain |
-|-------|-----------|--------------|
+| Style | Recommended interface | Advanced loader chain |
+|-------|-----------------------|-----------------------|
 | **Sync** | `kabigon.load_url_sync(url)` | `loader.load_sync(url)` |
 | **Async** | `await kabigon.load_url(url)` | `await loader.load(url)` |
 | **Batch** | `await asyncio.gather(*[kabigon.load_url(u) for u in urls])` | `await asyncio.gather(*[loader.load(u) for u in urls])` |

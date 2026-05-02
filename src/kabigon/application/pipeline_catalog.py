@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 from urllib.parse import urlparse
 
+from .source_applicability import is_github_url
+from .source_applicability import is_pdf_target
+from .source_applicability import is_youtube_video_url
+
 Matcher = Callable[[str], bool]
 
 
@@ -41,14 +45,6 @@ def _host(url: str) -> str:
     return urlparse(url).netloc.lower()
 
 
-def _is_http_url(url: str) -> bool:
-    return url.startswith(("http://", "https://"))
-
-
-def _is_pdf_path(url: str) -> bool:
-    return urlparse(url).path.lower().endswith(".pdf")
-
-
 def _is_ptt_url(url: str) -> bool:
     return _host(url) == "www.ptt.cc"
 
@@ -75,15 +71,7 @@ def _is_reddit_url(url: str) -> bool:
 
 
 def _is_youtube_url(url: str) -> bool:
-    return _host(url) in {
-        "youtu.be",
-        "m.youtube.com",
-        "music.youtube.com",
-        "youtube.com",
-        "www.youtube.com",
-        "www.youtube-nocookie.com",
-        "vid.plus",
-    }
+    return is_youtube_video_url(url)
 
 
 def _is_reel_url(url: str) -> bool:
@@ -91,7 +79,7 @@ def _is_reel_url(url: str) -> bool:
 
 
 def _is_github_url(url: str) -> bool:
-    return _host(url) in {"github.com", "raw.githubusercontent.com"}
+    return is_github_url(url)
 
 
 def _is_bbc_url(url: str) -> bool:
@@ -109,9 +97,7 @@ def _is_openai_web_url(url: str) -> bool:
 
 
 def _is_pdf_url(url: str) -> bool:
-    if not _is_http_url(url):
-        return True
-    return _is_pdf_path(url)
+    return is_pdf_target(url)
 
 
 _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (

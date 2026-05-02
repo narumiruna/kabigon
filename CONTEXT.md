@@ -37,6 +37,10 @@ _Avoid_: pipeline, service, resolver
 Fallback behavior inside one Loader Adapter, such as trying multiple source-specific fetch strategies before returning content.
 _Avoid_: pipeline fallback, execution fallback
 
+**Source applicability**:
+The rules that decide whether an input belongs to a source-specific Pipeline before Loaders run.
+_Avoid_: route matcher, loader validation, URL guard
+
 ## Relationships
 
 - A **Pipeline catalog** owns many **Pipelines**
@@ -46,6 +50,7 @@ _Avoid_: pipeline fallback, execution fallback
 - A **Load chain** turns an **Execution plan** into runnable **Loaders**
 - A **Loader** is attempted within an **Execution plan**
 - A **Loader-internal fallback** stays inside one **Loader** implementation
+- **Source applicability** decides whether a **Pipeline** applies before the **Execution plan** is built
 
 ## Architecture Notes
 

@@ -7,6 +7,7 @@
 - Keep `openai_web` on `firecrawl` only with `NO_FALLBACK`; do not append default fallback loaders for that route.
 - For local example runs, execute the user's exact command first and only add env overrides (for example `UV_CACHE_DIR`) after reproducing a concrete failure.
 - Reddit RSS fallback can return 403 when using browser-like request headers; fetch RSS with default httpx headers.
+- Treat CLI `--loader` and direct `kabigon.loaders.*` usage as advanced escape hatches; the preferred public interface is automatic Pipeline planning through `kabigon <url>` / `kabigon.load_url(url)`.
 
 ## TASTE
 
