@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from kabigon.application.source_applicability import parse_bbc_target
-from kabigon.domain.loader import Loader
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import parse_bbc_target
 
 from .news_article import DEFAULT_NEWS_ARTICLE_HEADERS
 from .news_article import load_news_article

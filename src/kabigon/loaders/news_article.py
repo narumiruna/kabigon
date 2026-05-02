@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 import httpx
 
-from kabigon.domain.errors import LoaderContentError
+from kabigon.core.errors import LoaderContentError
 
 from .html_extractors import extract_article_body_from_json_ld
 from .html_extractors import extract_first_tag_subtree

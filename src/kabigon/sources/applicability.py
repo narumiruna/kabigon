@@ -6,9 +6,9 @@ from urllib.parse import parse_qs
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-from kabigon.domain.errors import InvalidURLError
-from kabigon.domain.errors import KabigonError
-from kabigon.domain.errors import LoaderNotApplicableError
+from kabigon.core.errors import InvalidURLError
+from kabigon.core.errors import KabigonError
+from kabigon.core.errors import LoaderNotApplicableError
 
 BBC_DOMAIN_SUFFIX = "bbc.com"
 CNN_DOMAIN_SUFFIX = "cnn.com"

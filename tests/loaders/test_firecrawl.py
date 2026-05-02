@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from kabigon.domain.errors import FirecrawlAPIKeyNotSetError
-from kabigon.domain.errors import LoaderError
+from kabigon.core.errors import FirecrawlAPIKeyNotSetError
+from kabigon.core.errors import LoaderError
 from kabigon.loaders.firecrawl import FirecrawlLoader
 
 

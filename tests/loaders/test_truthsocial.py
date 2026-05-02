@@ -1,8 +1,8 @@
 import pytest
 from playwright.async_api import TimeoutError
 
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.errors import LoaderTimeoutError
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.errors import LoaderTimeoutError
 from kabigon.loaders.truthsocial import TruthSocialLoader
 from kabigon.loaders.truthsocial import check_truthsocial_url
 

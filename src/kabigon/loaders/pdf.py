@@ -7,10 +7,10 @@ from typing import Any
 import httpx
 from pypdf import PdfReader
 
-from kabigon.application.source_applicability import parse_pdf_target
-from kabigon.domain.errors import LoaderContentError
-from kabigon.domain.errors import LoaderNotApplicableError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import parse_pdf_target
 
 logger = logging.getLogger(__name__)
 

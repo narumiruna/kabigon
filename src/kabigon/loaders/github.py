@@ -4,11 +4,11 @@ from urllib.parse import urlparse
 
 import httpx
 
-from kabigon.application.source_applicability import RAW_GITHUB_HOST
-from kabigon.application.source_applicability import parse_github_raw_content_target
-from kabigon.application.source_applicability import parse_github_target
-from kabigon.domain.errors import InvalidURLError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import InvalidURLError
+from kabigon.core.loader import Loader
+from kabigon.sources.applicability import RAW_GITHUB_HOST
+from kabigon.sources.applicability import parse_github_raw_content_target
+from kabigon.sources.applicability import parse_github_target
 
 from .html_extractors import extract_first_tag_subtree
 from .utils import html_to_markdown

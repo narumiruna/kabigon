@@ -5,8 +5,8 @@ from collections.abc import Callable
 import pytest
 from typer.testing import CliRunner
 
-from kabigon.domain.loader import Loader
-from kabigon.interface import cli
+from kabigon import cli
+from kabigon.core.loader import Loader
 
 
 class DummyLoader(Loader):

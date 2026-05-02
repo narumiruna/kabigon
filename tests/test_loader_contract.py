@@ -1,6 +1,6 @@
 import inspect
 
-from kabigon.domain.loader import Loader
+from kabigon.core.loader import Loader
 from kabigon.loaders import BBCLoader
 from kabigon.loaders import CNNLoader
 from kabigon.loaders import FirecrawlLoader

@@ -189,7 +189,7 @@ There are three fallback levels to keep distinct:
 - The Load chain executes that ordered Loader list and records why each Loader failed.
 - A Loader may also have Loader-internal fallback, such as trying multiple source-specific fetch strategies inside one Loader.
 
-To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a pipeline entry in `application/pipeline_catalog.py` if the loader handles a specific source.
+To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `src/kabigon/loader_registry.py`, and add a Pipeline catalog entry in `src/kabigon/pipelines/catalog.py` if the loader handles a specific source.
 
 ## Configuration
 
@@ -313,8 +313,8 @@ uv publish
 1. Create `src/kabigon/loaders/<source>.py` and subclass `Loader`.
 2. Implement `async def load(self, url: str) -> str`.
 3. Export the class from `src/kabigon/loaders/__init__.py`.
-4. Register the loader in `src/kabigon/infrastructure/registry.py`.
-5. Add a Pipeline catalog entry in `src/kabigon/application/pipeline_catalog.py` if the loader handles a specific source.
+4. Register the loader in `src/kabigon/loader_registry.py`.
+5. Add a Pipeline catalog entry in `src/kabigon/pipelines/catalog.py` if the loader handles a specific source.
 6. Add or update Load chain and registry consistency tests when the Execution plan should change.
 7. Add Loader tests in `tests/loaders/`.
 

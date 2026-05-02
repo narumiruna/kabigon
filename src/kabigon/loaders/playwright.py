@@ -4,8 +4,8 @@ from typing import Literal
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
-from kabigon.domain.errors import LoaderTimeoutError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import LoaderTimeoutError
+from kabigon.core.loader import Loader
 
 from .utils import html_to_markdown
 

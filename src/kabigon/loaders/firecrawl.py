@@ -4,9 +4,9 @@ from typing import Any
 
 from firecrawl import FirecrawlApp
 
-from kabigon.domain.errors import FirecrawlAPIKeyNotSetError
-from kabigon.domain.errors import LoaderError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import FirecrawlAPIKeyNotSetError
+from kabigon.core.errors import LoaderError
+from kabigon.core.loader import Loader
 
 
 class FirecrawlLoader(Loader):

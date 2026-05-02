@@ -9,8 +9,8 @@ from typing import cast
 
 import yt_dlp
 
-from kabigon.domain.errors import WhisperNotInstalledError
-from kabigon.domain.loader import Loader
+from kabigon.core.errors import WhisperNotInstalledError
+from kabigon.core.loader import Loader
 
 logger = logging.getLogger(__name__)
 

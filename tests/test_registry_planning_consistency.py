@@ -1,6 +1,6 @@
-from kabigon.application.load_chain import DEFAULT_FALLBACK_LOADERS
-from kabigon.application.pipeline_catalog import list_pipelines
-from kabigon.infrastructure.registry import list_loader_names
+from kabigon.load_chain import DEFAULT_FALLBACK_LOADERS
+from kabigon.loader_registry import list_loader_names
+from kabigon.pipelines.catalog import list_pipelines
 
 
 def test_default_fallback_loaders_registered() -> None:
