@@ -95,6 +95,7 @@ def test_to_raw_github_url_error(url: str) -> None:
 @pytest.mark.parametrize(
     "url",
     [
+        "https://github.com/anthropics/claude-code",
         "https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md",
         "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/ralph-wiggum/README.md",
     ],

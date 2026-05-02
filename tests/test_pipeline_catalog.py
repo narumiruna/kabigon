@@ -14,6 +14,10 @@ def test_match_pipeline_youtube() -> None:
     assert pipeline.targeted_loaders == ("youtube", "youtube-ytdlp")
 
 
+def test_match_pipeline_youtube_playlist_is_not_video_pipeline() -> None:
+    assert match_pipeline("https://www.youtube.com/playlist?list=PL123") is None
+
+
 def test_match_pipeline_reddit() -> None:
     pipeline = match_pipeline("https://www.reddit.com/r/python/comments/abc/example/")
 
@@ -36,8 +40,19 @@ def test_match_pipeline_non_http_pdf_path() -> None:
     assert pipeline.targeted_loaders == ("pdf",)
 
 
+def test_match_pipeline_non_http_non_pdf_path_returns_none() -> None:
+    assert match_pipeline("not-a-valid-url") is None
+
+
 def test_match_pipeline_github_pdf_prefers_github() -> None:
     pipeline = match_pipeline("https://github.com/a/b/blob/main/demo.pdf")
+
+    assert pipeline is not None
+    assert pipeline.name == "github"
+
+
+def test_match_pipeline_raw_github() -> None:
+    pipeline = match_pipeline("https://raw.githubusercontent.com/a/b/main/README.md")
 
     assert pipeline is not None
     assert pipeline.name == "github"

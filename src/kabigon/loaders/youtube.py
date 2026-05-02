@@ -1,11 +1,13 @@
 import asyncio
 import logging
-from urllib.parse import parse_qs
-from urllib.parse import urlparse
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from kabigon.domain.errors import KabigonError
+from kabigon.application.source_applicability import NoVideoIDFoundError
+from kabigon.application.source_applicability import UnsupportedURLNetlocError
+from kabigon.application.source_applicability import UnsupportedURLSchemeError
+from kabigon.application.source_applicability import VideoIDError
+from kabigon.application.source_applicability import parse_youtube_video_target
 from kabigon.domain.errors import LoaderContentError
 from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.domain.loader import Loader
@@ -43,39 +45,6 @@ DEFAULT_LANGUAGES = [
     "ar",  # Arabic
     "hi",  # Hindi
 ]
-ALLOWED_SCHEMES = {
-    "http",
-    "https",
-}
-ALLOWED_NETLOCS = {
-    "youtu.be",
-    "m.youtube.com",
-    "music.youtube.com",
-    "youtube.com",
-    "www.youtube.com",
-    "www.youtube-nocookie.com",
-    "vid.plus",
-}
-
-
-class UnsupportedURLSchemeError(KabigonError):
-    def __init__(self, scheme: str) -> None:
-        super().__init__(f"unsupported URL scheme: {scheme}")
-
-
-class UnsupportedURLNetlocError(KabigonError):
-    def __init__(self, netloc: str) -> None:
-        super().__init__(f"unsupported URL netloc: {netloc}")
-
-
-class VideoIDError(KabigonError):
-    def __init__(self, video_id: str) -> None:
-        super().__init__(f"invalid video ID: {video_id}")
-
-
-class NoVideoIDFoundError(KabigonError):
-    def __init__(self, url: str) -> None:
-        super().__init__(f"no video found in URL: {url}")
 
 
 def parse_video_id(url: str) -> str:
@@ -107,32 +76,7 @@ def parse_video_id(url: str) -> str:
         >>> parse_video_id("https://youtu.be/dQw4w9WgXcQ")
         'dQw4w9WgXcQ'
     """
-    parsed_url = urlparse(url)
-
-    if parsed_url.scheme not in ALLOWED_SCHEMES:
-        raise UnsupportedURLSchemeError(parsed_url.scheme)
-
-    if parsed_url.netloc not in ALLOWED_NETLOCS:
-        raise UnsupportedURLNetlocError(parsed_url.netloc)
-
-    path = parsed_url.path
-
-    if path.endswith("/watch"):
-        query = parsed_url.query
-        parsed_query = parse_qs(query)
-        if "v" in parsed_query:
-            ids = parsed_query["v"]
-            video_id = ids[0]
-        else:
-            raise NoVideoIDFoundError(url)
-    else:
-        stripped_path = parsed_url.path.lstrip("/")
-        video_id = stripped_path.split("/")[-1]
-
-    if len(video_id) != 11:  # Video IDs are 11 characters long
-        raise VideoIDError(video_id)
-
-    return video_id
+    return parse_youtube_video_target(url).video_id
 
 
 def check_youtube_url(url: str) -> None:

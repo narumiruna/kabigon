@@ -7,6 +7,7 @@ from typing import Any
 import httpx
 from pypdf import PdfReader
 
+from kabigon.application.source_applicability import parse_pdf_target
 from kabigon.domain.errors import LoaderContentError
 from kabigon.domain.errors import LoaderNotApplicableError
 from kabigon.domain.loader import Loader
@@ -22,6 +23,7 @@ DEFAULT_HEADERS = {
 class PDFLoader(Loader):
     async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
         logger.debug("[PDFLoader] Processing: %s", url_or_file)
+        parse_pdf_target(url_or_file)
 
         if not url_or_file.startswith("http"):
             # Local file

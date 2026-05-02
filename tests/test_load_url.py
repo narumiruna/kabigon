@@ -31,8 +31,19 @@ def test_build_execution_plan_for_url_youtube_is_targeted_then_fallback() -> Non
     assert len(execution_plan) == len(set(execution_plan))
 
 
+def test_build_execution_plan_for_youtube_playlist_uses_default_order() -> None:
+    execution_plan = explain_load_chain("https://www.youtube.com/playlist?list=PL123").execution_plan
+
+    assert execution_plan == DEFAULT_FALLBACK_LOADERS
+
+
 def test_build_execution_plan_for_url_unknown_uses_default_order() -> None:
     execution_plan = explain_load_chain("https://example.com/hello").execution_plan
+    assert execution_plan == DEFAULT_FALLBACK_LOADERS
+
+
+def test_build_execution_plan_for_non_pdf_file_uses_default_order() -> None:
+    execution_plan = explain_load_chain("not-a-valid-url").execution_plan
     assert execution_plan == DEFAULT_FALLBACK_LOADERS
 
 

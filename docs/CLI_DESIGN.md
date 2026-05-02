@@ -12,7 +12,7 @@ kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 # List supported loaders
 kabigon --list
 
-# Explicit loader selection
+# Advanced escape hatch: explicit loader selection bypasses automatic pipeline planning
 kabigon --loader playwright https://example.com
 kabigon --loader httpx https://example.com
 kabigon --loader firecrawl https://example.com
@@ -27,6 +27,6 @@ kabigon --loader reel https://www.instagram.com/reel/CuA0XYZ1234/
 kabigon --loader github https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
 kabigon --loader pdf https://example.com/document.pdf
 
-# Compose loaders in order
+# Advanced escape hatch: compose loaders in order
 kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ```
