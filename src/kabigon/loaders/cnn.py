@@ -4,17 +4,15 @@ import logging
 
 import httpx
 
+from kabigon.application.source_applicability import parse_cnn_target
 from kabigon.domain.errors import LoaderContentError
 from kabigon.domain.loader import Loader
 
 from .html_extractors import extract_article_body_from_json_ld
 from .html_extractors import extract_first_tag_subtree
-from .url_match import ensure_domain_suffix
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-
-CNN_DOMAIN_SUFFIX = "cnn.com"
 
 _IGNORED_TAGS = {
     "script",
@@ -25,7 +23,7 @@ _IGNORED_TAGS = {
 
 
 def check_cnn_url(url: str) -> None:
-    ensure_domain_suffix(url, CNN_DOMAIN_SUFFIX, loader_name="CNNLoader", source_name="CNN")
+    parse_cnn_target(url)
 
 
 def extract_cnn_main_html(html: str) -> str:

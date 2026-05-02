@@ -1,15 +1,15 @@
 import logging
 
+from kabigon.application.source_applicability import parse_ptt_target
 from kabigon.domain.loader import Loader
 
 from .httpx import HttpxLoader
-from .url_match import ensure_host_in
 
 logger = logging.getLogger(__name__)
 
 
 def check_ptt_url(url: str) -> None:
-    ensure_host_in(url, ["www.ptt.cc"], loader_name="PttLoader", source_name="PTT")
+    parse_ptt_target(url)
 
 
 class PttLoader(Loader):

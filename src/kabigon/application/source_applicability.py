@@ -10,6 +10,8 @@ from kabigon.domain.errors import InvalidURLError
 from kabigon.domain.errors import KabigonError
 from kabigon.domain.errors import LoaderNotApplicableError
 
+BBC_DOMAIN_SUFFIX = "bbc.com"
+CNN_DOMAIN_SUFFIX = "cnn.com"
 YOUTUBE_ALLOWED_SCHEMES = {
     "http",
     "https",
@@ -24,7 +26,20 @@ YOUTUBE_ALLOWED_NETLOCS = {
     "vid.plus",
 }
 GITHUB_HOST = "github.com"
+OPENAI_WEB_HOSTS = (
+    "openai.com",
+    "www.openai.com",
+    "help.openai.com",
+    "platform.openai.com",
+)
+PTT_HOSTS = ("www.ptt.cc",)
 RAW_GITHUB_HOST = "raw.githubusercontent.com"
+REDDIT_DOMAINS = (
+    "reddit.com",
+    "www.reddit.com",
+    "old.reddit.com",
+)
+REEL_PREFIX = "https://www.instagram.com/reel"
 TRUTHSOCIAL_DOMAINS = (
     "truthsocial.com",
     "www.truthsocial.com",
@@ -80,6 +95,31 @@ class GitHubTarget:
 @dataclass(frozen=True)
 class PDFTarget:
     target: str
+
+
+@dataclass(frozen=True)
+class BBCTarget:
+    url: str
+
+
+@dataclass(frozen=True)
+class CNNTarget:
+    url: str
+
+
+@dataclass(frozen=True)
+class PttTarget:
+    url: str
+
+
+@dataclass(frozen=True)
+class RedditTarget:
+    url: str
+
+
+@dataclass(frozen=True)
+class ReelTarget:
+    url: str
 
 
 @dataclass(frozen=True)
@@ -182,6 +222,104 @@ def is_pdf_target(target: str) -> bool:
     return True
 
 
+def _host(url: str) -> str:
+    return urlparse(url).netloc.lower()
+
+
+def _host_in(url: str, hosts: tuple[str, ...]) -> bool:
+    return _host(url) in {host.lower() for host in hosts}
+
+
+def _host_matches_domain_suffix(url: str, domain_suffix: str) -> bool:
+    host = _host(url)
+    normalized_suffix = domain_suffix.lower().lstrip(".")
+    return host == normalized_suffix or host.endswith(f".{normalized_suffix}")
+
+
+def parse_bbc_target(url: str) -> BBCTarget:
+    if not _host_matches_domain_suffix(url, BBC_DOMAIN_SUFFIX):
+        raise LoaderNotApplicableError(
+            "BBCLoader",
+            url,
+            f"Not a BBC URL. Expected domain ending with {BBC_DOMAIN_SUFFIX}",
+        )
+    return BBCTarget(url=url)
+
+
+def is_bbc_url(url: str) -> bool:
+    try:
+        parse_bbc_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
+def parse_cnn_target(url: str) -> CNNTarget:
+    if not _host_matches_domain_suffix(url, CNN_DOMAIN_SUFFIX):
+        raise LoaderNotApplicableError(
+            "CNNLoader",
+            url,
+            f"Not a CNN URL. Expected domain ending with {CNN_DOMAIN_SUFFIX}",
+        )
+    return CNNTarget(url=url)
+
+
+def is_cnn_url(url: str) -> bool:
+    try:
+        parse_cnn_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
+def is_openai_web_url(url: str) -> bool:
+    return _host_in(url, OPENAI_WEB_HOSTS)
+
+
+def parse_ptt_target(url: str) -> PttTarget:
+    if not _host_in(url, PTT_HOSTS):
+        expected = ", ".join(PTT_HOSTS)
+        raise LoaderNotApplicableError("PttLoader", url, f"Not a PTT URL. Expected domains: {expected}")
+    return PttTarget(url=url)
+
+
+def is_ptt_url(url: str) -> bool:
+    try:
+        parse_ptt_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
+def parse_reddit_target(url: str) -> RedditTarget:
+    if not _host_in(url, REDDIT_DOMAINS):
+        expected = ", ".join(REDDIT_DOMAINS)
+        raise LoaderNotApplicableError("RedditLoader", url, f"Not a Reddit URL. Expected domains: {expected}")
+    return RedditTarget(url=url)
+
+
+def is_reddit_url(url: str) -> bool:
+    try:
+        parse_reddit_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
+def parse_reel_target(url: str) -> ReelTarget:
+    if not url.startswith(REEL_PREFIX):
+        raise LoaderNotApplicableError("ReelLoader", url, "Not an Instagram Reel URL")
+    return ReelTarget(url=url)
+
+
+def is_reel_url(url: str) -> bool:
+    try:
+        parse_reel_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
 def parse_truthsocial_target(url: str) -> TruthSocialTarget:
     parsed = urlparse(url)
     if parsed.netloc.lower() not in TRUTHSOCIAL_DOMAINS:
@@ -213,25 +351,47 @@ def is_twitter_url(url: str) -> bool:
 
 
 __all__ = [
+    "BBC_DOMAIN_SUFFIX",
+    "CNN_DOMAIN_SUFFIX",
+    "OPENAI_WEB_HOSTS",
+    "PTT_HOSTS",
+    "REDDIT_DOMAINS",
+    "REEL_PREFIX",
     "TRUTHSOCIAL_DOMAINS",
     "TWITTER_DOMAINS",
+    "BBCTarget",
+    "CNNTarget",
     "GitHubTarget",
     "NoVideoIDFoundError",
     "PDFTarget",
+    "PttTarget",
+    "RedditTarget",
+    "ReelTarget",
     "TruthSocialTarget",
     "TwitterTarget",
     "UnsupportedURLNetlocError",
     "UnsupportedURLSchemeError",
     "VideoIDError",
     "YouTubeVideoTarget",
+    "is_bbc_url",
+    "is_cnn_url",
     "is_github_url",
+    "is_openai_web_url",
     "is_pdf_target",
+    "is_ptt_url",
+    "is_reddit_url",
+    "is_reel_url",
     "is_truthsocial_url",
     "is_twitter_url",
     "is_youtube_video_url",
+    "parse_bbc_target",
+    "parse_cnn_target",
     "parse_github_raw_content_target",
     "parse_github_target",
     "parse_pdf_target",
+    "parse_ptt_target",
+    "parse_reddit_target",
+    "parse_reel_target",
     "parse_truthsocial_target",
     "parse_twitter_target",
     "parse_youtube_video_target",
