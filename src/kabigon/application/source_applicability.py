@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
+from urllib.parse import urlunparse
 
 from kabigon.domain.errors import InvalidURLError
 from kabigon.domain.errors import KabigonError
@@ -27,6 +28,16 @@ RAW_GITHUB_HOST = "raw.githubusercontent.com"
 TRUTHSOCIAL_DOMAINS = (
     "truthsocial.com",
     "www.truthsocial.com",
+)
+TWITTER_DOMAINS = (
+    "twitter.com",
+    "x.com",
+    "fxtwitter.com",
+    "vxtwitter.com",
+    "fixvx.com",
+    "twittpr.com",
+    "api.fxtwitter.com",
+    "fixupx.com",
 )
 
 
@@ -74,6 +85,12 @@ class PDFTarget:
 @dataclass(frozen=True)
 class TruthSocialTarget:
     url: str
+
+
+@dataclass(frozen=True)
+class TwitterTarget:
+    url: str
+    normalized_url: str
 
 
 def parse_youtube_video_target(url: str) -> YouTubeVideoTarget:
@@ -180,12 +197,29 @@ def is_truthsocial_url(url: str) -> bool:
     return True
 
 
+def parse_twitter_target(url: str) -> TwitterTarget:
+    parsed = urlparse(url)
+    if parsed.netloc.lower() not in TWITTER_DOMAINS:
+        raise LoaderNotApplicableError("TwitterLoader", url, "URL is not a Twitter/X URL")
+    return TwitterTarget(url=url, normalized_url=str(urlunparse(parsed._replace(netloc="x.com"))))
+
+
+def is_twitter_url(url: str) -> bool:
+    try:
+        parse_twitter_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
 __all__ = [
     "TRUTHSOCIAL_DOMAINS",
+    "TWITTER_DOMAINS",
     "GitHubTarget",
     "NoVideoIDFoundError",
     "PDFTarget",
     "TruthSocialTarget",
+    "TwitterTarget",
     "UnsupportedURLNetlocError",
     "UnsupportedURLSchemeError",
     "VideoIDError",
@@ -193,10 +227,12 @@ __all__ = [
     "is_github_url",
     "is_pdf_target",
     "is_truthsocial_url",
+    "is_twitter_url",
     "is_youtube_video_url",
     "parse_github_raw_content_target",
     "parse_github_target",
     "parse_pdf_target",
     "parse_truthsocial_target",
+    "parse_twitter_target",
     "parse_youtube_video_target",
 ]

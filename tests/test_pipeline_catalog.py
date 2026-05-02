@@ -41,6 +41,20 @@ def test_match_pipeline_truthsocial_hosts(url: str) -> None:
     assert pipeline.name == "truthsocial"
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://x.com/user/status/1",
+        "https://fixupx.com/user/status/1",
+    ],
+)
+def test_match_pipeline_twitter_hosts(url: str) -> None:
+    pipeline = match_pipeline(url)
+
+    assert pipeline is not None
+    assert pipeline.name == "twitter"
+
+
 def test_match_pipeline_unknown_returns_none() -> None:
     assert match_pipeline("https://example.com/path") is None
 

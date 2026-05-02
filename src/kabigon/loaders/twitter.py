@@ -1,8 +1,6 @@
 import asyncio
 import contextlib
 import logging
-from urllib.parse import urlparse
-from urllib.parse import urlunparse
 
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
@@ -11,24 +9,13 @@ from playwright.async_api import Route
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
+from kabigon.application.source_applicability import parse_twitter_target
 from kabigon.domain.errors import LoaderTimeoutError
 from kabigon.domain.loader import Loader
 
-from .url_match import ensure_host_in
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-TWITTER_DOMAINS = [
-    "twitter.com",
-    "x.com",
-    "fxtwitter.com",
-    "vxtwitter.com",
-    "fixvx.com",
-    "twittpr.com",
-    "api.fxtwitter.com",
-    "fixupx.com",
-]
-
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 )
@@ -41,11 +28,14 @@ TWEET_READY_SELECTORS = [
 
 
 def replace_domain(url: str, new_domain: str = "x.com") -> str:
-    return str(urlunparse(urlparse(url)._replace(netloc=new_domain)))
+    target = parse_twitter_target(url)
+    if new_domain == "x.com":
+        return target.normalized_url
+    return target.normalized_url.replace("//x.com", f"//{new_domain}", 1)
 
 
 def check_x_url(url: str) -> None:
-    ensure_host_in(url, TWITTER_DOMAINS, loader_name="TwitterLoader", source_name="Twitter/X")
+    parse_twitter_target(url)
 
 
 class TwitterLoader(Loader):

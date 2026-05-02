@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from .source_applicability import is_github_url
 from .source_applicability import is_pdf_target
 from .source_applicability import is_truthsocial_url
+from .source_applicability import is_twitter_url
 from .source_applicability import is_youtube_video_url
 
 Matcher = Callable[[str], bool]
@@ -51,16 +52,7 @@ def _is_ptt_url(url: str) -> bool:
 
 
 def _is_twitter_url(url: str) -> bool:
-    return _host(url) in {
-        "twitter.com",
-        "x.com",
-        "fxtwitter.com",
-        "vxtwitter.com",
-        "fixvx.com",
-        "twittpr.com",
-        "api.fxtwitter.com",
-        "fixupx.com",
-    }
+    return is_twitter_url(url)
 
 
 def _is_truthsocial_url(url: str) -> bool:
