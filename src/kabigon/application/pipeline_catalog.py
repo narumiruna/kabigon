@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 
+from . import loader_names
 from .source_applicability import is_bbc_url
 from .source_applicability import is_cnn_url
 from .source_applicability import is_github_url
@@ -95,73 +96,73 @@ def _is_pdf_url(url: str) -> bool:
 _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
     _PipelineEntry(
         pipeline=Pipeline(
-            name="ptt",
+            name=loader_names.PTT,
             content_type=ContentType.SOCIAL_POST,
-            targeted_loaders=("ptt",),
+            targeted_loaders=(loader_names.PTT,),
         ),
         matches=_is_ptt_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="twitter",
+            name=loader_names.TWITTER,
             content_type=ContentType.SOCIAL_POST,
-            targeted_loaders=("twitter",),
+            targeted_loaders=(loader_names.TWITTER,),
         ),
         matches=_is_twitter_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="truthsocial",
+            name=loader_names.TRUTHSOCIAL,
             content_type=ContentType.SOCIAL_POST,
-            targeted_loaders=("truthsocial",),
+            targeted_loaders=(loader_names.TRUTHSOCIAL,),
         ),
         matches=_is_truthsocial_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="reddit",
+            name=loader_names.REDDIT,
             content_type=ContentType.SOCIAL_POST,
-            targeted_loaders=("reddit",),
+            targeted_loaders=(loader_names.REDDIT,),
         ),
         matches=_is_reddit_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="youtube",
+            name=loader_names.YOUTUBE,
             content_type=ContentType.YOUTUBE_VIDEO,
-            targeted_loaders=("youtube", "youtube-ytdlp"),
+            targeted_loaders=(loader_names.YOUTUBE, loader_names.YOUTUBE_YTDLP),
         ),
         matches=_is_youtube_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="reel",
+            name=loader_names.REEL,
             content_type=ContentType.SOCIAL_POST,
-            targeted_loaders=("reel",),
+            targeted_loaders=(loader_names.REEL,),
         ),
         matches=_is_reel_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="github",
+            name=loader_names.GITHUB,
             content_type=ContentType.CODE_CONTENT,
-            targeted_loaders=("github",),
+            targeted_loaders=(loader_names.GITHUB,),
         ),
         matches=_is_github_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="bbc",
+            name=loader_names.BBC,
             content_type=ContentType.NEWS_ARTICLE,
-            targeted_loaders=("bbc",),
+            targeted_loaders=(loader_names.BBC,),
         ),
         matches=_is_bbc_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="cnn",
+            name=loader_names.CNN,
             content_type=ContentType.NEWS_ARTICLE,
-            targeted_loaders=("cnn",),
+            targeted_loaders=(loader_names.CNN,),
         ),
         matches=_is_cnn_url,
     ),
@@ -169,7 +170,7 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
         pipeline=Pipeline(
             name="openai_web",
             content_type=ContentType.GENERIC_WEB,
-            targeted_loaders=("firecrawl",),
+            targeted_loaders=(loader_names.FIRECRAWL,),
             requirements=("FIRECRAWL_API_KEY",),
             fallback_policy=FallbackPolicy.NO_FALLBACK,
         ),
@@ -177,9 +178,9 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
     ),
     _PipelineEntry(
         pipeline=Pipeline(
-            name="pdf",
+            name=loader_names.PDF,
             content_type=ContentType.DOCUMENT_PDF,
-            targeted_loaders=("pdf",),
+            targeted_loaders=(loader_names.PDF,),
         ),
         matches=_is_pdf_url,
     ),

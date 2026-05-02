@@ -8,25 +8,10 @@ from kabigon.domain.loader import Loader
 from kabigon.infrastructure.registry import get_loader_factory
 from kabigon.loaders.compose import Compose
 
+from .loader_names import DEFAULT_FALLBACK_LOADERS
 from .pipeline_catalog import ContentType
 from .pipeline_catalog import FallbackPolicy
 from .pipeline_catalog import match_pipeline
-
-DEFAULT_FALLBACK_LOADERS: tuple[str, ...] = (
-    "ptt",
-    "twitter",
-    "truthsocial",
-    "reddit",
-    "youtube",
-    "reel",
-    "youtube-ytdlp",
-    "pdf",
-    "github",
-    "bbc",
-    "cnn",
-    "playwright-networkidle",
-    "playwright-fast",
-)
 
 
 @dataclass(frozen=True)
