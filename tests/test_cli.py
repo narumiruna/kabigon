@@ -20,6 +20,11 @@ class DummyLoader(Loader):
         return self.result
 
 
+class DummyLoadChain:
+    def load_sync(self) -> str:
+        return "ok"
+
+
 def make_defs(*defs: tuple[str, str, Callable[[], Loader]]) -> list[tuple[str, str, Callable[[], Loader]]]:
     return list(defs)
 
@@ -39,31 +44,26 @@ def test_cli_list_outputs_loaders(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "beta - Beta loader" in result.stdout
 
 
-def test_cli_loader_compose_order(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls: list[str] = []
-
-    class FirstLoader(Loader):
-        async def load(self, url: str) -> str:
-            calls.append("first")
-            return ""
-
-    class SecondLoader(Loader):
-        async def load(self, url: str) -> str:
-            calls.append("second")
-            return "ok"
-
+def test_cli_loader_selection_uses_load_chain_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     specs = make_defs(
-        ("first", "First loader", lambda: FirstLoader()),
-        ("second", "Second loader", lambda: SecondLoader()),
+        ("first", "First loader", lambda: DummyLoader("first")),
+        ("second", "Second loader", lambda: DummyLoader("second")),
     )
     monkeypatch.setattr(cli, "LOADER_DEFS", specs)
+
+    def fake_resolve(url: str, loader_names: list[str], get_factory: Callable[[str], Callable[[], Loader]]):
+        assert url == "https://example.com"
+        assert loader_names == ["first", "second"]
+        assert isinstance(get_factory("first")(), DummyLoader)
+        return DummyLoadChain()
+
+    monkeypatch.setattr(cli, "resolve_explicit_load_chain", fake_resolve)
 
     runner = CliRunner()
     result = runner.invoke(cli.app, ["--loader", "first,second", "https://example.com"])
 
     assert result.exit_code == 0
     assert result.stdout.strip() == "ok"
-    assert calls == ["first", "second"]
 
 
 def test_cli_default_pipeline_uses_load_url_sync(monkeypatch: pytest.MonkeyPatch) -> None:

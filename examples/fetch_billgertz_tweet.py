@@ -1,18 +1,10 @@
-from kabigon import loaders
+import kabigon
 
 
 def main() -> None:
     url = "https://x.com/BillGertz/status/2005141727489708352"
 
-    # Use TwitterLoader directly or Compose with fallback
-    loader = loaders.Compose(
-        [
-            loaders.TwitterLoader(),
-            loaders.PlaywrightLoader(),  # Fallback
-        ]
-    )
-
-    result = loader.load_sync(url)
+    result = kabigon.load_url_sync(url)
     print(result)
 
 

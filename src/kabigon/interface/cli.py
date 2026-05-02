@@ -5,10 +5,10 @@ from typing import NoReturn
 
 import typer
 
+from kabigon.application.load_chain import resolve_explicit_load_chain
 from kabigon.application.service import load_url_sync
 from kabigon.domain.loader import Loader
 from kabigon.infrastructure.registry import get_cli_loader_defs
-from kabigon.loaders.compose import Compose
 
 LoaderFactory = Callable[[], Loader]
 LoaderDef = tuple[str, str, LoaderFactory]
@@ -46,10 +46,7 @@ def _print_loader_list() -> None:
 
 def _load_with_loader_names(url: str, loader_names: list[str]) -> str:
     registry = _loader_registry()
-    chain = [registry[name]() for name in loader_names]
-    if len(chain) == 1:
-        return chain[0].load_sync(url)
-    return Compose(chain).load_sync(url)
+    return resolve_explicit_load_chain(url, loader_names, registry.__getitem__).load_sync()
 
 
 @app.callback(invoke_without_command=True)

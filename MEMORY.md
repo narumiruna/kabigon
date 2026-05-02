@@ -15,4 +15,4 @@
 - Prefer plain data-table definitions for loader/pipeline wiring over `*Spec` abstractions when behavior is straightforward.
 - Prefer top-level flow clarity (CLI and routing path) over extra indirection layers.
 - Prefer an application-level Pipeline catalog to own Pipeline metadata; keep loader registry focused on loader factory wiring.
-- Prefer Load chain as the runnable + explainable retrieval seam; keep Pipeline catalog, registry, and Compose as supporting modules.
+- Prefer Load chain as the runnable + explainable retrieval seam; keep Pipeline catalog and registry as supporting modules.

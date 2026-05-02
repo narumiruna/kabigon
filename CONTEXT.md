@@ -55,7 +55,7 @@ _Avoid_: route matcher, loader validation, URL guard
 ## Architecture Notes
 
 - `docs/EARLY_LOAD_CHAIN.md` records the pre-routing fixed `Compose` load chain used around `v0.14.1` and earlier.
-- `Compose` executes ordered Loader attempts; it is not the Load chain itself.
+- The **Load chain** owns ordered Loader attempts in current architecture.
 
 ## Example dialogue
 

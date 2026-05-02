@@ -27,6 +27,6 @@ kabigon --loader reel https://www.instagram.com/reel/CuA0XYZ1234/
 kabigon --loader github https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md
 kabigon --loader pdf https://example.com/document.pdf
 
-# Advanced escape hatch: compose loaders in order
+# Advanced escape hatch: run loaders in explicit order
 kabigon --loader youtube,playwright https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ```

@@ -7,11 +7,11 @@ from .load_chain import resolve_load_chain
 
 
 def load_url_sync(url: str) -> str:
-    return resolve_load_chain(url).loader.load_sync(url)
+    return resolve_load_chain(url).load_sync()
 
 
 async def load_url(url: str) -> str:
-    return await resolve_load_chain(url).loader.load(url)
+    return await resolve_load_chain(url).load()
 
 
 def available_loaders() -> list[str]:

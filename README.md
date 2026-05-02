@@ -114,19 +114,12 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-### Advanced Loader Chains
+### Advanced Loader Selection
 
-Most callers should use `kabigon.load_url()` or `kabigon.load_url_sync()` so pipeline planning, targeted loaders, and fallback policy stay in one place. For debugging or advanced experiments, use `Compose` to build an explicit loader order that tries loaders in sequence:
+Most callers should use `kabigon.load_url()` or `kabigon.load_url_sync()` so pipeline planning, targeted loaders, and fallback policy stay in one place. For debugging or advanced experiments, the CLI can run an explicit loader order:
 
-```python
-from kabigon.loaders import Compose, TwitterLoader, YoutubeLoader, PlaywrightLoader
-
-loader = Compose([
-    TwitterLoader(),
-    YoutubeLoader(),
-    PlaywrightLoader(),  # generic fallback
-])
-text = loader.load_sync("https://x.com/user/status/123")
+```shell
+kabigon --loader twitter,playwright https://x.com/user/status/123
 ```
 
 ### Utility Functions
@@ -145,11 +138,11 @@ print(loaders)
 
 ### API Summary
 
-| Style | Recommended interface | Advanced loader chain |
+| Style | Recommended interface | Advanced loader order |
 |-------|-----------------------|-----------------------|
-| **Sync** | `kabigon.load_url_sync(url)` | `loader.load_sync(url)` |
-| **Async** | `await kabigon.load_url(url)` | `await loader.load(url)` |
-| **Batch** | `await asyncio.gather(*[kabigon.load_url(u) for u in urls])` | `await asyncio.gather(*[loader.load(u) for u in urls])` |
+| **Sync** | `kabigon.load_url_sync(url)` | `kabigon --loader name,name URL` |
+| **Async** | `await kabigon.load_url(url)` | Use individual Loader adapters directly |
+| **Batch** | `await asyncio.gather(*[kabigon.load_url(u) for u in urls])` | Use individual Loader adapters directly |
 
 ## Supported Sources
 
@@ -186,14 +179,14 @@ Interface (CLI)  →  Application (pipeline catalog, load chain)  →  Domain (L
 1. The URL enters via the CLI or `load_url()`.
 2. `pipeline_catalog.py` matches known sources (YouTube, Twitter, …) and returns the matched pipeline metadata.
 3. `load_chain.py` turns that into a runnable load chain: targeted loaders followed by fallback loaders, plus explanation metadata.
-4. `Compose` runs multi-loader chains in sequence and returns the first successful result.
+4. `load_chain.py` executes the ordered Loader attempts and returns the first successful result.
 
-`explain_plan()` returns Pipeline, requirement, and execution-plan metadata without constructing concrete loaders. Actual loading builds the runnable load chain and then executes either one loader or `Compose`.
+`explain_plan()` returns Pipeline, requirement, and execution-plan metadata without constructing concrete loaders. Actual loading builds and executes the runnable Load chain.
 
 There are three fallback levels to keep distinct:
 
 - **Fallback loaders** are added to the Execution plan after Targeted loaders when policy allows it.
-- `Compose` executes that ordered Loader list and records why each Loader failed.
+- The Load chain executes that ordered Loader list and records why each Loader failed.
 - A Loader may also have Loader-internal fallback, such as trying multiple source-specific fetch strategies inside one Loader.
 
 To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a pipeline entry in `application/pipeline_catalog.py` if the loader handles a specific source.
