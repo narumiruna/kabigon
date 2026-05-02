@@ -6,17 +6,17 @@ readme          = "README.md"
 requires-python = ">=3.12"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
-  "charset-normalizer>=3.4.4",
-  "firecrawl-py>=4.23.0",
+  "charset-normalizer>=3.4.7",
+  "firecrawl-py>=4.24.0",
   "httpx>=0.28.1",
   "markdownify>=1.2.2",
   "openai-whisper>=20250625",
-  "playwright>=1.58.0",
-  "pypdf>=6.10.0",
-  "rich>=14.3.2",
-  "typer>=0.23.0",
+  "playwright>=1.59.0",
+  "pypdf>=6.10.2",
+  "rich>=15.0.0",
+  "typer>=0.25.1",
   "youtube-transcript-api>=1.2.4",
-  "yt-dlp>=2026.2.4",
+  "yt-dlp>=2026.3.17",
 ]
 
 [project.scripts]
@@ -24,11 +24,11 @@ kabigon = "kabigon.cli:main"
 
 [dependency-groups]
 dev = [
-  "pip>=26.0.1",
-  "pytest>=9.0.2",
-  "pytest-cov>=7.0.0",
-  "ruff>=0.15.11",
-  "ty>=0.0.16",
+  "pip>=26.1",
+  "pytest>=9.0.3",
+  "pytest-cov>=7.1.0",
+  "ruff>=0.15.12",
+  "ty>=0.0.34",
 ]
 
 [build-system]
