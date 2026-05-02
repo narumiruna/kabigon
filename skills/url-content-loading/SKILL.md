@@ -23,7 +23,7 @@ uvx kabigon --loader pdf https://example.com/document.pdf
 ```
 
 ```shell
-# Compose loaders in order
+# Run loaders in explicit order
 # Example: try YouTube first, then fall back to `youtube-ytdlp` if captions are missing.
 # `youtube-ytdlp` can download audio and transcribe it via Whisper.
 uvx kabigon --loader youtube,youtube-ytdlp https://www.youtube.com/watch?v=dQw4w9WgXcQ

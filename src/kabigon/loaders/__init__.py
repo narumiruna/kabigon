@@ -1,6 +1,5 @@
 from .bbc import BBCLoader
 from .cnn import CNNLoader
-from .compose import Compose
 from .firecrawl import FirecrawlLoader
 from .github import GitHubLoader
 from .httpx import HttpxLoader
@@ -18,7 +17,6 @@ from .ytdlp import YtdlpLoader
 __all__ = [
     "BBCLoader",
     "CNNLoader",
-    "Compose",
     "FirecrawlLoader",
     "GitHubLoader",
     "HttpxLoader",
