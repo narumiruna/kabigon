@@ -37,6 +37,10 @@ _Avoid_: chain, stack
 - An **Execution plan** may append **Fallback loaders**
 - A **Loader** is attempted within an **Execution plan**
 
+## Architecture Notes
+
+- `docs/EARLY_LOAD_CHAIN.md` records the pre-routing fixed `Compose` load chain used around `v0.14.1` and earlier.
+
 ## Example dialogue
 
 > **Dev:** "If the URL matches the YouTube **Pipeline**, where do the fallback rules live?"
