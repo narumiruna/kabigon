@@ -6,21 +6,18 @@ from urllib.parse import urlunparse
 from xml.etree import ElementTree as ET
 
 import httpx
-from playwright.async_api import TimeoutError
-from playwright.async_api import async_playwright
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_reddit_target
 
+from .browser import DEFAULT_BROWSER_USER_AGENT
+from .browser import fetch_browser_html
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
+USER_AGENT = DEFAULT_BROWSER_USER_AGENT
 
 
 def check_reddit_url(url: str) -> None:
@@ -273,27 +270,16 @@ class RedditLoader(Loader):
         old_reddit_url = convert_to_old_reddit(url)
         logger.debug("[RedditLoader] Converted to old Reddit: %s", old_reddit_url)
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(user_agent=USER_AGENT)
-            page = await context.new_page()
-
-            try:
-                await page.goto(old_reddit_url, timeout=self.timeout, wait_until="networkidle")
-                logger.debug("[RedditLoader] Page loaded successfully via old Reddit")
-            except TimeoutError as e:
-                await browser.close()
-                logger.warning("[RedditLoader] Timeout after %ss: %s", self.timeout / 1000, old_reddit_url)
-                raise LoaderTimeoutError(
-                    "RedditLoader",
-                    old_reddit_url,
-                    self.timeout / 1000,
-                    "Reddit pages can be slow to load. Try increasing the timeout.",
-                ) from e
-
-            content = await page.content()
-            await browser.close()
-            return html_to_markdown(content)
+        content = await fetch_browser_html(
+            old_reddit_url,
+            loader_name="RedditLoader",
+            timeout_ms=self.timeout,
+            timeout_suggestion="Reddit pages can be slow to load. Try increasing the timeout.",
+            wait_until="networkidle",
+            user_agent=DEFAULT_BROWSER_USER_AGENT,
+        )
+        logger.debug("[RedditLoader] Page loaded successfully via old Reddit")
+        return html_to_markdown(content)
 
     async def load(self, url: str) -> str:
         """Asynchronously load Reddit content from URL.
@@ -309,7 +295,7 @@ class RedditLoader(Loader):
             LoaderTimeoutError: If page loading times out
         """
         logger.debug("[RedditLoader] Processing URL: %s", url)
-        check_reddit_url(url)
+        parse_reddit_target(url)
         try:
             result = await self._load_via_json(url)
         except (LoaderContentError, LoaderTimeoutError) as json_error:

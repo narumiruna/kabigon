@@ -16,4 +16,6 @@ class BBCLoader(Loader):
         self.headers = headers or DEFAULT_NEWS_ARTICLE_HEADERS
 
     async def load(self, url: str) -> str:
-        return await load_news_article(url, loader_name="BBCLoader", validate_url=check_bbc_url, headers=self.headers)
+        return await load_news_article(
+            url, loader_name="BBCLoader", validate_url=parse_bbc_target, headers=self.headers
+        )

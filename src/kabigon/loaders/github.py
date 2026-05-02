@@ -45,7 +45,7 @@ def extract_main_html(html: str) -> str:
 
 class GitHubLoader(Loader):
     async def load(self, url: str) -> str:
-        check_github_url(url)
+        parse_github_target(url)
         parsed = urlparse(url)
 
         if parsed.netloc == RAW_GITHUB_HOST or "/blob/" in parsed.path:

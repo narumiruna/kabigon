@@ -60,6 +60,7 @@ _Avoid_: route matcher, loader validation, URL guard
 
 - `docs/EARLY_LOAD_CHAIN.md` records the pre-routing fixed `Compose` load chain used around `v0.14.1` and earlier.
 - The **Load chain** owns ordered Loader attempts in current architecture.
+- The **Load chain** owns the default **Fallback loader** order; the Loader registry owns Loader factory wiring.
 
 ## Example dialogue
 

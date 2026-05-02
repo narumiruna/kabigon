@@ -15,7 +15,7 @@ class ReelLoader(Loader):
         self.ytdlp_loader = YtdlpLoader()
 
     async def load(self, url: str) -> str:
-        check_reel_url(url)
+        parse_reel_target(url)
 
         audio_content = await self.ytdlp_loader.load(url)
         html_content = await self.httpx_loader.load(url)

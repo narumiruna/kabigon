@@ -1,23 +1,18 @@
 import logging
 from contextlib import suppress
-from typing import Literal
 
-from playwright.async_api import Request
-from playwright.async_api import Route
+from playwright.async_api import Page
 from playwright.async_api import TimeoutError
-from playwright.async_api import async_playwright
 
-from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_truthsocial_target
 
+from .browser import DEFAULT_BLOCKED_RESOURCE_TYPES
+from .browser import DEFAULT_BROWSER_USER_AGENT
+from .browser import fetch_browser_html
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-)
 
 
 def check_truthsocial_url(url: str) -> None:
@@ -61,44 +56,28 @@ class TruthSocialLoader(Loader):
             LoaderTimeoutError: If page loading times out
         """
         logger.debug("[TruthSocialLoader] Processing URL: %s", url)
-        check_truthsocial_url(url)
+        parse_truthsocial_target(url)
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(user_agent=USER_AGENT)
-            page = await context.new_page()
-            wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "domcontentloaded"
+        async def wait_for_post_content(page: Page) -> None:
+            with suppress(TimeoutError):
+                await page.wait_for_selector(
+                    "article, .status, [data-testid='status'], [data-testid='post-content']",
+                    state="attached",
+                    timeout=min(self.timeout, 5_000),
+                )
 
-            async def route_handler(route: Route, request: Request) -> None:
-                if request.resource_type in {"image", "media", "font"}:
-                    await route.abort()
-                    return
-                await route.continue_()
+        content = await fetch_browser_html(
+            url,
+            loader_name="TruthSocialLoader",
+            timeout_ms=self.timeout,
+            timeout_suggestion="Truth Social pages require JavaScript and can be slow. Try increasing the timeout.",
+            wait_until="domcontentloaded",
+            user_agent=DEFAULT_BROWSER_USER_AGENT,
+            block_resource_types=DEFAULT_BLOCKED_RESOURCE_TYPES,
+            after_goto=wait_for_post_content,
+        )
+        logger.debug("[TruthSocialLoader] Page loaded successfully")
 
-            await page.route("**/*", route_handler)
-
-            try:
-                await page.goto(url, timeout=self.timeout, wait_until=wait_until)
-                with suppress(TimeoutError):
-                    await page.wait_for_selector(
-                        "article, .status, [data-testid='status'], [data-testid='post-content']",
-                        state="attached",
-                        timeout=min(self.timeout, 5_000),
-                    )
-                logger.debug("[TruthSocialLoader] Page loaded successfully")
-            except TimeoutError as e:
-                await browser.close()
-                logger.warning("[TruthSocialLoader] Timeout after %ss: %s", self.timeout / 1000, url)
-                raise LoaderTimeoutError(
-                    "TruthSocialLoader",
-                    url,
-                    self.timeout / 1000,
-                    "Truth Social pages require JavaScript and can be slow. Try increasing the timeout.",
-                ) from e
-
-            content = await page.content()
-            await browser.close()
-
-            result = html_to_markdown(content)
-            logger.debug("[TruthSocialLoader] Successfully extracted content (%s chars)", len(result))
-            return result
+        result = html_to_markdown(content)
+        logger.debug("[TruthSocialLoader] Successfully extracted content (%s chars)", len(result))
+        return result

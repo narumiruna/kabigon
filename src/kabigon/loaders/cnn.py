@@ -16,4 +16,6 @@ class CNNLoader(Loader):
         self.headers = headers or DEFAULT_NEWS_ARTICLE_HEADERS
 
     async def load(self, url: str) -> str:
-        return await load_news_article(url, loader_name="CNNLoader", validate_url=check_cnn_url, headers=self.headers)
+        return await load_news_article(
+            url, loader_name="CNNLoader", validate_url=parse_cnn_target, headers=self.headers
+        )
