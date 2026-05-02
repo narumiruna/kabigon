@@ -10,7 +10,7 @@ A source-specific retrieval path chosen from a URL.
 _Avoid_: route, source handler, provider
 
 **Pipeline catalog**:
-The module that owns the known Pipelines and exposes lookup from URL or Pipeline name.
+The module that owns the known Pipelines and exposes lookup from URL.
 _Avoid_: registry, routing table
 
 **Loader**:
