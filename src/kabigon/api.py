@@ -1,3 +1,5 @@
+"""Public compatibility exports for the top-level ``kabigon`` interface."""
+
 from kabigon.application.service import available_loaders
 from kabigon.application.service import explain_plan
 from kabigon.application.service import load_url

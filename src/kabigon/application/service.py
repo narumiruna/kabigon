@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from kabigon.infrastructure.registry import list_loader_names
 
+from .load_chain import explain_load_chain
 from .load_chain import resolve_load_chain
 
 
@@ -18,4 +19,4 @@ def available_loaders() -> list[str]:
 
 
 def explain_plan(url: str) -> dict[str, object]:
-    return resolve_load_chain(url).explanation.as_dict()
+    return explain_load_chain(url).as_dict()

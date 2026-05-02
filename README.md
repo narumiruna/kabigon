@@ -189,6 +189,14 @@ Interface (CLI)  →  Application (pipeline catalog, load chain)  →  Domain (L
 3. `load_chain.py` turns that into a runnable load chain: targeted loaders followed by fallback loaders, plus explanation metadata.
 4. `Compose` runs multi-loader chains in sequence and returns the first successful result.
 
+`explain_plan()` returns Pipeline, requirement, and execution-plan metadata without constructing concrete loaders. Actual loading builds the runnable load chain and then executes either one loader or `Compose`.
+
+There are three fallback levels to keep distinct:
+
+- **Fallback loaders** are added to the Execution plan after Targeted loaders when policy allows it.
+- `Compose` executes that ordered Loader list and records why each Loader failed.
+- A Loader may also have Loader-internal fallback, such as trying multiple source-specific fetch strategies inside one Loader.
+
 To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a pipeline entry in `application/pipeline_catalog.py` if the loader handles a specific source.
 
 ## Configuration
@@ -314,8 +322,9 @@ uv publish
 2. Implement `async def load(self, url: str) -> str`.
 3. Export the class from `src/kabigon/loaders/__init__.py`.
 4. Register the loader in `src/kabigon/infrastructure/registry.py`.
-5. Add a URL-matching rule in `src/kabigon/application/routing.py` (if domain-specific).
-6. Add tests in `tests/loaders/`.
+5. Add a Pipeline catalog entry in `src/kabigon/application/pipeline_catalog.py` if the loader handles a specific source.
+6. Add or update Load chain and registry consistency tests when the Execution plan should change.
+7. Add Loader tests in `tests/loaders/`.
 
 ## License
 

@@ -1,4 +1,4 @@
-"""Compatibility exports for models now owned by ``kabigon.application``."""
+"""Compatibility-only exports for models now owned by ``kabigon.application``."""
 
 from kabigon.application.load_chain import LoadChainExplanation
 from kabigon.application.pipeline_catalog import ContentType

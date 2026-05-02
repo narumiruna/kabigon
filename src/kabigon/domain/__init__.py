@@ -7,6 +7,7 @@ from .errors import LoaderError
 from .errors import LoaderNotApplicableError
 from .errors import LoaderTimeoutError
 from .errors import MissingDependencyError
+from .errors import MissingRequirementError
 from .errors import WhisperNotInstalledError
 from .loader import Loader
 
@@ -21,5 +22,6 @@ __all__ = [
     "LoaderNotApplicableError",
     "LoaderTimeoutError",
     "MissingDependencyError",
+    "MissingRequirementError",
     "WhisperNotInstalledError",
 ]

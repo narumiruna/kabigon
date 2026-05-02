@@ -33,6 +33,10 @@ _Avoid_: chain, stack
 The runnable form of an Execution plan for one URL, plus explanation of the Pipeline and Loader order decisions.
 _Avoid_: pipeline, service, resolver
 
+**Loader-internal fallback**:
+Fallback behavior inside one Loader Adapter, such as trying multiple source-specific fetch strategies before returning content.
+_Avoid_: pipeline fallback, execution fallback
+
 ## Relationships
 
 - A **Pipeline catalog** owns many **Pipelines**
@@ -41,10 +45,12 @@ _Avoid_: pipeline, service, resolver
 - An **Execution plan** may append **Fallback loaders**
 - A **Load chain** turns an **Execution plan** into runnable **Loaders**
 - A **Loader** is attempted within an **Execution plan**
+- A **Loader-internal fallback** stays inside one **Loader** implementation
 
 ## Architecture Notes
 
 - `docs/EARLY_LOAD_CHAIN.md` records the pre-routing fixed `Compose` load chain used around `v0.14.1` and earlier.
+- `Compose` executes ordered Loader attempts; it is not the Load chain itself.
 
 ## Example dialogue
 

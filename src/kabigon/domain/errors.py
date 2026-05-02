@@ -29,6 +29,15 @@ class ConfigurationError(KabigonError):
     """Raised when required configuration is missing."""
 
 
+class MissingRequirementError(ConfigurationError):
+    """Raised when a Load chain requirement is missing."""
+
+    def __init__(self, requirements: tuple[str, ...]) -> None:
+        self.requirements = requirements
+        missing = ", ".join(requirements)
+        super().__init__(f"Missing required environment variable(s): {missing}")
+
+
 class FirecrawlAPIKeyNotSetError(ConfigurationError):
     """Raised when FIRECRAWL_API_KEY environment variable is not set."""
 
