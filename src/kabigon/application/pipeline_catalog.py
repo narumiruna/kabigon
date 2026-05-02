@@ -215,4 +215,8 @@ def match_pipeline(url: str) -> Pipeline | None:
     return None
 
 
-__all__ = ["ContentType", "FallbackPolicy", "Pipeline", "match_pipeline"]
+def list_pipelines() -> tuple[Pipeline, ...]:
+    return tuple(entry.pipeline for entry in _PIPELINE_ENTRIES)
+
+
+__all__ = ["ContentType", "FallbackPolicy", "Pipeline", "list_pipelines", "match_pipeline"]
