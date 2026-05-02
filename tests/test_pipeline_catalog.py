@@ -30,6 +30,20 @@ def test_match_pipeline_reddit() -> None:
 @pytest.mark.parametrize(
     "url",
     [
+        "https://truthsocial.com/@realDonaldTrump/posts/123456",
+        "https://www.truthsocial.com/@user/posts/789",
+    ],
+)
+def test_match_pipeline_truthsocial_hosts(url: str) -> None:
+    pipeline = match_pipeline(url)
+
+    assert pipeline is not None
+    assert pipeline.name == "truthsocial"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
         "https://x.com/user/status/1",
         "https://fixupx.com/user/status/1",
     ],

@@ -7,18 +7,13 @@ from playwright.async_api import Route
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
+from kabigon.application.source_applicability import parse_truthsocial_target
 from kabigon.domain.errors import LoaderTimeoutError
 from kabigon.domain.loader import Loader
 
-from .url_match import ensure_host_in
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-
-TRUTHSOCIAL_DOMAINS = [
-    "truthsocial.com",
-    "www.truthsocial.com",
-]
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
@@ -34,7 +29,7 @@ def check_truthsocial_url(url: str) -> None:
     Raises:
         LoaderNotApplicableError: If URL is not from Truth Social
     """
-    ensure_host_in(url, TRUTHSOCIAL_DOMAINS, loader_name="TruthSocialLoader", source_name="Truth Social")
+    parse_truthsocial_target(url)
 
 
 class TruthSocialLoader(Loader):
