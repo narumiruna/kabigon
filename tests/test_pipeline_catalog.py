@@ -27,6 +27,13 @@ def test_match_pipeline_reddit() -> None:
     assert pipeline.targeted_loaders == ("reddit",)
 
 
+def test_match_pipeline_ptt() -> None:
+    pipeline = match_pipeline("https://www.ptt.cc/bbs/Gossiping/M.1746078381.A.FFC.html")
+
+    assert pipeline is not None
+    assert pipeline.name == "ptt"
+
+
 @pytest.mark.parametrize(
     "url",
     [
@@ -84,6 +91,21 @@ def test_match_pipeline_raw_github() -> None:
 
     assert pipeline is not None
     assert pipeline.name == "github"
+
+
+@pytest.mark.parametrize(
+    ("url", "pipeline_name"),
+    [
+        ("https://www.instagram.com/reel/CuA0XYZ1234/", "reel"),
+        ("https://www.bbc.com/news/articles/c70k29914q4o", "bbc"),
+        ("https://edition.cnn.com/2026/03/16/tech/example", "cnn"),
+    ],
+)
+def test_match_pipeline_remaining_source_applicability(url: str, pipeline_name: str) -> None:
+    pipeline = match_pipeline(url)
+
+    assert pipeline is not None
+    assert pipeline.name == pipeline_name
 
 
 @pytest.mark.parametrize(

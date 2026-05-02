@@ -9,20 +9,14 @@ import httpx
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
+from kabigon.application.source_applicability import parse_reddit_target
 from kabigon.domain.errors import LoaderContentError
 from kabigon.domain.errors import LoaderTimeoutError
 from kabigon.domain.loader import Loader
 
-from .url_match import ensure_host_in
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-
-REDDIT_DOMAINS = [
-    "reddit.com",
-    "www.reddit.com",
-    "old.reddit.com",
-]
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
@@ -38,7 +32,7 @@ def check_reddit_url(url: str) -> None:
     Raises:
         LoaderNotApplicableError: If URL is not from Reddit
     """
-    ensure_host_in(url, REDDIT_DOMAINS, loader_name="RedditLoader", source_name="Reddit")
+    parse_reddit_target(url)
 
 
 def convert_to_old_reddit(url: str) -> str:

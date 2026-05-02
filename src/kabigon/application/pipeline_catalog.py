@@ -3,10 +3,15 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
-from urllib.parse import urlparse
 
+from .source_applicability import is_bbc_url
+from .source_applicability import is_cnn_url
 from .source_applicability import is_github_url
+from .source_applicability import is_openai_web_url
 from .source_applicability import is_pdf_target
+from .source_applicability import is_ptt_url
+from .source_applicability import is_reddit_url
+from .source_applicability import is_reel_url
 from .source_applicability import is_truthsocial_url
 from .source_applicability import is_twitter_url
 from .source_applicability import is_youtube_video_url
@@ -43,12 +48,8 @@ class _PipelineEntry:
     matches: Matcher
 
 
-def _host(url: str) -> str:
-    return urlparse(url).netloc.lower()
-
-
 def _is_ptt_url(url: str) -> bool:
-    return _host(url) == "www.ptt.cc"
+    return is_ptt_url(url)
 
 
 def _is_twitter_url(url: str) -> bool:
@@ -60,7 +61,7 @@ def _is_truthsocial_url(url: str) -> bool:
 
 
 def _is_reddit_url(url: str) -> bool:
-    return _host(url) in {"reddit.com", "www.reddit.com", "old.reddit.com"}
+    return is_reddit_url(url)
 
 
 def _is_youtube_url(url: str) -> bool:
@@ -68,7 +69,7 @@ def _is_youtube_url(url: str) -> bool:
 
 
 def _is_reel_url(url: str) -> bool:
-    return url.startswith("https://www.instagram.com/reel")
+    return is_reel_url(url)
 
 
 def _is_github_url(url: str) -> bool:
@@ -76,17 +77,15 @@ def _is_github_url(url: str) -> bool:
 
 
 def _is_bbc_url(url: str) -> bool:
-    host = _host(url)
-    return host == "bbc.com" or host.endswith(".bbc.com")
+    return is_bbc_url(url)
 
 
 def _is_cnn_url(url: str) -> bool:
-    host = _host(url)
-    return host == "cnn.com" or host.endswith(".cnn.com")
+    return is_cnn_url(url)
 
 
 def _is_openai_web_url(url: str) -> bool:
-    return _host(url) in {"openai.com", "www.openai.com", "help.openai.com", "platform.openai.com"}
+    return is_openai_web_url(url)
 
 
 def _is_pdf_url(url: str) -> bool:
