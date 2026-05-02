@@ -13,7 +13,6 @@ from .models import ContentType
 from .models import FallbackPolicy
 from .models import LoaderPlan
 from .models import RetrievalContext
-from .models import RetrievalStrategy
 
 __all__ = [
     "ConfigurationError",
@@ -30,6 +29,5 @@ __all__ = [
     "LoaderTimeoutError",
     "MissingDependencyError",
     "RetrievalContext",
-    "RetrievalStrategy",
     "WhisperNotInstalledError",
 ]
