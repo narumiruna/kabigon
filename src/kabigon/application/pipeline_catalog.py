@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 from .source_applicability import is_github_url
 from .source_applicability import is_pdf_target
+from .source_applicability import is_truthsocial_url
 from .source_applicability import is_youtube_video_url
 
 Matcher = Callable[[str], bool]
@@ -63,7 +64,7 @@ def _is_twitter_url(url: str) -> bool:
 
 
 def _is_truthsocial_url(url: str) -> bool:
-    return _host(url) in {"truthsocial.com", "www.truthsocial.com"}
+    return is_truthsocial_url(url)
 
 
 def _is_reddit_url(url: str) -> bool:

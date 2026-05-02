@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 from kabigon.domain.errors import InvalidURLError
 from kabigon.domain.errors import KabigonError
+from kabigon.domain.errors import LoaderNotApplicableError
 
 YOUTUBE_ALLOWED_SCHEMES = {
     "http",
@@ -23,6 +24,10 @@ YOUTUBE_ALLOWED_NETLOCS = {
 }
 GITHUB_HOST = "github.com"
 RAW_GITHUB_HOST = "raw.githubusercontent.com"
+TRUTHSOCIAL_DOMAINS = (
+    "truthsocial.com",
+    "www.truthsocial.com",
+)
 
 
 class UnsupportedURLSchemeError(KabigonError):
@@ -64,6 +69,11 @@ class GitHubTarget:
 @dataclass(frozen=True)
 class PDFTarget:
     target: str
+
+
+@dataclass(frozen=True)
+class TruthSocialTarget:
+    url: str
 
 
 def parse_youtube_video_target(url: str) -> YouTubeVideoTarget:
@@ -155,19 +165,38 @@ def is_pdf_target(target: str) -> bool:
     return True
 
 
+def parse_truthsocial_target(url: str) -> TruthSocialTarget:
+    parsed = urlparse(url)
+    if parsed.netloc.lower() not in TRUTHSOCIAL_DOMAINS:
+        raise LoaderNotApplicableError("TruthSocialLoader", url, "Not a Truth Social URL")
+    return TruthSocialTarget(url=url)
+
+
+def is_truthsocial_url(url: str) -> bool:
+    try:
+        parse_truthsocial_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
 __all__ = [
+    "TRUTHSOCIAL_DOMAINS",
     "GitHubTarget",
     "NoVideoIDFoundError",
     "PDFTarget",
+    "TruthSocialTarget",
     "UnsupportedURLNetlocError",
     "UnsupportedURLSchemeError",
     "VideoIDError",
     "YouTubeVideoTarget",
     "is_github_url",
     "is_pdf_target",
+    "is_truthsocial_url",
     "is_youtube_video_url",
     "parse_github_raw_content_target",
     "parse_github_target",
     "parse_pdf_target",
+    "parse_truthsocial_target",
     "parse_youtube_video_target",
 ]

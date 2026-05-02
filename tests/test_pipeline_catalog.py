@@ -27,6 +27,20 @@ def test_match_pipeline_reddit() -> None:
     assert pipeline.targeted_loaders == ("reddit",)
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://truthsocial.com/@realDonaldTrump/posts/123456",
+        "https://www.truthsocial.com/@user/posts/789",
+    ],
+)
+def test_match_pipeline_truthsocial_hosts(url: str) -> None:
+    pipeline = match_pipeline(url)
+
+    assert pipeline is not None
+    assert pipeline.name == "truthsocial"
+
+
 def test_match_pipeline_unknown_returns_none() -> None:
     assert match_pipeline("https://example.com/path") is None
 
