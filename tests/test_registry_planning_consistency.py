@@ -1,5 +1,5 @@
+from kabigon.application.load_chain import DEFAULT_FALLBACK_LOADERS
 from kabigon.application.pipeline_catalog import list_pipelines
-from kabigon.application.planning import DEFAULT_FALLBACK_LOADERS
 from kabigon.infrastructure.registry import list_loader_names
 
 

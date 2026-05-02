@@ -1,9 +1,8 @@
 import pytest
 
 import kabigon
-from kabigon.application.planning import DEFAULT_FALLBACK_LOADERS
-from kabigon.application.service import resolve_execution_plan_loader_names
-from kabigon.application.service import resolve_targeted_loader_names
+from kabigon.application.load_chain import DEFAULT_FALLBACK_LOADERS
+from kabigon.application.load_chain import resolve_load_chain
 
 
 def test_load_url_function_exists() -> None:
@@ -18,35 +17,36 @@ def test_load_url_async_function_exists() -> None:
     assert callable(kabigon.api.load_url)
 
 
-def test_resolve_targeted_loader_names_for_url_youtube_url() -> None:
-    targeted = resolve_targeted_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-    assert targeted == ["youtube", "youtube-ytdlp"]
+def test_resolve_load_chain_for_youtube_explains_targeted_loaders() -> None:
+    chain = resolve_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    assert chain.explanation.targeted_loaders == ("youtube", "youtube-ytdlp")
 
 
 def test_build_execution_plan_for_url_youtube_is_targeted_then_fallback() -> None:
-    execution_plan = resolve_execution_plan_loader_names("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    execution_plan = resolve_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ").explanation.execution_plan
 
-    assert execution_plan[:2] == ["youtube", "youtube-ytdlp"]
+    assert execution_plan[:2] == ("youtube", "youtube-ytdlp")
     assert "playwright-networkidle" in execution_plan
     assert "playwright-fast" in execution_plan
     assert len(execution_plan) == len(set(execution_plan))
 
 
 def test_build_execution_plan_for_url_unknown_uses_default_order() -> None:
-    execution_plan = resolve_execution_plan_loader_names("https://example.com/hello")
-    assert execution_plan == list(DEFAULT_FALLBACK_LOADERS)
+    execution_plan = resolve_load_chain("https://example.com/hello").explanation.execution_plan
+    assert execution_plan == DEFAULT_FALLBACK_LOADERS
 
 
 def test_targeted_loaders_are_prefix_of_execution_plan() -> None:
     url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    targeted = resolve_targeted_loader_names(url)
-    execution_plan = resolve_execution_plan_loader_names(url)
+    explanation = resolve_load_chain(url).explanation
+    targeted = explanation.targeted_loaders
+    execution_plan = explanation.execution_plan
     assert execution_plan[: len(targeted)] == targeted
 
 
-def test_build_execution_plan_for_openai_web_is_targeted_then_fallback() -> None:
-    execution_plan = resolve_execution_plan_loader_names("https://openai.com/pricing")
-    assert execution_plan == ["firecrawl"]
+def test_build_execution_plan_for_openai_web_uses_targeted_only() -> None:
+    execution_plan = resolve_load_chain("https://openai.com/pricing").explanation.execution_plan
+    assert execution_plan == ("firecrawl",)
 
 
 def test_explain_plan_includes_openai_web_requirements() -> None:

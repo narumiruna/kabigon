@@ -117,7 +117,7 @@ asyncio.run(main())
 
 ### Custom Loader Chains
 
-Use `Compose` to build a custom pipeline that tries loaders in order:
+Use `Compose` to build an explicit loader order that tries loaders in sequence:
 
 ```python
 from kabigon.loaders import Compose, TwitterLoader, YoutubeLoader, PlaywrightLoader
@@ -177,17 +177,17 @@ print(loaders)
 kabigon follows a layered architecture:
 
 ```
-Interface (CLI)  →  Application (pipeline catalog, planning)  →  Domain (Loader ABC, errors)
-                                                              ↓
-                                                        Loaders (concrete implementations)
+Interface (CLI)  →  Application (pipeline catalog, load chain)  →  Domain (Loader ABC, errors)
+                                                                 ↓
+                                                           Loaders (concrete implementations)
 ```
 
 **Request flow:**
 
 1. The URL enters via the CLI or `load_url()`.
 2. `pipeline_catalog.py` matches known sources (YouTube, Twitter, …) and returns the matched pipeline metadata.
-3. `planning.py` turns that into a retrieval context and a `LoaderPlan` — targeted loaders followed by fallback loaders.
-4. `executor.py` instantiates the loaders; `Compose` runs them in sequence and returns the first successful result.
+3. `load_chain.py` turns that into a runnable load chain: targeted loaders followed by fallback loaders, plus explanation metadata.
+4. `Compose` runs multi-loader chains in sequence and returns the first successful result.
 
 To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `infrastructure/registry.py`, and add a pipeline entry in `application/pipeline_catalog.py` if the loader handles a specific source.
 

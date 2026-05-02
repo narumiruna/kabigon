@@ -29,12 +29,17 @@ _Avoid_: backup scraper, rescue path
 The ordered list of Loaders attempted for one retrieval.
 _Avoid_: chain, stack
 
+**Load chain**:
+The runnable form of an Execution plan for one URL, plus explanation of the Pipeline and Loader order decisions.
+_Avoid_: pipeline, service, resolver
+
 ## Relationships
 
 - A **Pipeline catalog** owns many **Pipelines**
 - A **Pipeline** selects one or more **Targeted loaders**
 - An **Execution plan** starts with the **Targeted loaders**
 - An **Execution plan** may append **Fallback loaders**
+- A **Load chain** turns an **Execution plan** into runnable **Loaders**
 - A **Loader** is attempted within an **Execution plan**
 
 ## Architecture Notes
