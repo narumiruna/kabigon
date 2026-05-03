@@ -183,7 +183,7 @@ flowchart TD
 
     subgraph Execution["Load chain execution"]
         LoadChain --> NextLoader{"Next loader in execution_plan?"}
-        NextLoader -->|Yes| Factory["loader_registry.get_loader_factory(name)"]
+        NextLoader -->|Yes| Factory["Invoke chain's get_factory(name)<br/>automatic path: loader_registry.get_loader_factory<br/>explicit CLI path: CLI_VISIBLE_LOADERS registry lookup"]
         Factory --> Instantiate["Instantiate loader lazily"]
         Instantiate --> RunLoader["await loader.load(url)"]
         RunLoader --> Result{"Non-empty text returned?"}
