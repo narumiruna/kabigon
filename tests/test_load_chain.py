@@ -10,7 +10,6 @@ from kabigon.load_chain import DEFAULT_FALLBACK_LOADERS
 from kabigon.load_chain import explain_load_chain
 from kabigon.load_chain import resolve_explicit_load_chain
 from kabigon.load_chain import resolve_load_chain
-from kabigon.loaders.firecrawl import FirecrawlLoader
 from kabigon.pipelines.catalog import ContentType
 
 
@@ -70,8 +69,6 @@ def test_load_chain_for_no_fallback_pipeline_builds_single_loader(monkeypatch) -
 
     chain = resolve_load_chain("https://openai.com/pricing")
 
-    assert len(chain.loaders) == 1
-    assert isinstance(chain.loaders[0], FirecrawlLoader)
     assert chain.explanation.pipeline == "openai_web"
     assert chain.explanation.execution_plan == ("firecrawl",)
     assert chain.explanation.requirements == ("FIRECRAWL_API_KEY",)
@@ -93,6 +90,21 @@ def test_explicit_load_chain_uses_shared_attempt_runtime() -> None:
 
     assert chain.explanation.execution_plan == ("empty", "success")
     assert chain.load_sync() == "loaded https://example.com"
+
+
+def test_load_chain_builds_loaders_only_when_attempted() -> None:
+    built: list[str] = []
+
+    def factory(name: str) -> type[Loader]:
+        built.append(name)
+        if name == "success":
+            return SuccessLoader
+        raise AssertionError(f"unexpected loader build: {name}")
+
+    chain = resolve_explicit_load_chain("https://example.com", ("success", "heavy-fallback"), factory)
+
+    assert chain.load_sync() == "loaded https://example.com"
+    assert built == ["success"]
 
 
 def test_load_chain_records_failed_attempt_details() -> None:
