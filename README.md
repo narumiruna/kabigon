@@ -167,7 +167,7 @@ flowchart TD
 
     subgraph ExplicitPlan["Explicit loader override"]
         LoaderOption --> ParseNames["Parse comma-separated loader names"]
-        ParseNames --> ValidateNames{"All loader names known?"}
+        ParseNames --> ValidateNames{"All loader names accepted by CLI?"}
         ValidateNames -->|No| CliError["CLI exits with code 2"]
         ValidateNames -->|Yes| ResolveExplicit["resolve_explicit_load_chain(url, names)"]
         ResolveExplicit --> ExplicitExplanation["LoadChainExplanation<br/>execution_plan=requested names"]
