@@ -1,9 +1,11 @@
 import pytest
 
+from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders.youtube import NoVideoIDFoundError
 from kabigon.loaders.youtube import UnsupportedURLNetlocError
 from kabigon.loaders.youtube import UnsupportedURLSchemeError
 from kabigon.loaders.youtube import VideoIDError
+from kabigon.loaders.youtube import YoutubeLoader
 from kabigon.loaders.youtube import check_youtube_url
 from kabigon.loaders.youtube import parse_video_id
 
@@ -148,3 +150,14 @@ def test_check_youtube_url_converts_video_id_error_to_value_error() -> None:
     """Test that check_youtube_url converts VideoIDError to ValueError."""
     with pytest.raises(ValueError, match="invalid video ID"):
         check_youtube_url("https://www.youtube.com/watch?v=abc")
+
+
+def test_youtube_loader_converts_source_applicability_to_not_applicable() -> None:
+    loader = YoutubeLoader()
+
+    with pytest.raises(LoaderNotApplicableError) as exc_info:
+        loader.load_sync("https://example.com/watch?v=dQw4w9WgXcQ")
+
+    error = exc_info.value
+    assert error.loader_name == "YoutubeLoader"
+    assert error.reason == "unsupported URL netloc: example.com"

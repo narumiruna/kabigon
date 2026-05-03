@@ -16,5 +16,9 @@ class UnexpectedLoader(Loader):
 def test_youtube_ytdlp_checks_source_applicability_before_heavy_setup() -> None:
     loader = YoutubeYtdlpLoader(ytdlp_loader_factory=UnexpectedLoader)
 
-    with pytest.raises(LoaderNotApplicableError):
+    with pytest.raises(LoaderNotApplicableError) as exc_info:
         loader.load_sync("https://example.com/not-youtube")
+
+    error = exc_info.value
+    assert error.loader_name == "YoutubeYtdlpLoader"
+    assert error.reason == "unsupported URL netloc: example.com"

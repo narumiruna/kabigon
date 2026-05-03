@@ -46,6 +46,15 @@ class ConstructorFailLoader(Loader):
         return "should not load"
 
 
+class SourceApplicabilityLoader(Loader):
+    async def load(self, url: str) -> str:
+        from kabigon.sources.applicability import parse_youtube_video_target
+        from kabigon.sources.applicability import require_loader_applicability
+
+        require_loader_applicability("SourceApplicabilityLoader", url, parse_youtube_video_target)
+        return "should not load"
+
+
 def test_load_chain_explains_youtube_decision() -> None:
     explanation = explain_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
@@ -148,6 +157,19 @@ def test_load_chain_records_failed_attempt_details() -> None:
     assert "ContentFailLoader: Content extraction failed - parse failed" in error.details
     assert "EmptyLoader: Empty result" in error.details
     assert "Attempted loaders:" in str(error)
+
+
+def test_load_chain_records_source_applicability_as_not_applicable() -> None:
+    chain = resolve_explicit_load_chain(
+        "https://example.com/watch?v=dQw4w9WgXcQ",
+        ("source-applicability",),
+        {"source-applicability": SourceApplicabilityLoader}.__getitem__,
+    )
+
+    with pytest.raises(LoaderError) as exc_info:
+        chain.load_sync()
+
+    assert exc_info.value.details == ["SourceApplicabilityLoader: Not applicable (unsupported URL netloc: example.com)"]
 
 
 def test_explain_load_chain_does_not_build_loader_for_missing_requirement(monkeypatch) -> None:

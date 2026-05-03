@@ -11,6 +11,7 @@ from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_pdf_target
+from kabigon.sources.applicability import require_loader_applicability
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ DEFAULT_HEADERS = {
 class PDFLoader(Loader):
     async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
         logger.debug("[PDFLoader] Processing: %s", url_or_file)
-        parse_pdf_target(url_or_file)
+        require_loader_applicability("PDFLoader", url_or_file, parse_pdf_target)
 
         if not url_or_file.startswith("http"):
             # Local file

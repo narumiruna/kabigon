@@ -1,6 +1,7 @@
 import pytest
 
 from kabigon.core.errors import InvalidURLError
+from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.sources.applicability import is_bbc_url
 from kabigon.sources.applicability import is_cnn_url
 from kabigon.sources.applicability import is_github_url
@@ -15,6 +16,7 @@ from kabigon.sources.applicability import is_youtube_video_url
 from kabigon.sources.applicability import parse_github_raw_content_target
 from kabigon.sources.applicability import parse_twitter_target
 from kabigon.sources.applicability import parse_youtube_video_target
+from kabigon.sources.applicability import require_loader_applicability
 
 
 @pytest.mark.parametrize(
@@ -86,3 +88,25 @@ def test_twitter_target_normalizes_to_x_domain() -> None:
 
 def test_pdf_target_requires_pdf_suffix() -> None:
     assert not is_pdf_target("not-a-valid-url")
+
+
+def test_loader_applicability_converts_source_parse_failure() -> None:
+    with pytest.raises(LoaderNotApplicableError) as exc_info:
+        require_loader_applicability(
+            "YoutubeLoader", "https://example.com/watch?v=dQw4w9WgXcQ", parse_youtube_video_target
+        )
+
+    error = exc_info.value
+    assert error.loader_name == "YoutubeLoader"
+    assert error.url == "https://example.com/watch?v=dQw4w9WgXcQ"
+    assert error.reason == "unsupported URL netloc: example.com"
+
+
+def test_loader_applicability_preserves_loader_not_applicable_error() -> None:
+    with pytest.raises(LoaderNotApplicableError) as exc_info:
+        require_loader_applicability("TwitterLoader", "https://example.com/status/1", parse_twitter_target)
+
+    error = exc_info.value
+    assert error.loader_name == "TwitterLoader"
+    assert error.url == "https://example.com/status/1"
+    assert error.reason == "URL is not a Twitter/X URL"

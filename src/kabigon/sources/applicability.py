@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs
@@ -76,6 +77,15 @@ class NoVideoIDFoundError(KabigonError):
         super().__init__(f"no video found in URL: {url}")
 
 
+_SOURCE_APPLICABILITY_ERRORS = (
+    InvalidURLError,
+    UnsupportedURLSchemeError,
+    UnsupportedURLNetlocError,
+    NoVideoIDFoundError,
+    VideoIDError,
+)
+
+
 @dataclass(frozen=True)
 class YouTubeVideoTarget:
     url: str
@@ -131,6 +141,19 @@ class TruthSocialTarget:
 class TwitterTarget:
     url: str
     normalized_url: str
+
+
+def require_loader_applicability[TargetT](
+    loader_name: str,
+    target: str,
+    parse_target: Callable[[str], TargetT],
+) -> TargetT:
+    try:
+        return parse_target(target)
+    except LoaderNotApplicableError:
+        raise
+    except _SOURCE_APPLICABILITY_ERRORS as e:
+        raise LoaderNotApplicableError(loader_name, target, str(e)) from e
 
 
 def parse_youtube_video_target(url: str) -> YouTubeVideoTarget:
@@ -395,4 +418,5 @@ __all__ = [
     "parse_truthsocial_target",
     "parse_twitter_target",
     "parse_youtube_video_target",
+    "require_loader_applicability",
 ]

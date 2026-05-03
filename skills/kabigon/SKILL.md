@@ -1,13 +1,14 @@
 ---
 name: kabigon
-description: Load URL content as text or markdown with kabigon. Use this for extracting content from YouTube videos, social posts, news articles, PDFs, GitHub files, generic web pages, and audio/video URLs.
+description: Load URL content as text or markdown with kabigon. Use this for extracting content from YouTube videos, social posts, news articles, PDFs, GitHub files, generic web pages, and audio/video URLs through kabigon's automatic Pipeline planning.
 ---
 
 ## How to load URL content
 
+Use the automatic path unless you are debugging or intentionally comparing Loaders. Kabigon matches the URL to a source-specific Pipeline, builds an Execution plan from Targeted loaders plus allowed Fallback loaders, and returns the first successful Loader result.
+
 ```shell
-# Prefer automatic pipeline planning. Kabigon selects targeted loaders first,
-# then falls back to generic loaders when policy allows it.
+# CLI usage
 uvx kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 uvx kabigon https://x.com/howie_serious/status/1917768568135115147
 uvx kabigon https://reddit.com/r/python/comments/xyz/...
@@ -15,14 +16,35 @@ uvx kabigon https://github.com/user/repo/blob/main/README.md
 uvx kabigon https://example.com/document.pdf
 ```
 
+```python
+import kabigon
+
+text = kabigon.load_url_sync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+```
+
+```python
+import asyncio
+import kabigon
+
+text = await kabigon.load_url("https://x.com/user/status/123")
+```
+
 ```shell
 # List supported loader names.
 uvx kabigon --list
 ```
 
+```python
+import kabigon
+
+# Inspect the Pipeline, Targeted loaders, Execution plan, and requirements.
+plan = kabigon.explain_plan("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+loaders = kabigon.available_loaders()
+```
+
 ## Advanced loader selection
 
-Use `--loader` only when debugging, comparing loaders, or intentionally bypassing automatic pipeline planning.
+Use `--loader` only when debugging, comparing Loaders, or intentionally bypassing automatic Pipeline planning. A comma-separated loader list runs in the exact order provided.
 
 ```shell
 uvx kabigon --loader playwright https://example.com
@@ -50,12 +72,18 @@ uvx kabigon --loader youtube,youtube-ytdlp https://www.youtube.com/watch?v=dQw4w
 
 ## Supported sources
 
-- YouTube videos: transcript extraction, then optional yt-dlp + Whisper audio transcription.
-- Social posts: Twitter/X, Truth Social, Reddit, PTT, and Instagram Reels.
-- News articles: BBC and CNN article-aware extraction.
-- Code and documents: GitHub file/page content and PDF text extraction.
-- Generic web pages: Playwright browser rendering, HTTPX HTML-to-markdown, or Firecrawl.
-- Audio/video URLs: generic yt-dlp + Whisper transcription.
+- YouTube videos: `youtube`, then `youtube-ytdlp` audio transcription when needed.
+- Social posts: `twitter`, `truthsocial`, `reddit`, `ptt`, and `reel`.
+- News articles: `bbc` and `cnn` article-aware extraction.
+- Code and documents: `github` file/page content and `pdf` text extraction.
+- Generic web pages: `playwright`, `httpx`, or `firecrawl`.
+- Audio/video URLs: `ytdlp` generic audio transcription.
+
+## Failure behavior
+
+- A Loader that cannot handle the input raises a not-applicable attempt so the Load chain can continue.
+- Content extraction, timeout, and configuration failures are reported in the Load chain failure details.
+- Prefer `kabigon.explain_plan(url)` when you need to understand why a URL will use a specific Pipeline or Loader order.
 
 ## Configuration notes
 

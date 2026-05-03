@@ -9,6 +9,7 @@ from kabigon.core.loader import Loader
 from kabigon.sources.applicability import RAW_GITHUB_HOST
 from kabigon.sources.applicability import parse_github_raw_content_target
 from kabigon.sources.applicability import parse_github_target
+from kabigon.sources.applicability import require_loader_applicability
 
 from .html_extractors import extract_first_tag_subtree
 from .utils import html_to_markdown
@@ -45,7 +46,7 @@ def extract_main_html(html: str) -> str:
 
 class GitHubLoader(Loader):
     async def load(self, url: str) -> str:
-        parse_github_target(url)
+        require_loader_applicability("GitHubLoader", url, parse_github_target)
         parsed = urlparse(url)
 
         if parsed.netloc == RAW_GITHUB_HOST or "/blob/" in parsed.path:
