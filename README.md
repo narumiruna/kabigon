@@ -126,6 +126,14 @@ print(plan)
 print(kabigon.available_loaders())
 ```
 
+## Architecture
+
+![Kabigon URL processing architecture](docs/architecture/url-processing.svg)
+
+The automatic path uses `kabigon.pipelines` to select a source-aware pipeline, then `kabigon.load_chain` builds one ordered execution plan. Each loader is constructed only when its turn is reached; the first non-empty string is returned, and if every planned loader fails, kabigon raises `LoaderError` with the attempted loader details.
+
+Mermaid source: [`docs/architecture/url-processing.mmd`](docs/architecture/url-processing.mmd)
+
 ## Commands
 
 ### `kabigon <url>`
