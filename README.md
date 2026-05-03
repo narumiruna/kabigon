@@ -1,5 +1,10 @@
 # kabigon
 
+<a href="https://badge.fury.io/py/kabigon"><img src="https://badge.fury.io/py/kabigon.svg"></a>
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg"></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+<a href="https://codecov.io/gh/narumiruna/kabigon"><img src="https://codecov.io/gh/narumiruna/kabigon/branch/main/graph/badge.svg"></a>
+
 A Python library and CLI tool that extracts content from URLs and converts the result to text or markdown. Feed it a YouTube video, a tweet, a Reddit thread, a PDF, or any web page — kabigon picks the right loader automatically.
 
 ## Features
