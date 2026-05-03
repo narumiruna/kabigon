@@ -1,32 +1,24 @@
 # kabigon
 
-[![PyPI version](https://badge.fury.io/py/kabigon.svg)](https://badge.fury.io/py/kabigon)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/narumiruna/kabigon/branch/main/graph/badge.svg)](https://codecov.io/gh/narumiruna/kabigon)
+A Python library and CLI tool that extracts content from URLs and returns plain text or markdown. Point it at a YouTube video, a tweet, a Reddit thread, a PDF, or any web page — kabigon selects the right loader automatically.
 
-A Python library that extracts content from URLs and converts the result to text or markdown. Feed it a YouTube video, a tweet, a Reddit thread, a PDF, or any web page — kabigon picks the right loader automatically.
+Intended for developers and data engineers who need reliable, source-aware text extraction without writing per-site scraping logic.
 
 ## Features
 
-- **Smart routing** — recognises YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, BBC, CNN, PDFs, and generic web pages, then selects the best extraction pipeline
-- **Automatic fallback** — if the primary loader fails, remaining loaders are tried in order without repeating work
-- **Async-first** — built on `async`/`await`; a synchronous wrapper is provided for convenience
-- **Single-line API** — `kabigon.load_url_sync(url)` is all you need to get started
-- **Extensible** — add a new loader by subclassing `Loader` and implementing one method
+- Automatic loader selection for YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, BBC, CNN, PDF, and generic web pages
+- Fallback chain: if the primary loader fails, remaining loaders are tried in order without repeating already-attempted ones
+- Async-first (`async`/`await`) with a synchronous wrapper for scripts and notebooks
+- Single-line Python API: `kabigon.load_url_sync(url)`
+- CLI for ad-hoc extraction and debugging
+- Extensible: add a loader by subclassing `Loader` and implementing one method
 
-## Table of Contents
+## Requirements
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [CLI](#cli)
-- [Python API](#python-api)
-- [Supported Sources](#supported-sources)
-- [Architecture](#architecture)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
-- [License](#license)
+- Python 3.12+
+- [Playwright](https://playwright.dev/python/) Chromium browser (for generic web scraping)
+- FFmpeg (only for audio/video transcription loaders)
+- `FIRECRAWL_API_KEY` environment variable (only for the Firecrawl loader)
 
 ## Installation
 
@@ -38,7 +30,7 @@ uv tool install kabigon
 uvx kabigon <url>
 ```
 
-After installation, install a browser for Playwright (required for generic web scraping):
+After installation, install the Chromium browser for Playwright:
 
 ```bash
 playwright install chromium
@@ -49,49 +41,33 @@ playwright install chromium
 ```python
 import kabigon
 
-# One line to load any URL
 text = kabigon.load_url_sync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 print(text)
 ```
 
-## CLI
+## Usage
+
+### CLI
 
 ```bash
-# Load content from a URL (auto-selects the best loader)
+# Auto-select the best loader
 kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
-
-# List all available loaders
-kabigon --list
-
-# Advanced: bypass automatic planning with a specific loader or loader chain
-kabigon --loader youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ
-```
-
-By default, kabigon routes the URL to a source-specific pipeline first, then falls back to the remaining default loaders without repeating already-attempted ones. Prefer this automatic path unless you are debugging or intentionally bypassing pipeline planning.
-
-More examples:
-
-```bash
-kabigon https://x.com/elonmusk/status/123456789
-kabigon https://truthsocial.com/@realDonaldTrump/posts/123456
-kabigon https://reddit.com/r/python/comments/xyz/...
+kabigon https://x.com/user/status/123456789
+kabigon https://reddit.com/r/python/comments/xyz/
 kabigon https://github.com/user/repo/blob/main/README.md
 kabigon https://example.com/document.pdf
 ```
 
-## Python API
-
-### Sync
+### Python — sync
 
 ```python
 import kabigon
 
-# Automatic loader selection
 text = kabigon.load_url_sync("https://www.google.com")
 print(text)
 ```
 
-### Async
+### Python — async
 
 ```python
 import asyncio
@@ -101,7 +77,16 @@ async def main() -> None:
     text = await kabigon.load_url("https://www.google.com")
     print(text)
 
-    # Parallel batch loading
+asyncio.run(main())
+```
+
+### Parallel batch loading
+
+```python
+import asyncio
+import kabigon
+
+async def main() -> None:
     urls = [
         "https://x.com/user/status/123",
         "https://youtube.com/watch?v=abc",
@@ -114,104 +99,123 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-### Advanced Loader Selection
+## API Reference
 
-Most callers should use `kabigon.load_url()` or `kabigon.load_url_sync()` so pipeline planning, targeted loaders, and fallback policy stay in one place. For debugging or advanced experiments, the CLI can run an explicit loader order:
+All public functions are importable from the `kabigon` package.
 
-```shell
-kabigon --loader twitter,playwright https://x.com/user/status/123
-```
-
-### Utility Functions
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `load_url_sync` | `(url: str) -> str` | Load a URL synchronously using automatic loader selection |
+| `load_url` | `async (url: str) -> str` | Load a URL asynchronously using automatic loader selection |
+| `available_loaders` | `() -> list[str]` | Return names of all registered loaders |
+| `explain_plan` | `(url: str) -> dict[str, object]` | Return the planned loader chain for a URL without executing it |
 
 ```python
 import kabigon
 
-# Show which loaders kabigon would use for a URL
+# Inspect which loaders would be used for a URL
 plan = kabigon.explain_plan("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 print(plan)
 
-# List all registered loader names
-loaders = kabigon.available_loaders()
-print(loaders)
+# List all loader names
+print(kabigon.available_loaders())
 ```
 
-### API Summary
+## Commands
 
-| Style | Recommended interface | Advanced loader order |
-|-------|-----------------------|-----------------------|
-| **Sync** | `kabigon.load_url_sync(url)` | `kabigon --loader name,name URL` |
-| **Async** | `await kabigon.load_url(url)` | Use individual Loader adapters directly |
-| **Batch** | `await asyncio.gather(*[kabigon.load_url(u) for u in urls])` | Use individual Loader adapters directly |
+### `kabigon <url>`
 
-## Supported Sources
+Load content from a URL. Automatically selects the best loader.
 
-| Source | Loader | Notes |
-|--------|--------|-------|
-| YouTube | `YoutubeLoader` | Transcript extraction via `youtube-transcript-api` |
-| YouTube | `YoutubeYtdlpLoader` | Audio download + Whisper transcription |
-| Twitter / X | `TwitterLoader` | Supports `x.com`, `fxtwitter.com`, `vxtwitter.com`, and others |
-| Truth Social | `TruthSocialLoader` | Post content extraction |
-| Reddit | `RedditLoader` | Posts and comments; auto-redirects to `old.reddit.com` |
-| Instagram Reels | `ReelLoader` | Audio transcription via yt-dlp + Whisper |
-| GitHub | `GitHubLoader` | File content from `github.com/.../blob/...` and `raw.githubusercontent.com` |
-| BBC | `BBCLoader` | Article-aware HTML parsing |
-| CNN | `CNNLoader` | Article-aware HTML parsing |
-| PDF | `PDFLoader` | Text extraction from remote or local PDF files |
-| PTT | `PttLoader` | Taiwan PTT (BBS) forum posts |
-| Generic web | `PlaywrightLoader` | Full browser rendering via Playwright |
-| Generic web | `HttpxLoader` | Lightweight HTTP fetch + HTML-to-markdown |
-| Generic web | `FirecrawlLoader` | Web extraction via the [Firecrawl](https://firecrawl.dev) API |
-| Audio / Video | `YtdlpLoader` | Generic audio transcription via yt-dlp + Whisper |
-
-## Architecture
-
-kabigon follows a layered architecture:
-
-```
-Interface (CLI)  →  Application (pipeline catalog, load chain)  →  Domain (Loader ABC, errors)
-                                                                 ↓
-                                                           Loaders (concrete implementations)
+```bash
+kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ```
 
-**Request flow:**
+### `kabigon --list`
 
-1. The URL enters via the CLI or `load_url()`.
-2. `pipeline_catalog.py` matches known sources (YouTube, Twitter, …) and returns the matched pipeline metadata.
-3. `load_chain.py` turns that into a runnable load chain: targeted loaders followed by fallback loaders, plus explanation metadata.
-4. `load_chain.py` executes the ordered Loader attempts and returns the first successful result.
+Print all available loaders and their descriptions.
 
-`explain_plan()` returns Pipeline, Targeted loader, Fallback loader, requirement, and Execution plan metadata without constructing concrete loaders. Actual loading builds and executes the runnable Load chain.
+```bash
+kabigon --list
+```
 
-There are three fallback levels to keep distinct:
+### `kabigon --loader <names> <url>`
 
-- **Fallback loaders** are added to the Execution plan after Targeted loaders when policy allows it.
-- The Load chain executes that ordered Loader list and records why each Loader failed.
-- A Loader may also have Loader-internal fallback, such as trying multiple source-specific fetch strategies inside one Loader.
+Override automatic loader selection with a comma-separated list of loader names, tried in order.
 
-To add a new loader, create a file in `src/kabigon/loaders/`, subclass `Loader`, implement `async def load(self, url: str) -> str`, register it in `src/kabigon/loader_registry.py`, and add a Pipeline catalog entry in `src/kabigon/pipelines/catalog.py` if the loader handles a specific source.
+```bash
+kabigon --loader twitter,playwright https://x.com/user/status/123
+```
+
+Use this only for debugging or testing specific loaders. The automatic path is preferred for normal use.
 
 ## Configuration
 
-### Environment Variables
+### Environment variables
 
-| Variable | Purpose |
-|----------|---------|
-| `FFMPEG_PATH` | Custom path to the FFmpeg binary (used by Whisper / yt-dlp audio transcription) |
-| `FIRECRAWL_API_KEY` | API key for the [Firecrawl](https://firecrawl.dev) loader |
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `FIRECRAWL_API_KEY` | For `firecrawl` loader | API key for the [Firecrawl](https://firecrawl.dev) web extraction service |
+| `FFMPEG_PATH` | Optional | Custom path to the FFmpeg binary used by Whisper / yt-dlp |
 
 ### Docker
 
-A `Dockerfile` is provided for containerised usage:
+A `Dockerfile` is provided. The image includes Playwright with Chromium and runs `xvfb-run` for headless rendering.
 
 ```bash
 docker build -t kabigon .
-
-# "kabigon" after the image name is the CLI command
 docker run --rm kabigon kabigon https://example.com
 ```
 
-The image includes Playwright with Chromium and uses `xvfb-run` for headless browser rendering.
+## Project Structure
+
+```
+src/kabigon/
+├── core/          # Loader ABC, exceptions, and shared helpers
+├── loaders/       # Concrete loader implementations (one file per source)
+├── pipelines/     # Pipeline catalog: maps URL patterns to loader chains
+├── api.py         # Public Python interface (load_url, explain_plan, …)
+├── cli.py         # Typer CLI entrypoint
+└── load_chain.py  # Chain execution and fallback logic
+tests/
+├── loaders/       # Per-loader unit tests
+examples/          # Runnable usage samples
+```
+
+URL-to-pipeline matching lives in `kabigon.pipelines`; loader ordering and fallback policy live in `kabigon.load_chain`.
+
+## Development
+
+```bash
+git clone https://github.com/narumiruna/kabigon.git
+cd kabigon
+uv sync
+playwright install chromium
+```
+
+Lint, format, and type-check:
+
+```bash
+uv run ruff check .        # lint
+uv run ruff format .       # format
+uv run ty check .          # type check
+uv run ruff check --fix .  # auto-fix lint issues
+```
+
+## Testing
+
+```bash
+# Full suite with coverage
+uv run pytest -v -s --cov=src tests
+
+# Single loader file
+uv run pytest -v -s tests/loaders/test_youtube.py
+
+# Single test
+uv run pytest -v -s tests/loaders/test_youtube.py::test_name
+```
+
+Tests must be deterministic and must not rely on live network calls.
 
 ## Troubleshooting
 
@@ -220,8 +224,6 @@ The image includes Playwright with Chromium and uses `xvfb-run` for headless bro
 ```
 Executable doesn't exist at /path/to/chromium
 ```
-
-Install the browser after installing kabigon:
 
 ```bash
 playwright install chromium
@@ -233,7 +235,7 @@ playwright install chromium
 ffmpeg not found
 ```
 
-Install FFmpeg:
+Install FFmpeg or point to a custom binary:
 
 ```bash
 # Ubuntu / Debian
@@ -241,15 +243,12 @@ sudo apt-get install ffmpeg
 
 # macOS
 brew install ffmpeg
-```
 
-Or point to a custom binary:
-
-```bash
+# Custom binary
 export FFMPEG_PATH=/path/to/ffmpeg
 ```
 
-### Timeout errors
+### Playwright timeout
 
 ```
 Timeout 30000ms exceeded
@@ -266,57 +265,19 @@ text = loader.load_sync(url)
 
 ### CAPTCHA / rate limiting
 
-Some websites block automated access. kabigon automatically uses `old.reddit.com` for Reddit to avoid CAPTCHAs. For other sites, consider adding delays between requests or implementing retry logic.
+Some sites block automated access. kabigon automatically redirects Reddit requests to `old.reddit.com` to avoid CAPTCHAs. For other sites, add delays between requests or implement retry logic in your calling code.
 
-## Development
+## Contributing
 
-### Setup
-
-```bash
-git clone https://github.com/narumiruna/kabigon.git
-cd kabigon
-uv sync
-playwright install chromium
-```
-
-### Testing
-
-```bash
-# Full suite with coverage
-uv run pytest -v -s --cov=src tests
-
-# Single file
-uv run pytest -v -s tests/loaders/test_youtube.py
-
-# Single test
-uv run pytest -v -s tests/loaders/test_youtube.py::test_name
-```
-
-### Linting and Type Checking
-
-```bash
-uv run ruff check .       # lint
-uv run ruff format .      # format
-uv run ty check .         # type check
-uv run ruff check --fix . # auto-fix lint issues
-```
-
-### Building and Publishing
-
-```bash
-uv build -f wheel
-uv publish
-```
-
-### Adding a New Loader
+To add a new loader:
 
 1. Create `src/kabigon/loaders/<source>.py` and subclass `Loader`.
 2. Implement `async def load(self, url: str) -> str`.
 3. Export the class from `src/kabigon/loaders/__init__.py`.
 4. Register the loader in `src/kabigon/loader_registry.py`.
-5. Add a Pipeline catalog entry in `src/kabigon/pipelines/catalog.py` if the loader handles a specific source.
-6. Add or update Load chain and planning consistency tests when the Execution plan should change.
-7. Add Loader tests in `tests/loaders/`.
+5. If the loader handles a specific source, add a pipeline entry in `src/kabigon/pipelines/catalog.py`.
+6. Update load-chain and planning consistency tests if the execution plan changes.
+7. Add loader tests in `tests/loaders/`.
 
 ## License
 
