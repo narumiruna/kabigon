@@ -21,7 +21,8 @@ class PlaywrightLoader(Loader):
         self.browser_headless = browser_headless
 
     async def load(self, url: str) -> str:
-        logger.debug(
+        logger.info("[PlaywrightLoader] Processing URL: %s", url)
+        logger.info(
             "[PlaywrightLoader] Loading URL: %s (timeout=%s, wait_until=%s)",
             url,
             self.timeout,
@@ -38,7 +39,7 @@ class PlaywrightLoader(Loader):
             wait_until=self.wait_until,
             browser_headless=self.browser_headless,
         )
-        logger.debug("[PlaywrightLoader] Successfully loaded page")
+        logger.debug("[PlaywrightLoader] Loaded browser page")
         result = html_to_markdown(content)
-        logger.debug("[PlaywrightLoader] Successfully extracted content (%s chars)", len(result))
+        logger.info("[PlaywrightLoader] Extracted browser page content (%s chars)", len(result))
         return result

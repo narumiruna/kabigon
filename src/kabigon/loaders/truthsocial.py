@@ -55,7 +55,7 @@ class TruthSocialLoader(Loader):
             LoaderNotApplicableError: If URL is not from Truth Social
             LoaderTimeoutError: If page loading times out
         """
-        logger.debug("[TruthSocialLoader] Processing URL: %s", url)
+        logger.info("[TruthSocialLoader] Processing URL: %s", url)
         parse_truthsocial_target(url)
 
         async def wait_for_post_content(page: Page) -> None:
@@ -76,8 +76,8 @@ class TruthSocialLoader(Loader):
             block_resource_types=DEFAULT_BLOCKED_RESOURCE_TYPES,
             after_goto=wait_for_post_content,
         )
-        logger.debug("[TruthSocialLoader] Page loaded successfully")
+        logger.debug("[TruthSocialLoader] Loaded browser page")
 
         result = html_to_markdown(content)
-        logger.debug("[TruthSocialLoader] Successfully extracted content (%s chars)", len(result))
+        logger.info("[TruthSocialLoader] Extracted Truth Social content (%s chars)", len(result))
         return result

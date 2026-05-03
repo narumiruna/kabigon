@@ -105,13 +105,14 @@ class YoutubeLoader(Loader):
         self.languages = languages or DEFAULT_LANGUAGES
 
     def load_sync(self, url: str) -> str:
-        logger.debug("[YoutubeLoader] Processing URL: %s", url)
+        logger.info("[YoutubeLoader] Processing URL: %s", url)
 
         video_id = require_loader_applicability("YoutubeLoader", url, parse_youtube_video_target).video_id
 
         logger.debug("[YoutubeLoader] Extracted video ID: %s", video_id)
 
         try:
+            logger.info("[YoutubeLoader] Fetching transcript")
             fetched = YouTubeTranscriptApi().fetch(video_id, self.languages)
         except Exception as e:
             logger.warning("[YoutubeLoader] Failed to fetch transcript for %s: %s", video_id, e)
@@ -135,7 +136,8 @@ class YoutubeLoader(Loader):
                 "YoutubeLoader", url, "Transcript is empty", "The video may not have any captions."
             )
 
-        logger.debug("[YoutubeLoader] Successfully extracted %s transcript lines", len(lines))
+        logger.info("[YoutubeLoader] Extracted transcript content (%s chars)", len(result))
+        logger.debug("[YoutubeLoader] Extracted %s transcript lines", len(lines))
         return result
 
     async def load(self, url: str) -> str:

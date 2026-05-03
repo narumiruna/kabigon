@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from urllib.parse import urlparse
 
 import httpx
@@ -13,6 +14,8 @@ from kabigon.sources.applicability import require_loader_applicability
 
 from .html_extractors import extract_first_tag_subtree
 from .utils import html_to_markdown
+
+logger = logging.getLogger(__name__)
 
 _IGNORED_TAGS = {
     "script",
@@ -46,11 +49,13 @@ def extract_main_html(html: str) -> str:
 
 class GitHubLoader(Loader):
     async def load(self, url: str) -> str:
+        logger.info("[GitHubLoader] Processing URL: %s", url)
         require_loader_applicability("GitHubLoader", url, parse_github_target)
         parsed = urlparse(url)
 
         if parsed.netloc == RAW_GITHUB_HOST or "/blob/" in parsed.path:
             raw_url = to_raw_github_url(url)
+            logger.info("[GitHubLoader] Fetching raw GitHub content: %s", raw_url)
 
             async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -61,11 +66,14 @@ class GitHubLoader(Loader):
                 response.raise_for_status()
 
             content_type = response.headers.get("content-type", "")
+            logger.debug("[GitHubLoader] Raw content-type: %s", content_type)
             if "text" not in content_type and "json" not in content_type and "xml" not in content_type:
                 raise InvalidURLError(url, f"GitHub text content-type (got {content_type!r})")
 
+            logger.info("[GitHubLoader] Loaded raw GitHub content (%s chars)", len(response.text))
             return response.text
 
+        logger.info("[GitHubLoader] Fetching GitHub HTML page")
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 url,
@@ -78,8 +86,11 @@ class GitHubLoader(Loader):
             response.raise_for_status()
 
         content_type = response.headers.get("content-type", "")
+        logger.debug("[GitHubLoader] HTML content-type: %s", content_type)
         if "html" not in content_type:
             raise InvalidURLError(url, f"GitHub HTML content-type (got {content_type!r})")
 
         main_html = extract_main_html(response.text)
-        return html_to_markdown(main_html)
+        result = html_to_markdown(main_html)
+        logger.info("[GitHubLoader] Extracted GitHub HTML content (%s chars)", len(result))
+        return result
