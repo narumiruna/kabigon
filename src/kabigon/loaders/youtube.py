@@ -4,13 +4,13 @@ import logging
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from kabigon.core.errors import LoaderContentError
-from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import NoVideoIDFoundError
 from kabigon.sources.applicability import UnsupportedURLNetlocError
 from kabigon.sources.applicability import UnsupportedURLSchemeError
 from kabigon.sources.applicability import VideoIDError
 from kabigon.sources.applicability import parse_youtube_video_target
+from kabigon.sources.applicability import require_loader_applicability
 
 logger = logging.getLogger(__name__)
 
@@ -107,11 +107,7 @@ class YoutubeLoader(Loader):
     def load_sync(self, url: str) -> str:
         logger.debug("[YoutubeLoader] Processing URL: %s", url)
 
-        try:
-            video_id = parse_video_id(url)
-        except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as e:
-            logger.debug("[YoutubeLoader] URL validation failed: %s", e)
-            raise LoaderNotApplicableError("YoutubeLoader", url, str(e)) from e
+        video_id = require_loader_applicability("YoutubeLoader", url, parse_youtube_video_target).video_id
 
         logger.debug("[YoutubeLoader] Extracted video ID: %s", video_id)
 

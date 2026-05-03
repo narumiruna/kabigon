@@ -43,6 +43,7 @@ from .applicability import parse_reel_target
 from .applicability import parse_truthsocial_target
 from .applicability import parse_twitter_target
 from .applicability import parse_youtube_video_target
+from .applicability import require_loader_applicability
 
 __all__ = [
     "BBC_DOMAIN_SUFFIX",
@@ -90,4 +91,5 @@ __all__ = [
     "parse_truthsocial_target",
     "parse_twitter_target",
     "parse_youtube_video_target",
+    "require_loader_applicability",
 ]
