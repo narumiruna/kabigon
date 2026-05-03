@@ -71,12 +71,12 @@ class LoadChain:
     async def load(self) -> str:
         errors: list[str] = []
 
-        for loader_name in self.explanation.execution_plan:
-            loader = self.get_factory(loader_name)()
-            loader_name = loader.__class__.__name__
-            logger.debug("[%s] Attempting to load URL: %s", loader_name, self.explanation.url)
-
+        for planned_loader_name in self.explanation.execution_plan:
+            loader_name = planned_loader_name
             try:
+                loader = self.get_factory(planned_loader_name)()
+                loader_name = loader.__class__.__name__
+                logger.debug("[%s] Attempting to load URL: %s", loader_name, self.explanation.url)
                 result = await loader.load(self.explanation.url)
             except LoaderNotApplicableError as e:
                 logger.debug("[%s] Not applicable: %s", loader_name, e.reason)

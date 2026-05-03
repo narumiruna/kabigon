@@ -38,6 +38,14 @@ class ContentFailLoader(Loader):
         raise LoaderContentError("ContentFailLoader", url, "parse failed")
 
 
+class ConstructorFailLoader(Loader):
+    def __init__(self) -> None:
+        raise RuntimeError("constructor failed")
+
+    async def load(self, url: str) -> str:
+        return "should not load"
+
+
 def test_load_chain_explains_youtube_decision() -> None:
     explanation = explain_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
@@ -105,6 +113,16 @@ def test_load_chain_builds_loaders_only_when_attempted() -> None:
 
     assert chain.load_sync() == "loaded https://example.com"
     assert built == ["success"]
+
+
+def test_load_chain_records_constructor_failure_and_continues() -> None:
+    chain = resolve_explicit_load_chain(
+        "https://example.com",
+        ("constructor-fail", "success"),
+        {"constructor-fail": ConstructorFailLoader, "success": SuccessLoader}.__getitem__,
+    )
+
+    assert chain.load_sync() == "loaded https://example.com"
 
 
 def test_load_chain_records_failed_attempt_details() -> None:
