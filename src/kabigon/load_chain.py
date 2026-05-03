@@ -67,13 +67,6 @@ class LoadChainExplanation:
 
 
 @dataclass(frozen=True)
-class _ExecutionPlan:
-    targeted_loaders: tuple[str, ...]
-    fallback_loaders: tuple[str, ...]
-    loaders: tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class LoadChain:
     get_factory: Callable[[str], LoaderFactory]
     explanation: LoadChainExplanation
@@ -166,20 +159,38 @@ def _missing_requirements(requirements: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(name for name in requirements if not os.getenv(name))
 
 
-def _build_execution_plan(
+def _fallback_loaders_for(
     targeted_loaders: tuple[str, ...],
     fallback_policy: FallbackPolicy,
-) -> _ExecutionPlan:
+) -> tuple[str, ...]:
     fallback_candidates: tuple[str, ...] = ()
     if fallback_policy == FallbackPolicy.REMAINING_DEFAULT:
         fallback_candidates = DEFAULT_FALLBACK_LOADERS
 
-    fallback_loaders = _remaining_unique_loaders(targeted_loaders, fallback_candidates)
+    return _remaining_unique_loaders(targeted_loaders, fallback_candidates)
 
-    return _ExecutionPlan(
+
+def _build_explanation(
+    url: str,
+    *,
+    pipeline_name: str | None,
+    content_type: ContentType,
+    targeted_loaders: tuple[str, ...] = (),
+    fallback_loaders: tuple[str, ...] = (),
+    execution_plan: tuple[str, ...] | None = None,
+    get_requirements: Callable[[str], tuple[str, ...]] = get_loader_requirements,
+) -> LoadChainExplanation:
+    loaders = (*targeted_loaders, *fallback_loaders) if execution_plan is None else execution_plan
+    requirements = _requirements_for_loaders(loaders, get_requirements)
+    return LoadChainExplanation(
+        url=url,
+        pipeline=pipeline_name,
+        content_type=content_type,
         targeted_loaders=targeted_loaders,
         fallback_loaders=fallback_loaders,
-        loaders=(*targeted_loaders, *fallback_loaders),
+        execution_plan=loaders,
+        requirements=requirements,
+        missing_requirements=_missing_requirements(requirements),
     )
 
 
@@ -204,17 +215,13 @@ def explain_load_chain(url: str) -> LoadChainExplanation:
         targeted_loaders = pipeline.targeted_loaders
         fallback_policy = pipeline.fallback_policy
 
-    execution_plan = _build_execution_plan(targeted_loaders, fallback_policy)
-    requirements = _requirements_for_loaders(execution_plan.loaders, get_loader_requirements)
-    return LoadChainExplanation(
+    fallback_loaders = _fallback_loaders_for(targeted_loaders, fallback_policy)
+    return _build_explanation(
         url=url,
-        pipeline=pipeline_name,
+        pipeline_name=pipeline_name,
         content_type=content_type,
-        targeted_loaders=execution_plan.targeted_loaders,
-        fallback_loaders=execution_plan.fallback_loaders,
-        execution_plan=execution_plan.loaders,
-        requirements=requirements,
-        missing_requirements=_missing_requirements(requirements),
+        targeted_loaders=targeted_loaders,
+        fallback_loaders=fallback_loaders,
     )
 
 
@@ -236,16 +243,12 @@ def resolve_explicit_load_chain(
         if get_requirements is None
         else get_requirements
     )
-    requirements = _requirements_for_loaders(execution_plan, requirements_lookup)
-    explanation = LoadChainExplanation(
+    explanation = _build_explanation(
         url=url,
-        pipeline=None,
+        pipeline_name=None,
         content_type=ContentType.GENERIC_WEB,
-        targeted_loaders=(),
-        fallback_loaders=(),
         execution_plan=execution_plan,
-        requirements=requirements,
-        missing_requirements=_missing_requirements(requirements),
+        get_requirements=requirements_lookup,
     )
     if not execution_plan:
         raise ValueError(_EMPTY_EXECUTION_PLAN)
