@@ -109,6 +109,48 @@ def test_explicit_load_chain_uses_shared_attempt_runtime() -> None:
     assert chain.load_sync() == "loaded https://example.com"
 
 
+def test_explicit_load_chain_explains_loader_requirements(monkeypatch) -> None:
+    monkeypatch.setenv("FIRECRAWL_API_KEY", "test-key")
+
+    chain = resolve_explicit_load_chain("https://example.com", ("firecrawl",))
+
+    assert chain.explanation.pipeline is None
+    assert chain.explanation.execution_plan == ("firecrawl",)
+    assert chain.explanation.requirements == ("FIRECRAWL_API_KEY",)
+    assert chain.explanation.missing_requirements == ()
+
+
+def test_explicit_load_chain_checks_requirements_before_building_loader(monkeypatch) -> None:
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
+
+    with pytest.raises(MissingRequirementError, match="FIRECRAWL_API_KEY"):
+        resolve_explicit_load_chain("https://example.com", ("firecrawl",))
+
+
+def test_explicit_load_chain_keeps_custom_registry_requirements_opt_in() -> None:
+    chain = resolve_explicit_load_chain(
+        "https://example.com",
+        ("success",),
+        {"success": SuccessLoader}.__getitem__,
+    )
+
+    assert chain.explanation.requirements == ()
+
+
+def test_explicit_load_chain_accepts_injected_loader_requirements(monkeypatch) -> None:
+    monkeypatch.setenv("CUSTOM_REQUIREMENT", "yes")
+
+    chain = resolve_explicit_load_chain(
+        "https://example.com",
+        ("success",),
+        {"success": SuccessLoader}.__getitem__,
+        lambda name: ("CUSTOM_REQUIREMENT",) if name == "success" else (),
+    )
+
+    assert chain.explanation.requirements == ("CUSTOM_REQUIREMENT",)
+    assert chain.load_sync() == "loaded https://example.com"
+
+
 def test_load_chain_builds_loaders_only_when_attempted() -> None:
     built: list[str] = []
 

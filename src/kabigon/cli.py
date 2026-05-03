@@ -11,9 +11,10 @@ from kabigon.core.loader import Loader
 from kabigon.load_chain import resolve_explicit_load_chain
 from kabigon.loader_registry import get_loader_description
 from kabigon.loader_registry import get_loader_factory
+from kabigon.loader_registry import get_loader_requirements
 
 LoaderFactory = Callable[[], Loader]
-LoaderDef = tuple[str, str, LoaderFactory]
+LoaderDef = tuple[str, str, LoaderFactory, tuple[str, ...]]
 
 CLI_VISIBLE_LOADERS = (
     loader_registry.PLAYWRIGHT,
@@ -34,14 +35,19 @@ CLI_VISIBLE_LOADERS = (
 )
 
 LOADER_DEFS: list[LoaderDef] = [
-    (name, get_loader_description(name), get_loader_factory(name)) for name in CLI_VISIBLE_LOADERS
+    (name, get_loader_description(name), get_loader_factory(name), get_loader_requirements(name))
+    for name in CLI_VISIBLE_LOADERS
 ]
 
 app = typer.Typer(add_completion=False)
 
 
 def _loader_registry() -> dict[str, LoaderFactory]:
-    return {name: factory for name, _description, factory in LOADER_DEFS}
+    return {name: factory for name, _description, factory, _requirements in LOADER_DEFS}
+
+
+def _loader_requirements() -> dict[str, tuple[str, ...]]:
+    return {name: requirements for name, _description, _factory, requirements in LOADER_DEFS}
 
 
 def _exit_with_error(message: str) -> NoReturn:
@@ -62,13 +68,14 @@ def _parse_loader_names(raw: str) -> list[str]:
 
 
 def _print_loader_list() -> None:
-    for name, description, _factory in LOADER_DEFS:
+    for name, description, _factory, _requirements in LOADER_DEFS:
         typer.echo(f"{name} - {description}")
 
 
 def _load_with_loader_names(url: str, loader_names: list[str]) -> str:
     registry = _loader_registry()
-    return resolve_explicit_load_chain(url, loader_names, registry.__getitem__).load_sync()
+    requirements = _loader_requirements()
+    return resolve_explicit_load_chain(url, loader_names, registry.__getitem__, requirements.__getitem__).load_sync()
 
 
 @app.callback(invoke_without_command=True)
