@@ -1,8 +1,12 @@
+from collections.abc import Callable
+
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_reel_target
 
 from .httpx import HttpxLoader
 from .ytdlp import YtdlpLoader
+
+type LoaderFactory = Callable[[], Loader]
 
 
 def check_reel_url(url: str) -> None:
@@ -10,14 +14,18 @@ def check_reel_url(url: str) -> None:
 
 
 class ReelLoader(Loader):
-    def __init__(self) -> None:
-        self.httpx_loader = HttpxLoader()
-        self.ytdlp_loader = YtdlpLoader()
+    def __init__(
+        self,
+        ytdlp_loader_factory: LoaderFactory = YtdlpLoader,
+        httpx_loader_factory: LoaderFactory = HttpxLoader,
+    ) -> None:
+        self.ytdlp_loader_factory = ytdlp_loader_factory
+        self.httpx_loader_factory = httpx_loader_factory
 
     async def load(self, url: str) -> str:
         parse_reel_target(url)
 
-        audio_content = await self.ytdlp_loader.load(url)
-        html_content = await self.httpx_loader.load(url)
+        audio_content = await self.ytdlp_loader_factory().load(url)
+        html_content = await self.httpx_loader_factory().load(url)
 
         return f"{audio_content}\n\n{html_content}"
