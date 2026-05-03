@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 import kabigon.loaders as loaders
 from kabigon.core.loader import Loader
 
 LoaderFactory = Callable[[], Loader]
-LoaderDef = tuple[str, str, LoaderFactory]
+
+
+@dataclass(frozen=True)
+class LoaderDef:
+    name: str
+    description: str
+    factory: LoaderFactory
+    requirements: tuple[str, ...] = ()
+
 
 PTT = "ptt"
 TWITTER = "twitter"
@@ -27,55 +36,59 @@ FIRECRAWL = "firecrawl"
 YTDLP = "ytdlp"
 
 LOADER_DEFS: tuple[LoaderDef, ...] = (
-    (PTT, "Taiwan PTT forum posts", lambda: loaders.PttLoader()),
-    (TWITTER, "Extracts Twitter/X post content", lambda: loaders.TwitterLoader()),
-    (TRUTHSOCIAL, "Extracts Truth Social posts", lambda: loaders.TruthSocialLoader()),
-    (REDDIT, "Extracts Reddit posts and comments", lambda: loaders.RedditLoader()),
-    (YOUTUBE, "Extracts YouTube video transcripts", lambda: loaders.YoutubeLoader()),
-    (REEL, "Instagram Reels audio transcription + metadata", lambda: loaders.ReelLoader()),
-    (
+    LoaderDef(PTT, "Taiwan PTT forum posts", lambda: loaders.PttLoader()),
+    LoaderDef(TWITTER, "Extracts Twitter/X post content", lambda: loaders.TwitterLoader()),
+    LoaderDef(TRUTHSOCIAL, "Extracts Truth Social posts", lambda: loaders.TruthSocialLoader()),
+    LoaderDef(REDDIT, "Extracts Reddit posts and comments", lambda: loaders.RedditLoader()),
+    LoaderDef(YOUTUBE, "Extracts YouTube video transcripts", lambda: loaders.YoutubeLoader()),
+    LoaderDef(REEL, "Instagram Reels audio transcription + metadata", lambda: loaders.ReelLoader()),
+    LoaderDef(
         YOUTUBE_YTDLP,
         "YouTube audio transcription via yt-dlp + Whisper",
         lambda: loaders.YoutubeYtdlpLoader(),
     ),
-    (PDF, "Extracts text from PDF files", lambda: loaders.PDFLoader()),
-    (GITHUB, "Fetches GitHub pages and file content", lambda: loaders.GitHubLoader()),
-    (BBC, "BBC article extraction with article-aware parsing", lambda: loaders.BBCLoader()),
-    (CNN, "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
-    (
+    LoaderDef(PDF, "Extracts text from PDF files", lambda: loaders.PDFLoader()),
+    LoaderDef(GITHUB, "Fetches GitHub pages and file content", lambda: loaders.GitHubLoader()),
+    LoaderDef(BBC, "BBC article extraction with article-aware parsing", lambda: loaders.BBCLoader()),
+    LoaderDef(CNN, "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
+    LoaderDef(
         PLAYWRIGHT_NETWORKIDLE,
         "Browser-based scraping with networkidle wait",
         lambda: loaders.PlaywrightLoader(timeout=50_000, wait_until="networkidle"),
     ),
-    (
+    LoaderDef(
         PLAYWRIGHT_FAST,
         "Browser-based scraping with faster defaults",
         lambda: loaders.PlaywrightLoader(timeout=10_000),
     ),
-    (PLAYWRIGHT, "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
-    (HTTPX, "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
-    (
+    LoaderDef(PLAYWRIGHT, "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
+    LoaderDef(HTTPX, "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
+    LoaderDef(
         FIRECRAWL,
         "Firecrawl-based web extraction (requires FIRECRAWL_API_KEY)",
         lambda: loaders.FirecrawlLoader(),
+        requirements=("FIRECRAWL_API_KEY",),
     ),
-    (YTDLP, "Audio transcription via yt-dlp + Whisper", lambda: loaders.YtdlpLoader()),
+    LoaderDef(YTDLP, "Audio transcription via yt-dlp + Whisper", lambda: loaders.YtdlpLoader()),
 )
 
-_LOADER_FACTORY_BY_NAME: dict[str, LoaderFactory] = {name: factory for name, _description, factory in LOADER_DEFS}
-_LOADER_DESCRIPTION_BY_NAME: dict[str, str] = {name: description for name, description, _factory in LOADER_DEFS}
+_LOADER_DEF_BY_NAME: dict[str, LoaderDef] = {loader_def.name: loader_def for loader_def in LOADER_DEFS}
 
 
 def get_loader_factory(name: str) -> LoaderFactory:
-    return _LOADER_FACTORY_BY_NAME[name]
+    return _LOADER_DEF_BY_NAME[name].factory
 
 
 def get_loader_description(name: str) -> str:
-    return _LOADER_DESCRIPTION_BY_NAME[name]
+    return _LOADER_DEF_BY_NAME[name].description
+
+
+def get_loader_requirements(name: str) -> tuple[str, ...]:
+    return _LOADER_DEF_BY_NAME[name].requirements
 
 
 def list_loader_names() -> list[str]:
-    return [name for name, _description, _factory in LOADER_DEFS]
+    return [loader_def.name for loader_def in LOADER_DEFS]
 
 
 __all__ = [
@@ -101,5 +114,6 @@ __all__ = [
     "LoaderFactory",
     "get_loader_description",
     "get_loader_factory",
+    "get_loader_requirements",
     "list_loader_names",
 ]

@@ -15,6 +15,7 @@ from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.errors import MissingRequirementError
 from kabigon.core.loader import Loader
 from kabigon.loader_registry import get_loader_factory
+from kabigon.loader_registry import get_loader_requirements
 from kabigon.pipelines.catalog import ContentType
 from kabigon.pipelines.catalog import FallbackPolicy
 from kabigon.pipelines.catalog import match_pipeline
@@ -128,6 +129,30 @@ def _merge_unique_loaders(primary: tuple[str, ...], fallback: tuple[str, ...]) -
     return tuple(ordered)
 
 
+def _merge_unique_requirements(*requirement_groups: tuple[str, ...]) -> tuple[str, ...]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+
+    for requirement in (requirement for group in requirement_groups for requirement in group):
+        if requirement in seen:
+            continue
+        seen.add(requirement)
+        ordered.append(requirement)
+
+    return tuple(ordered)
+
+
+def _no_loader_requirements(_name: str) -> tuple[str, ...]:
+    return ()
+
+
+def _requirements_for_loaders(
+    loader_names: tuple[str, ...],
+    get_requirements: Callable[[str], tuple[str, ...]],
+) -> tuple[str, ...]:
+    return _merge_unique_requirements(*(get_requirements(name) for name in loader_names))
+
+
 def _missing_requirements(requirements: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(name for name in requirements if not os.getenv(name))
 
@@ -145,18 +170,22 @@ def explain_load_chain(url: str) -> LoadChainExplanation:
     pipeline_name: str | None = None
     content_type = ContentType.GENERIC_WEB
     targeted_loaders: tuple[str, ...] = ()
-    requirements: tuple[str, ...] = ()
+    pipeline_requirements: tuple[str, ...] = ()
     fallback = DEFAULT_FALLBACK_LOADERS
 
     if pipeline is not None:
         pipeline_name = pipeline.name
         content_type = pipeline.content_type
         targeted_loaders = pipeline.targeted_loaders
-        requirements = pipeline.requirements
+        pipeline_requirements = pipeline.requirements
         if pipeline.fallback_policy == FallbackPolicy.NO_FALLBACK:
             fallback = ()
 
     execution_plan = _merge_unique_loaders(targeted_loaders, fallback)
+    requirements = _merge_unique_requirements(
+        pipeline_requirements,
+        _requirements_for_loaders(execution_plan, get_loader_requirements),
+    )
     return LoadChainExplanation(
         url=url,
         pipeline=pipeline_name,
@@ -178,17 +207,27 @@ def resolve_explicit_load_chain(
     url: str,
     loader_names: Sequence[str],
     get_factory: Callable[[str], LoaderFactory] = get_loader_factory,
+    get_requirements: Callable[[str], tuple[str, ...]] | None = None,
 ) -> LoadChain:
     execution_plan = tuple(loader_names)
+    requirements_lookup = (
+        (get_loader_requirements if get_factory is get_loader_factory else _no_loader_requirements)
+        if get_requirements is None
+        else get_requirements
+    )
+    requirements = _requirements_for_loaders(execution_plan, requirements_lookup)
     explanation = LoadChainExplanation(
         url=url,
         pipeline=None,
         content_type=ContentType.GENERIC_WEB,
         targeted_loaders=(),
         execution_plan=execution_plan,
+        requirements=requirements,
+        missing_requirements=_missing_requirements(requirements),
     )
     if not execution_plan:
         raise ValueError(_EMPTY_EXECUTION_PLAN)
+    _ensure_requirements(explanation)
     return LoadChain(get_factory=get_factory, explanation=explanation)
 
 
