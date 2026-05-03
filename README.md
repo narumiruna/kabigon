@@ -1,5 +1,10 @@
 # kabigon
 
+[![PyPI version](https://badge.fury.io/py/kabigon.svg)](https://badge.fury.io/py/kabigon)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/narumiruna/kabigon/branch/main/graph/badge.svg)](https://codecov.io/gh/narumiruna/kabigon)
+
 A Python library and CLI tool that extracts content from URLs and returns plain text or markdown. Point it at a YouTube video, a tweet, a Reddit thread, a PDF, or any web page — kabigon selects the right loader automatically.
 
 Intended for developers and data engineers who need reliable, source-aware text extraction without writing per-site scraping logic.
