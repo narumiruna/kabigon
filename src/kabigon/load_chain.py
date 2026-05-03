@@ -65,13 +65,14 @@ class LoadChainExplanation:
 
 @dataclass(frozen=True)
 class LoadChain:
-    loaders: tuple[Loader, ...]
+    get_factory: Callable[[str], LoaderFactory]
     explanation: LoadChainExplanation
 
     async def load(self) -> str:
         errors: list[str] = []
 
-        for loader in self.loaders:
+        for loader_name in self.explanation.execution_plan:
+            loader = self.get_factory(loader_name)()
             loader_name = loader.__class__.__name__
             logger.debug("[%s] Attempting to load URL: %s", loader_name, self.explanation.url)
 
@@ -138,16 +139,6 @@ def _ensure_requirements(explanation: LoadChainExplanation) -> None:
     raise MissingRequirementError(explanation.missing_requirements)
 
 
-def _build_loaders(
-    loader_names: tuple[str, ...],
-    get_factory: Callable[[str], LoaderFactory] = get_loader_factory,
-) -> tuple[Loader, ...]:
-    if not loader_names:
-        raise ValueError(_EMPTY_EXECUTION_PLAN)
-
-    return tuple(get_factory(name)() for name in loader_names)
-
-
 def explain_load_chain(url: str) -> LoadChainExplanation:
     pipeline = match_pipeline(url)
 
@@ -180,7 +171,7 @@ def explain_load_chain(url: str) -> LoadChainExplanation:
 def resolve_load_chain(url: str) -> LoadChain:
     explanation = explain_load_chain(url)
     _ensure_requirements(explanation)
-    return LoadChain(loaders=_build_loaders(explanation.execution_plan), explanation=explanation)
+    return LoadChain(get_factory=get_loader_factory, explanation=explanation)
 
 
 def resolve_explicit_load_chain(
@@ -196,7 +187,9 @@ def resolve_explicit_load_chain(
         targeted_loaders=(),
         execution_plan=execution_plan,
     )
-    return LoadChain(loaders=_build_loaders(execution_plan, get_factory), explanation=explanation)
+    if not execution_plan:
+        raise ValueError(_EMPTY_EXECUTION_PLAN)
+    return LoadChain(get_factory=get_factory, explanation=explanation)
 
 
 __all__ = [
