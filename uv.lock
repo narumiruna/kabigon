@@ -668,7 +668,7 @@ wheels = [
 
 [[package]]
 name = "kabigon"
-version = "0.19.1"
+version = "0.19.2"
 source = { editable = "." }
 dependencies = [
     { name = "charset-normalizer" },
