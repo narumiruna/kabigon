@@ -126,6 +126,98 @@ print(plan)
 print(kabigon.available_loaders())
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    URL["URL input"] --> Entry{"Entry point"}
+
+    subgraph Inputs["Public entry points"]
+        CLI["CLI: kabigon URL"]
+        LoaderOption["CLI: kabigon --loader names URL"]
+        PySync["Python: kabigon.load_url_sync(url)"]
+        PyAsync["Python: await kabigon.load_url(url)"]
+    end
+
+    Entry --> CLI
+    Entry --> LoaderOption
+    Entry --> PySync
+    Entry --> PyAsync
+
+    CLI --> LoadUrlSync["load_url_sync(url)"]
+    PySync --> LoadUrlSync
+    PyAsync --> LoadUrl["load_url(url)"]
+
+    subgraph Planning["Plan resolution"]
+        LoadUrlSync --> ResolveAuto["resolve_load_chain(url)"]
+        LoadUrl --> ResolveAuto
+        ResolveAuto --> MatchPipeline["match_pipeline(url)"]
+        MatchPipeline --> SourceRules["Source applicability checks<br/>host, path, video ID, file extension"]
+        SourceRules --> Matched{"Pipeline matched?"}
+        Matched -->|Yes| Pipeline["Pipeline metadata<br/>content_type + targeted_loaders + fallback_policy"]
+        Matched -->|No| GenericPlan["Generic web plan<br/>content_type=generic_web<br/>targeted_loaders=none"]
+        Pipeline --> Policy{"Fallback policy"}
+        GenericPlan --> RemainingDefault
+        Policy -->|REMAINING_DEFAULT| RemainingDefault["Remaining default fallback candidates<br/>ptt, twitter, truthsocial, reddit, youtube, reel,<br/>youtube-ytdlp, pdf, github, bbc, cnn,<br/>playwright-networkidle, playwright-fast"]
+        Policy -->|NO_FALLBACK| TargetedOnly["Use targeted loaders only"]
+        RemainingDefault --> Deduplicate["Remove loaders already targeted"]
+        Deduplicate --> Explanation["LoadChainExplanation<br/>pipeline, content_type, targeted_loaders,<br/>fallback_loaders, execution_plan"]
+        TargetedOnly --> Explanation
+    end
+
+    subgraph ExplicitPlan["Explicit loader override"]
+        LoaderOption --> ParseNames["Parse comma-separated loader names"]
+        ParseNames --> ValidateNames{"All loader names known?"}
+        ValidateNames -->|No| CliError["CLI exits with code 2"]
+        ValidateNames -->|Yes| ResolveExplicit["resolve_explicit_load_chain(url, names)"]
+        ResolveExplicit --> ExplicitExplanation["LoadChainExplanation<br/>execution_plan=requested names"]
+    end
+
+    subgraph Requirements["Requirement gate"]
+        Explanation --> CollectRequirements["Collect required env vars from planned loaders"]
+        ExplicitExplanation --> CollectRequirements
+        CollectRequirements --> MissingRequirements{"Any missing requirements?"}
+        MissingRequirements -->|Yes| MissingRequirementError["Raise MissingRequirementError<br/>for example FIRECRAWL_API_KEY"]
+        MissingRequirements -->|No| LoadChain["Create LoadChain"]
+    end
+
+    subgraph Execution["Load chain execution"]
+        LoadChain --> NextLoader{"Next loader in execution_plan?"}
+        NextLoader -->|Yes| Factory["loader_registry.get_loader_factory(name)"]
+        Factory --> Instantiate["Instantiate loader lazily"]
+        Instantiate --> RunLoader["await loader.load(url)"]
+        RunLoader --> Result{"Non-empty text returned?"}
+        Result -->|Yes| TextResult["Return str content"]
+        Result -->|No| RecordFailure["Record empty result"]
+        RunLoader --> LoaderFailure["Record loader failure<br/>not applicable, timeout, content error, or exception"]
+        RecordFailure --> NextLoader
+        LoaderFailure --> NextLoader
+        NextLoader -->|No| LoaderError["Raise LoaderError<br/>with attempted loader details"]
+    end
+
+    subgraph Output["Output"]
+        TextResult --> CliOutput["CLI prints text"]
+        TextResult --> PythonOutput["Python caller receives str"]
+        MissingRequirementError --> ErrorOutput["Error returned to caller / command"]
+        LoaderError --> ErrorOutput
+        CliError --> ErrorOutput
+    end
+
+    classDef input fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+    classDef plan fill:#ecfdf5,stroke:#047857,color:#064e3b
+    classDef exec fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef success fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef error fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+
+    class URL,CLI,LoaderOption,PySync,PyAsync input
+    class ResolveAuto,MatchPipeline,SourceRules,Pipeline,GenericPlan,RemainingDefault,TargetedOnly,Deduplicate,Explanation,ParseNames,ResolveExplicit,ExplicitExplanation,CollectRequirements plan
+    class LoadChain,NextLoader,Factory,Instantiate,RunLoader,RecordFailure,LoaderFailure exec
+    class TextResult,CliOutput,PythonOutput success
+    class CliError,MissingRequirementError,LoaderError,ErrorOutput error
+```
+
+The automatic path uses `kabigon.pipelines` to select a source-aware pipeline, then `kabigon.load_chain` builds one ordered execution plan. Each loader is constructed only when its turn is reached; the first non-empty string is returned, and if every planned loader fails, kabigon raises `LoaderError` with the attempted loader details.
+
 ## Commands
 
 ### `kabigon <url>`
