@@ -27,6 +27,10 @@ YOUTUBE_ALLOWED_NETLOCS = {
     "vid.plus",
 }
 GITHUB_HOST = "github.com"
+ARXIV_HOSTS = (
+    "arxiv.org",
+    "www.arxiv.org",
+)
 OPENAI_WEB_HOSTS = (
     "openai.com",
     "www.openai.com",
@@ -228,7 +232,8 @@ def is_github_url(url: str) -> bool:
 def parse_pdf_target(target: str) -> PDFTarget:
     parsed = urlparse(target)
     if parsed.scheme in {"http", "https"}:
-        if not parsed.path.lower().endswith(".pdf"):
+        path = parsed.path.lower()
+        if not path.endswith(".pdf") and not (parsed.netloc.lower() in ARXIV_HOSTS and path.startswith("/pdf/")):
             raise InvalidURLError(target, "PDF")
         return PDFTarget(target=target)
 

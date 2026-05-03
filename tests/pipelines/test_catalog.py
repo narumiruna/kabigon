@@ -75,6 +75,15 @@ def test_match_pipeline_non_http_pdf_path() -> None:
     assert pipeline.targeted_loaders == ("pdf",)
 
 
+def test_match_pipeline_arxiv_pdf_endpoint() -> None:
+    pipeline = match_pipeline("https://arxiv.org/pdf/2603.20617")
+
+    assert pipeline is not None
+    assert pipeline.name == "pdf"
+    assert pipeline.content_type == ContentType.DOCUMENT_PDF
+    assert pipeline.targeted_loaders == ("pdf",)
+
+
 def test_match_pipeline_non_http_non_pdf_path_returns_none() -> None:
     assert match_pipeline("not-a-valid-url") is None
 

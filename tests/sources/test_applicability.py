@@ -33,6 +33,7 @@ from kabigon.sources.applicability import require_loader_applicability
         ("https://edition.cnn.com/2026/03/16/tech/example", is_cnn_url),
         ("https://openai.com/pricing", is_openai_web_url),
         ("/tmp/demo.pdf", is_pdf_target),
+        ("https://arxiv.org/pdf/2603.20617", is_pdf_target),
     ],
 )
 def test_source_applicability_accepts_supported_targets(url, is_applicable) -> None:
