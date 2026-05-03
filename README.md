@@ -181,7 +181,7 @@ Interface (CLI)  →  Application (pipeline catalog, load chain)  →  Domain (L
 3. `load_chain.py` turns that into a runnable load chain: targeted loaders followed by fallback loaders, plus explanation metadata.
 4. `load_chain.py` executes the ordered Loader attempts and returns the first successful result.
 
-`explain_plan()` returns Pipeline, requirement, and execution-plan metadata without constructing concrete loaders. Actual loading builds and executes the runnable Load chain.
+`explain_plan()` returns Pipeline, Targeted loader, Fallback loader, requirement, and Execution plan metadata without constructing concrete loaders. Actual loading builds and executes the runnable Load chain.
 
 There are three fallback levels to keep distinct:
 

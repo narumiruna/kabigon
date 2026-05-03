@@ -48,6 +48,7 @@ class LoadChainExplanation:
     pipeline: str | None
     content_type: ContentType
     targeted_loaders: tuple[str, ...]
+    fallback_loaders: tuple[str, ...]
     execution_plan: tuple[str, ...]
     requirements: tuple[str, ...] = ()
     missing_requirements: tuple[str, ...] = ()
@@ -58,10 +59,18 @@ class LoadChainExplanation:
             "pipeline": self.pipeline,
             "content_type": self.content_type,
             "targeted_loaders": list(self.targeted_loaders),
+            "fallback_loaders": list(self.fallback_loaders),
             "execution_plan": list(self.execution_plan),
             "requirements": list(self.requirements),
             "missing_requirements": list(self.missing_requirements),
         }
+
+
+@dataclass(frozen=True)
+class _ExecutionPlan:
+    targeted_loaders: tuple[str, ...]
+    fallback_loaders: tuple[str, ...]
+    loaders: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -116,11 +125,11 @@ class LoadChain:
         return asyncio.run(self.load())
 
 
-def _merge_unique_loaders(primary: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
-    seen: set[str] = set()
+def _remaining_unique_loaders(primary: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
+    seen = set(primary)
     ordered: list[str] = []
 
-    for loader_name in (*primary, *fallback):
+    for loader_name in fallback:
         if loader_name in seen:
             continue
         seen.add(loader_name)
@@ -157,6 +166,23 @@ def _missing_requirements(requirements: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(name for name in requirements if not os.getenv(name))
 
 
+def _build_execution_plan(
+    targeted_loaders: tuple[str, ...],
+    fallback_policy: FallbackPolicy,
+) -> _ExecutionPlan:
+    fallback_candidates: tuple[str, ...] = ()
+    if fallback_policy == FallbackPolicy.REMAINING_DEFAULT:
+        fallback_candidates = DEFAULT_FALLBACK_LOADERS
+
+    fallback_loaders = _remaining_unique_loaders(targeted_loaders, fallback_candidates)
+
+    return _ExecutionPlan(
+        targeted_loaders=targeted_loaders,
+        fallback_loaders=fallback_loaders,
+        loaders=(*targeted_loaders, *fallback_loaders),
+    )
+
+
 def _ensure_requirements(explanation: LoadChainExplanation) -> None:
     if not explanation.missing_requirements:
         return
@@ -170,28 +196,23 @@ def explain_load_chain(url: str) -> LoadChainExplanation:
     pipeline_name: str | None = None
     content_type = ContentType.GENERIC_WEB
     targeted_loaders: tuple[str, ...] = ()
-    pipeline_requirements: tuple[str, ...] = ()
-    fallback = DEFAULT_FALLBACK_LOADERS
+    fallback_policy = FallbackPolicy.REMAINING_DEFAULT
 
     if pipeline is not None:
         pipeline_name = pipeline.name
         content_type = pipeline.content_type
         targeted_loaders = pipeline.targeted_loaders
-        pipeline_requirements = pipeline.requirements
-        if pipeline.fallback_policy == FallbackPolicy.NO_FALLBACK:
-            fallback = ()
+        fallback_policy = pipeline.fallback_policy
 
-    execution_plan = _merge_unique_loaders(targeted_loaders, fallback)
-    requirements = _merge_unique_requirements(
-        pipeline_requirements,
-        _requirements_for_loaders(execution_plan, get_loader_requirements),
-    )
+    execution_plan = _build_execution_plan(targeted_loaders, fallback_policy)
+    requirements = _requirements_for_loaders(execution_plan.loaders, get_loader_requirements)
     return LoadChainExplanation(
         url=url,
         pipeline=pipeline_name,
         content_type=content_type,
-        targeted_loaders=targeted_loaders,
-        execution_plan=execution_plan,
+        targeted_loaders=execution_plan.targeted_loaders,
+        fallback_loaders=execution_plan.fallback_loaders,
+        execution_plan=execution_plan.loaders,
         requirements=requirements,
         missing_requirements=_missing_requirements(requirements),
     )
@@ -221,6 +242,7 @@ def resolve_explicit_load_chain(
         pipeline=None,
         content_type=ContentType.GENERIC_WEB,
         targeted_loaders=(),
+        fallback_loaders=(),
         execution_plan=execution_plan,
         requirements=requirements,
         missing_requirements=_missing_requirements(requirements),

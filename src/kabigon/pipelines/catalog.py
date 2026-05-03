@@ -39,7 +39,6 @@ class Pipeline:
     name: str
     content_type: ContentType
     targeted_loaders: tuple[str, ...]
-    requirements: tuple[str, ...] = ()
     fallback_policy: FallbackPolicy = FallbackPolicy.REMAINING_DEFAULT
 
 
@@ -127,7 +126,6 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             name="openai_web",
             content_type=ContentType.GENERIC_WEB,
             targeted_loaders=(loader_names.FIRECRAWL,),
-            requirements=("FIRECRAWL_API_KEY",),
             fallback_policy=FallbackPolicy.NO_FALLBACK,
         ),
         matches=is_openai_web_url,
