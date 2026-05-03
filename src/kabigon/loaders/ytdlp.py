@@ -34,7 +34,8 @@ def download_audio(url: str, outtmpl: str | None = None) -> None:
     if ffmpeg_path is not None:
         ydl_opts["ffmpeg_location"] = ffmpeg_path
 
-    logger.info("Downloading audio from URL: %s with options: %s", url, ydl_opts)
+    logger.info("[YtdlpLoader] Downloading audio from URL: %s", url)
+    logger.debug("[YtdlpLoader] yt-dlp options: %s", ydl_opts)
     with yt_dlp.YoutubeDL(cast(Any, ydl_opts)) as ydl:
         ydl.download([url])
 
@@ -50,6 +51,7 @@ class YtdlpLoader(Loader):
         self.load_audio = whisper.load_audio
 
     def load_sync(self, url: str) -> str:
+        logger.info("[YtdlpLoader] Processing URL: %s", url)
         outtmpl = uuid.uuid4().hex[:20]
         path = str(Path(outtmpl).with_suffix(".mp3"))
         download_audio(url, outtmpl=outtmpl)
@@ -57,7 +59,8 @@ class YtdlpLoader(Loader):
 
         try:
             audio = self.load_audio(path)
-            logger.info("Transcribing audio file: %s", path)
+            logger.info("[YtdlpLoader] Transcribing audio file")
+            logger.debug("[YtdlpLoader] Audio file path: %s", path)
             result = self.model.transcribe(audio)
         finally:
             # Clean up the audio file
@@ -66,8 +69,11 @@ class YtdlpLoader(Loader):
 
         text = result.get("text", "")
         if isinstance(text, str):
+            logger.info("[YtdlpLoader] Extracted transcript content (%s chars)", len(text))
             return text
-        return "\n".join(str(item) for item in text)
+        joined_text = "\n".join(str(item) for item in text)
+        logger.info("[YtdlpLoader] Extracted transcript content (%s chars)", len(joined_text))
+        return joined_text
 
     async def load(self, url: str) -> str:
         return await asyncio.to_thread(self.load_sync, url)

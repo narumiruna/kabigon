@@ -59,11 +59,11 @@ class TwitterLoader(Loader):
                     task.cancel()
 
     async def load(self, url: str) -> str:
-        logger.debug("[TwitterLoader] Processing URL: %s", url)
+        logger.info("[TwitterLoader] Processing URL: %s", url)
         parse_twitter_target(url)
 
         url = replace_domain(url)
-        logger.debug("[TwitterLoader] Normalized URL: %s", url)
+        logger.info("[TwitterLoader] Fetching normalized URL: %s", url)
 
         async def wait_for_tweet(page: Page) -> None:
             with contextlib.suppress(TimeoutError):
@@ -101,5 +101,5 @@ class TwitterLoader(Loader):
             extract_content=extract_tweet_content,
         )
         result = html_to_markdown(content)
-        logger.debug("[TwitterLoader] Successfully converted to markdown (%s chars)", len(result))
+        logger.info("[TwitterLoader] Extracted Twitter content (%s chars)", len(result))
         return result

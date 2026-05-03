@@ -23,12 +23,13 @@ DEFAULT_HEADERS = {
 
 class PDFLoader(Loader):
     async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
-        logger.debug("[PDFLoader] Processing: %s", url_or_file)
+        logger.info("[PDFLoader] Processing URL or file: %s", url_or_file)
         require_loader_applicability("PDFLoader", url_or_file, parse_pdf_target)
 
         if not url_or_file.startswith("http"):
             # Local file
-            logger.debug("[PDFLoader] Reading local file: %s", url_or_file)
+            logger.info("[PDFLoader] Reading local PDF file")
+            logger.debug("[PDFLoader] Local PDF path: %s", url_or_file)
             try:
                 result = read_pdf_content(url_or_file)
             except Exception as e:
@@ -40,10 +41,11 @@ class PDFLoader(Loader):
                     "Check that the file exists and is a valid PDF.",
                 ) from e
             else:
-                logger.debug("[PDFLoader] Successfully read local PDF (%s chars)", len(result))
+                logger.info("[PDFLoader] Loaded local PDF content (%s chars)", len(result))
                 return result
 
         # Remote URL
+        logger.info("[PDFLoader] Fetching remote PDF")
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(url_or_file, headers=DEFAULT_HEADERS, follow_redirects=True)
@@ -72,7 +74,7 @@ class PDFLoader(Loader):
                     "The PDF may be corrupted or use unsupported features.",
                 ) from e
             else:
-                logger.debug("[PDFLoader] Successfully read remote PDF (%s chars)", len(result))
+                logger.info("[PDFLoader] Loaded remote PDF content (%s chars)", len(result))
                 return result
 
 

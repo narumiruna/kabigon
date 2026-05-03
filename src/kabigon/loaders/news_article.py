@@ -40,9 +40,10 @@ async def load_news_article(
     headers: dict[str, str],
 ) -> str:
     validate_url(url)
-    logger.debug("[%s] Fetching URL: %s", loader_name, url)
+    logger.info("[%s] Processing URL: %s", loader_name, url)
 
     try:
+        logger.info("[%s] Fetching article HTML", loader_name)
         async with httpx.AsyncClient() as client:
             response = await client.get(url, headers=headers, follow_redirects=True)
             response.raise_for_status()
@@ -56,10 +57,10 @@ async def load_news_article(
 
     json_ld_body = extract_article_body_from_json_ld(response.text)
     if json_ld_body:
-        logger.debug("[%s] Extracted articleBody from JSON-LD (%s chars)", loader_name, len(json_ld_body))
+        logger.info("[%s] Extracted articleBody from JSON-LD (%s chars)", loader_name, len(json_ld_body))
         return json_ld_body
 
     main_html = extract_news_article_main_html(response.text)
     result = html_to_markdown(main_html)
-    logger.debug("[%s] Extracted article HTML content (%s chars)", loader_name, len(result))
+    logger.info("[%s] Extracted article HTML content (%s chars)", loader_name, len(result))
     return result

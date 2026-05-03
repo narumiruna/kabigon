@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from typing import NoReturn
 
@@ -40,6 +41,7 @@ LOADER_DEFS: list[LoaderDef] = [
 ]
 
 app = typer.Typer(add_completion=False)
+LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s:%(lineno)d - %(message)s"
 
 
 def _loader_registry() -> dict[str, LoaderFactory]:
@@ -72,6 +74,11 @@ def _print_loader_list() -> None:
         typer.echo(f"{name} - {description}")
 
 
+def _configure_logging(verbose: bool) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(format=LOG_FORMAT, level=level)
+
+
 def _load_with_loader_names(url: str, loader_names: list[str]) -> str:
     registry = _loader_registry()
     requirements = _loader_requirements()
@@ -83,7 +90,10 @@ def _main(
     url: str | None = typer.Argument(None, metavar="URL"),
     loader: str | None = typer.Option(None, "--loader", help="Comma-separated loader names"),
     list_: bool = typer.Option(False, "--list", help="List supported loaders"),
+    verbose: bool = typer.Option(False, "--verbose", help="Show debug logging"),
 ) -> None:
+    _configure_logging(verbose)
+
     if list_:
         if url is not None or loader is not None:
             _exit_with_error("--list cannot be combined with URL or --loader.")
