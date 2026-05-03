@@ -61,6 +61,9 @@ def test_load_chain_explains_youtube_decision() -> None:
     assert explanation.pipeline == "youtube"
     assert explanation.content_type == ContentType.YOUTUBE_VIDEO
     assert explanation.targeted_loaders == ("youtube", "youtube-ytdlp")
+    assert explanation.fallback_loaders == tuple(
+        loader_name for loader_name in DEFAULT_FALLBACK_LOADERS if loader_name not in explanation.targeted_loaders
+    )
     assert explanation.execution_plan[:2] == ("youtube", "youtube-ytdlp")
     assert explanation.requirements == ()
 
@@ -71,6 +74,7 @@ def test_load_chain_explains_generic_web_default_order() -> None:
     assert explanation.pipeline is None
     assert explanation.content_type == ContentType.GENERIC_WEB
     assert explanation.targeted_loaders == ()
+    assert explanation.fallback_loaders == DEFAULT_FALLBACK_LOADERS
     assert explanation.execution_plan == DEFAULT_FALLBACK_LOADERS
 
 
@@ -87,6 +91,8 @@ def test_load_chain_for_no_fallback_pipeline_builds_single_loader(monkeypatch) -
     chain = resolve_load_chain("https://openai.com/pricing")
 
     assert chain.explanation.pipeline == "openai_web"
+    assert chain.explanation.targeted_loaders == ("firecrawl",)
+    assert chain.explanation.fallback_loaders == ()
     assert chain.explanation.execution_plan == ("firecrawl",)
     assert chain.explanation.requirements == ("FIRECRAWL_API_KEY",)
     assert chain.explanation.missing_requirements == ()
@@ -115,6 +121,7 @@ def test_explicit_load_chain_explains_loader_requirements(monkeypatch) -> None:
     chain = resolve_explicit_load_chain("https://example.com", ("firecrawl",))
 
     assert chain.explanation.pipeline is None
+    assert chain.explanation.fallback_loaders == ()
     assert chain.explanation.execution_plan == ("firecrawl",)
     assert chain.explanation.requirements == ("FIRECRAWL_API_KEY",)
     assert chain.explanation.missing_requirements == ()
@@ -220,6 +227,8 @@ def test_explain_load_chain_does_not_build_loader_for_missing_requirement(monkey
     explanation = explain_load_chain("https://openai.com/pricing")
 
     assert explanation.pipeline == "openai_web"
+    assert explanation.targeted_loaders == ("firecrawl",)
+    assert explanation.fallback_loaders == ()
     assert explanation.execution_plan == ("firecrawl",)
     assert explanation.requirements == ("FIRECRAWL_API_KEY",)
     assert explanation.missing_requirements == ("FIRECRAWL_API_KEY",)
@@ -240,6 +249,7 @@ def test_load_chain_explanation_as_dict_uses_public_shapes() -> None:
         "pipeline": "youtube",
         "content_type": ContentType.YOUTUBE_VIDEO,
         "targeted_loaders": ["youtube", "youtube-ytdlp"],
+        "fallback_loaders": list(explanation.fallback_loaders),
         "execution_plan": list(explanation.execution_plan),
         "requirements": [],
         "missing_requirements": [],

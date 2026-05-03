@@ -123,7 +123,6 @@ def test_match_pipeline_openai_web(url: str) -> None:
     assert pipeline.name == "openai_web"
     assert pipeline.content_type == ContentType.GENERIC_WEB
     assert pipeline.targeted_loaders == ("firecrawl",)
-    assert pipeline.requirements == ("FIRECRAWL_API_KEY",)
     assert pipeline.fallback_policy == FallbackPolicy.NO_FALLBACK
 
 
