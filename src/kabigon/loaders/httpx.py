@@ -5,6 +5,7 @@ import httpx
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
 
+from .content_guard import ensure_usable_content
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -46,4 +47,5 @@ class HttpxLoader(Loader):
 
         result = html_to_markdown(response.content)
         logger.info("[HttpxLoader] Extracted HTML content (%s chars)", len(result))
+        ensure_usable_content(result, loader_name="HttpxLoader", url=url)
         return result
