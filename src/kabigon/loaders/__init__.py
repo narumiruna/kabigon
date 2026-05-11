@@ -1,5 +1,6 @@
 from .bbc import BBCLoader
 from .cnn import CNNLoader
+from .curl_cffi import CurlCffiLoader
 from .firecrawl import FirecrawlLoader
 from .github import GitHubLoader
 from .httpx import HttpxLoader
@@ -18,6 +19,7 @@ from .ytdlp import YtdlpLoader
 __all__ = [
     "BBCLoader",
     "CNNLoader",
+    "CurlCffiLoader",
     "FirecrawlLoader",
     "GitHubLoader",
     "HttpxLoader",

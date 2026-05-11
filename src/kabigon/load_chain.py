@@ -36,8 +36,10 @@ DEFAULT_FALLBACK_LOADERS = (
     loader_registry.BBC,
     loader_registry.CNN,
     loader_registry.LTN,
+    loader_registry.CURL_CFFI,
     loader_registry.PLAYWRIGHT_NETWORKIDLE,
     loader_registry.PLAYWRIGHT_FAST,
+    loader_registry.HTTPX,
 )
 
 logger = logging.getLogger(__name__)

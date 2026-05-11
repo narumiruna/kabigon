@@ -32,6 +32,7 @@ LTN = "ltn"
 PLAYWRIGHT_NETWORKIDLE = "playwright-networkidle"
 PLAYWRIGHT_FAST = "playwright-fast"
 PLAYWRIGHT = "playwright"
+CURL_CFFI = "curl-cffi"
 HTTPX = "httpx"
 FIRECRAWL = "firecrawl"
 YTDLP = "ytdlp"
@@ -64,6 +65,11 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
         lambda: loaders.PlaywrightLoader(timeout=15_000, wait_until="domcontentloaded"),
     ),
     LoaderDef(PLAYWRIGHT, "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
+    LoaderDef(
+        CURL_CFFI,
+        "HTTP fetch with browser TLS fingerprint via curl_cffi (bypasses many WAFs)",
+        lambda: loaders.CurlCffiLoader(),
+    ),
     LoaderDef(HTTPX, "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
     LoaderDef(
         FIRECRAWL,
@@ -96,6 +102,7 @@ def list_loader_names() -> list[str]:
 __all__ = [
     "BBC",
     "CNN",
+    "CURL_CFFI",
     "FIRECRAWL",
     "GITHUB",
     "HTTPX",
