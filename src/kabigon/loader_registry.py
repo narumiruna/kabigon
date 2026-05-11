@@ -61,7 +61,7 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
     LoaderDef(
         PLAYWRIGHT_FAST,
         "Browser-based scraping with faster defaults",
-        lambda: loaders.PlaywrightLoader(timeout=10_000),
+        lambda: loaders.PlaywrightLoader(timeout=15_000, wait_until="domcontentloaded"),
     ),
     LoaderDef(PLAYWRIGHT, "Browser-based scraping for any website", lambda: loaders.PlaywrightLoader()),
     LoaderDef(HTTPX, "Simple HTTP fetch + HTML to markdown", lambda: loaders.HttpxLoader()),
