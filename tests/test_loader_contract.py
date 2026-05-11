@@ -6,6 +6,7 @@ from kabigon.loaders import CNNLoader
 from kabigon.loaders import FirecrawlLoader
 from kabigon.loaders import GitHubLoader
 from kabigon.loaders import HttpxLoader
+from kabigon.loaders import LTNLoader
 from kabigon.loaders import PDFLoader
 from kabigon.loaders import PlaywrightLoader
 from kabigon.loaders import PttLoader
@@ -23,6 +24,7 @@ LOADER_CLASSES = [
     FirecrawlLoader,
     GitHubLoader,
     HttpxLoader,
+    LTNLoader,
     PDFLoader,
     PlaywrightLoader,
     PttLoader,

@@ -28,6 +28,7 @@ PDF = "pdf"
 GITHUB = "github"
 BBC = "bbc"
 CNN = "cnn"
+LTN = "ltn"
 PLAYWRIGHT_NETWORKIDLE = "playwright-networkidle"
 PLAYWRIGHT_FAST = "playwright-fast"
 PLAYWRIGHT = "playwright"
@@ -51,6 +52,7 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
     LoaderDef(GITHUB, "Fetches GitHub pages and file content", lambda: loaders.GitHubLoader()),
     LoaderDef(BBC, "BBC article extraction with article-aware parsing", lambda: loaders.BBCLoader()),
     LoaderDef(CNN, "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
+    LoaderDef(LTN, "Liberty Times Net article extraction", lambda: loaders.LTNLoader()),
     LoaderDef(
         PLAYWRIGHT_NETWORKIDLE,
         "Browser-based scraping with networkidle wait",
@@ -98,6 +100,7 @@ __all__ = [
     "GITHUB",
     "HTTPX",
     "LOADER_DEFS",
+    "LTN",
     "PDF",
     "PLAYWRIGHT",
     "PLAYWRIGHT_FAST",

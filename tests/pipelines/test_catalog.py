@@ -108,6 +108,7 @@ def test_match_pipeline_raw_github() -> None:
         ("https://www.instagram.com/reel/CuA0XYZ1234/", "reel"),
         ("https://www.bbc.com/news/articles/c70k29914q4o", "bbc"),
         ("https://edition.cnn.com/2026/03/16/tech/example", "cnn"),
+        ("https://news.ltn.com.tw/news/life/breakingnews/5432239", "ltn"),
     ],
 )
 def test_match_pipeline_remaining_source_applicability(url: str, pipeline_name: str) -> None:
