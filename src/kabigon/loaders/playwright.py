@@ -4,6 +4,7 @@ from typing import Literal
 from kabigon.core.loader import Loader
 
 from .browser import fetch_browser_html
+from .content_guard import ensure_usable_content
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -42,4 +43,5 @@ class PlaywrightLoader(Loader):
         logger.debug("[PlaywrightLoader] Loaded browser page")
         result = html_to_markdown(content)
         logger.info("[PlaywrightLoader] Extracted browser page content (%s chars)", len(result))
+        ensure_usable_content(result, loader_name="PlaywrightLoader", url=url)
         return result
