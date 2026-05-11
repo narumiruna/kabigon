@@ -35,6 +35,7 @@ DEFAULT_FALLBACK_LOADERS = (
     loader_registry.GITHUB,
     loader_registry.BBC,
     loader_registry.CNN,
+    loader_registry.LTN,
     loader_registry.PLAYWRIGHT_NETWORKIDLE,
     loader_registry.PLAYWRIGHT_FAST,
 )

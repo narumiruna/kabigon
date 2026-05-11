@@ -8,6 +8,7 @@ import kabigon.loader_registry as loader_names
 from kabigon.sources.applicability import is_bbc_url
 from kabigon.sources.applicability import is_cnn_url
 from kabigon.sources.applicability import is_github_url
+from kabigon.sources.applicability import is_ltn_url
 from kabigon.sources.applicability import is_openai_web_url
 from kabigon.sources.applicability import is_pdf_target
 from kabigon.sources.applicability import is_ptt_url
@@ -120,6 +121,14 @@ _PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
             targeted_loaders=(loader_names.CNN,),
         ),
         matches=is_cnn_url,
+    ),
+    _PipelineEntry(
+        pipeline=Pipeline(
+            name=loader_names.LTN,
+            content_type=ContentType.NEWS_ARTICLE,
+            targeted_loaders=(loader_names.LTN,),
+        ),
+        matches=is_ltn_url,
     ),
     _PipelineEntry(
         pipeline=Pipeline(

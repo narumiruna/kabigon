@@ -3,6 +3,7 @@ from .cnn import CNNLoader
 from .firecrawl import FirecrawlLoader
 from .github import GitHubLoader
 from .httpx import HttpxLoader
+from .ltn import LTNLoader
 from .pdf import PDFLoader
 from .playwright import PlaywrightLoader
 from .ptt import PttLoader
@@ -20,6 +21,7 @@ __all__ = [
     "FirecrawlLoader",
     "GitHubLoader",
     "HttpxLoader",
+    "LTNLoader",
     "PDFLoader",
     "PlaywrightLoader",
     "PttLoader",

@@ -13,6 +13,7 @@ from kabigon.core.errors import LoaderNotApplicableError
 
 BBC_DOMAIN_SUFFIX = "bbc.com"
 CNN_DOMAIN_SUFFIX = "cnn.com"
+LTN_DOMAIN_SUFFIX = "ltn.com.tw"
 YOUTUBE_ALLOWED_SCHEMES = {
     "http",
     "https",
@@ -118,6 +119,11 @@ class BBCTarget:
 
 @dataclass(frozen=True)
 class CNNTarget:
+    url: str
+
+
+@dataclass(frozen=True)
+class LTNTarget:
     url: str
 
 
@@ -300,6 +306,24 @@ def is_cnn_url(url: str) -> bool:
     return True
 
 
+def parse_ltn_target(url: str) -> LTNTarget:
+    if not _host_matches_domain_suffix(url, LTN_DOMAIN_SUFFIX):
+        raise LoaderNotApplicableError(
+            "LTNLoader",
+            url,
+            f"Not an LTN URL. Expected domain ending with {LTN_DOMAIN_SUFFIX}",
+        )
+    return LTNTarget(url=url)
+
+
+def is_ltn_url(url: str) -> bool:
+    try:
+        parse_ltn_target(url)
+    except LoaderNotApplicableError:
+        return False
+    return True
+
+
 def is_openai_web_url(url: str) -> bool:
     return _host_in(url, OPENAI_WEB_HOSTS)
 
@@ -381,6 +405,7 @@ def is_twitter_url(url: str) -> bool:
 __all__ = [
     "BBC_DOMAIN_SUFFIX",
     "CNN_DOMAIN_SUFFIX",
+    "LTN_DOMAIN_SUFFIX",
     "OPENAI_WEB_HOSTS",
     "PTT_HOSTS",
     "REDDIT_DOMAINS",
@@ -390,6 +415,7 @@ __all__ = [
     "BBCTarget",
     "CNNTarget",
     "GitHubTarget",
+    "LTNTarget",
     "NoVideoIDFoundError",
     "PDFTarget",
     "PttTarget",
@@ -404,6 +430,7 @@ __all__ = [
     "is_bbc_url",
     "is_cnn_url",
     "is_github_url",
+    "is_ltn_url",
     "is_openai_web_url",
     "is_pdf_target",
     "is_ptt_url",
@@ -416,6 +443,7 @@ __all__ = [
     "parse_cnn_target",
     "parse_github_raw_content_target",
     "parse_github_target",
+    "parse_ltn_target",
     "parse_pdf_target",
     "parse_ptt_target",
     "parse_reddit_target",
