@@ -15,7 +15,7 @@ dependencies    = [
   "playwright>=1.59.0",
   "pypdf>=6.11.0",
   "rich>=15.0.0",
-  "typer>=0.25.1",
+  "typer>=0.26.4",
   "youtube-transcript-api>=1.2.4",
   "yt-dlp>=2026.3.17",
 ]
