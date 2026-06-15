@@ -63,6 +63,20 @@ def test_source_applicability_rejects_unknown_targets(is_applicable) -> None:
     assert not is_applicable("https://example.com/not-supported")
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://new.reddit.com/r/python/comments/abc/example/",
+        "https://np.reddit.com/r/python/comments/abc/example/",
+        "https://m.reddit.com/r/python/comments/abc/example/",
+        "https://sh.reddit.com/r/python/comments/abc/example/",
+        "https://redd.it/abc",
+    ],
+)
+def test_reddit_applicability_accepts_common_url_variants(url: str) -> None:
+    assert is_reddit_url(url)
+
+
 def test_youtube_applicability_rejects_playlist() -> None:
     assert not is_youtube_video_url("https://www.youtube.com/playlist?list=PL123")
 
