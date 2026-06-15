@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 from typing import cast
+from urllib.parse import ParseResult
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 from xml.etree import ElementTree as ET
@@ -18,6 +19,18 @@ from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
 USER_AGENT = DEFAULT_BROWSER_USER_AGENT
+REDDIT_SHORT_HOSTS = {"redd.it", "www.redd.it"}
+
+
+def _reddit_endpoint_path(parsed: ParseResult) -> str:
+    path = parsed.path.rstrip("/")
+    if parsed.netloc.lower() not in REDDIT_SHORT_HOSTS:
+        return path
+
+    post_id = parsed.path.strip("/").split("/", maxsplit=1)[0]
+    if not post_id:
+        return path
+    return f"/comments/{post_id}"
 
 
 def check_reddit_url(url: str) -> None:
@@ -42,13 +55,14 @@ def convert_to_old_reddit(url: str) -> str:
         URL with old.reddit.com domain
     """
     parsed = urlparse(url)
-    return str(urlunparse(parsed._replace(netloc="old.reddit.com")))
+    path = _reddit_endpoint_path(parsed)
+    return str(urlunparse(parsed._replace(netloc="old.reddit.com", path=path, query="", fragment="")))
 
 
 def to_reddit_json_url(url: str) -> str:
     """Normalize Reddit URL to a `www.reddit.com/.../.json` API URL."""
     parsed = urlparse(url)
-    path = parsed.path.rstrip("/")
+    path = _reddit_endpoint_path(parsed)
     if not path.endswith(".json"):
         path = f"{path}.json"
     return str(urlunparse(parsed._replace(netloc="www.reddit.com", path=path, query="", fragment="")))
@@ -56,7 +70,7 @@ def to_reddit_json_url(url: str) -> str:
 
 def to_reddit_rss_url(url: str) -> str:
     parsed = urlparse(url)
-    path = parsed.path.rstrip("/")
+    path = _reddit_endpoint_path(parsed)
     if not path.endswith(".rss"):
         path = f"{path}/.rss"
     return str(urlunparse(parsed._replace(netloc="www.reddit.com", path=path, query="", fragment="")))

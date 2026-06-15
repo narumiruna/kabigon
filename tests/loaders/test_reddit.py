@@ -5,6 +5,7 @@ import pytest
 
 from kabigon.loaders import reddit
 from kabigon.loaders.reddit import RedditLoader
+from kabigon.loaders.reddit import convert_to_old_reddit
 from kabigon.loaders.reddit import to_reddit_json_url
 from kabigon.loaders.reddit import to_reddit_rss_url
 
@@ -63,6 +64,13 @@ def test_to_reddit_json_url_normalizes_host_and_path() -> None:
 def test_to_reddit_rss_url_normalizes_host_and_path() -> None:
     url = "https://old.reddit.com/r/selfhosted/comments/abc123/example/?utm_source=share"
     assert to_reddit_rss_url(url) == "https://www.reddit.com/r/selfhosted/comments/abc123/example/.rss"
+
+
+def test_reddit_short_url_normalizes_to_comments_path() -> None:
+    url = "https://redd.it/abc123?utm_source=share"
+    assert to_reddit_json_url(url) == "https://www.reddit.com/comments/abc123.json"
+    assert to_reddit_rss_url(url) == "https://www.reddit.com/comments/abc123/.rss"
+    assert convert_to_old_reddit(url) == "https://old.reddit.com/comments/abc123"
 
 
 def test_reddit_loader_prefers_json_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:

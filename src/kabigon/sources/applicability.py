@@ -44,6 +44,12 @@ REDDIT_DOMAINS = (
     "reddit.com",
     "www.reddit.com",
     "old.reddit.com",
+    "new.reddit.com",
+    "np.reddit.com",
+    "m.reddit.com",
+    "sh.reddit.com",
+    "redd.it",
+    "www.redd.it",
 )
 REEL_PREFIX = "https://www.instagram.com/reel"
 TRUTHSOCIAL_DOMAINS = (
