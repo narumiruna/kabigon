@@ -29,10 +29,6 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
     return target.normalized_url.replace("//x.com", f"//{new_domain}", 1)
 
 
-def check_x_url(url: str) -> None:
-    parse_twitter_target(url)
-
-
 class TwitterLoader(Loader):
     def __init__(self, timeout: float = 20_000, wait_for_tweet_timeout: float = 15_000) -> None:
         self.timeout = timeout

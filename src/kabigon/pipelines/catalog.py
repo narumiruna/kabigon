@@ -43,122 +43,116 @@ class Pipeline:
     fallback_policy: FallbackPolicy = FallbackPolicy.REMAINING_DEFAULT
 
 
-@dataclass(frozen=True)
-class _PipelineEntry:
-    pipeline: Pipeline
-    matches: Matcher
-
-
-_PIPELINE_ENTRIES: tuple[_PipelineEntry, ...] = (
-    _PipelineEntry(
-        pipeline=Pipeline(
+_PIPELINE_ENTRIES: tuple[tuple[Pipeline, Matcher], ...] = (
+    (
+        Pipeline(
             name=loader_names.PTT,
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.PTT,),
         ),
-        matches=is_ptt_url,
+        is_ptt_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.TWITTER,
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.TWITTER,),
         ),
-        matches=is_twitter_url,
+        is_twitter_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.TRUTHSOCIAL,
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.TRUTHSOCIAL,),
         ),
-        matches=is_truthsocial_url,
+        is_truthsocial_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.REDDIT,
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.REDDIT,),
         ),
-        matches=is_reddit_url,
+        is_reddit_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.YOUTUBE,
             content_type=ContentType.YOUTUBE_VIDEO,
             targeted_loaders=(loader_names.YOUTUBE, loader_names.YOUTUBE_YTDLP),
         ),
-        matches=is_youtube_video_url,
+        is_youtube_video_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.REEL,
             content_type=ContentType.SOCIAL_POST,
             targeted_loaders=(loader_names.REEL,),
         ),
-        matches=is_reel_url,
+        is_reel_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.GITHUB,
             content_type=ContentType.CODE_CONTENT,
             targeted_loaders=(loader_names.GITHUB,),
         ),
-        matches=is_github_url,
+        is_github_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.BBC,
             content_type=ContentType.NEWS_ARTICLE,
             targeted_loaders=(loader_names.BBC,),
         ),
-        matches=is_bbc_url,
+        is_bbc_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.CNN,
             content_type=ContentType.NEWS_ARTICLE,
             targeted_loaders=(loader_names.CNN,),
         ),
-        matches=is_cnn_url,
+        is_cnn_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.LTN,
             content_type=ContentType.NEWS_ARTICLE,
             targeted_loaders=(loader_names.LTN,),
         ),
-        matches=is_ltn_url,
+        is_ltn_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name="openai_web",
             content_type=ContentType.GENERIC_WEB,
             targeted_loaders=(loader_names.FIRECRAWL,),
             fallback_policy=FallbackPolicy.NO_FALLBACK,
         ),
-        matches=is_openai_web_url,
+        is_openai_web_url,
     ),
-    _PipelineEntry(
-        pipeline=Pipeline(
+    (
+        Pipeline(
             name=loader_names.PDF,
             content_type=ContentType.DOCUMENT_PDF,
             targeted_loaders=(loader_names.PDF,),
         ),
-        matches=is_pdf_target,
+        is_pdf_target,
     ),
 )
 
 
 def match_pipeline(url: str) -> Pipeline | None:
-    for entry in _PIPELINE_ENTRIES:
-        if entry.matches(url):
-            return entry.pipeline
+    for pipeline, matches in _PIPELINE_ENTRIES:
+        if matches(url):
+            return pipeline
     return None
 
 
 def list_pipelines() -> tuple[Pipeline, ...]:
-    return tuple(entry.pipeline for entry in _PIPELINE_ENTRIES)
+    return tuple(pipeline for pipeline, _matches in _PIPELINE_ENTRIES)
 
 
 __all__ = ["ContentType", "FallbackPolicy", "Pipeline", "list_pipelines", "match_pipeline"]

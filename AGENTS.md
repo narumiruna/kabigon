@@ -4,7 +4,7 @@
 - `src/kabigon/`: typed package root (`py.typed`).
 - `src/kabigon/core/`: shared primitives, exceptions, and helpers.
 - `src/kabigon/loaders/`: source-specific loaders.
-- `src/kabigon/cli.py`: Typer entrypoint (`kabigon`).
+- `src/kabigon/cli.py`: argparse entrypoint (`kabigon`).
 - `tests/` and `tests/loaders/`: pytest suite and loader-focused cases.
 - `examples/`: runnable usage samples.
 Keep new features inside the existing boundaries (core vs loaders vs CLI). Avoid cross-layer shortcuts.

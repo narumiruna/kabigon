@@ -5,10 +5,6 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
-from kabigon.sources.applicability import NoVideoIDFoundError
-from kabigon.sources.applicability import UnsupportedURLNetlocError
-from kabigon.sources.applicability import UnsupportedURLSchemeError
-from kabigon.sources.applicability import VideoIDError
 from kabigon.sources.applicability import parse_youtube_video_target
 from kabigon.sources.applicability import require_loader_applicability
 
@@ -77,27 +73,6 @@ def parse_video_id(url: str) -> str:
         'dQw4w9WgXcQ'
     """
     return parse_youtube_video_target(url).video_id
-
-
-def check_youtube_url(url: str) -> None:
-    """Validate that the given URL is a supported YouTube URL.
-
-    This delegates to ``parse_video_id`` to ensure that URL validation
-    (including scheme and netloc checks) is implemented in a single place.
-    Any validation failures are surfaced as ``ValueError`` to maintain
-    the previous public interface of this function.
-
-    Args:
-        url: YouTube video URL to validate.
-
-    Raises:
-        ValueError: If URL is invalid or not a supported YouTube URL.
-    """
-    try:
-        # We only care about validation here; the caller does not need the ID.
-        parse_video_id(url)
-    except (UnsupportedURLSchemeError, UnsupportedURLNetlocError, NoVideoIDFoundError, VideoIDError) as exc:
-        raise ValueError(str(exc)) from exc
 
 
 class YoutubeLoader(Loader):

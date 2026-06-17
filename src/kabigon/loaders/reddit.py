@@ -33,18 +33,6 @@ def _reddit_endpoint_path(parsed: ParseResult) -> str:
     return f"/comments/{post_id}"
 
 
-def check_reddit_url(url: str) -> None:
-    """Check if URL is from Reddit.
-
-    Args:
-        url: The URL to check
-
-    Raises:
-        LoaderNotApplicableError: If URL is not from Reddit
-    """
-    parse_reddit_target(url)
-
-
 def convert_to_old_reddit(url: str) -> str:
     """Convert Reddit URL to old.reddit.com format.
 

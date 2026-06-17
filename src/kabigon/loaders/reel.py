@@ -12,10 +12,6 @@ type LoaderFactory = Callable[[], Loader]
 logger = logging.getLogger(__name__)
 
 
-def check_reel_url(url: str) -> None:
-    parse_reel_target(url)
-
-
 class ReelLoader(Loader):
     def __init__(
         self,

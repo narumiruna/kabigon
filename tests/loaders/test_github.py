@@ -1,9 +1,9 @@
 import pytest
 
 from kabigon.core.errors import InvalidURLError
-from kabigon.loaders.github import check_github_url
 from kabigon.loaders.github import extract_main_html
 from kabigon.loaders.github import to_raw_github_url
+from kabigon.sources.applicability import parse_github_target
 
 
 def test_extract_main_html_prefers_main() -> None:
@@ -100,10 +100,10 @@ def test_to_raw_github_url_error(url: str) -> None:
         "https://raw.githubusercontent.com/anthropics/claude-code/main/plugins/ralph-wiggum/README.md",
     ],
 )
-def test_check_github_url(url: str) -> None:
-    check_github_url(url)  # should not raise
+def test_parse_github_target(url: str) -> None:
+    parse_github_target(url)  # should not raise
 
 
-def test_check_github_url_error() -> None:
+def test_parse_github_target_error() -> None:
     with pytest.raises(InvalidURLError, match="URL is not a GitHub URL"):
-        check_github_url("https://example.com/x")
+        parse_github_target("https://example.com/x")

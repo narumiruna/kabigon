@@ -4,7 +4,7 @@ from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders.browser import DEFAULT_BLOCKED_RESOURCE_TYPES
 from kabigon.loaders.browser import DEFAULT_BROWSER_USER_AGENT
 from kabigon.loaders.truthsocial import TruthSocialLoader
-from kabigon.loaders.truthsocial import check_truthsocial_url
+from kabigon.sources.applicability import parse_truthsocial_target
 
 
 @pytest.mark.parametrize(
@@ -14,9 +14,9 @@ from kabigon.loaders.truthsocial import check_truthsocial_url
         "https://www.truthsocial.com/@user/posts/789",
     ],
 )
-def test_check_truthsocial_url(url: str) -> None:
+def test_parse_truthsocial_target(url: str) -> None:
     """Test that valid Truth Social URLs pass validation."""
-    check_truthsocial_url(url)  # Should not raise
+    parse_truthsocial_target(url)  # Should not raise
 
 
 @pytest.mark.parametrize(
@@ -27,10 +27,10 @@ def test_check_truthsocial_url(url: str) -> None:
         "https://x.com/user/status/123",
     ],
 )
-def test_check_truthsocial_url_error(url: str) -> None:
+def test_parse_truthsocial_target_error(url: str) -> None:
     """Test that non-Truth Social URLs raise LoaderNotApplicableError."""
     with pytest.raises(LoaderNotApplicableError, match="Not a Truth Social URL"):
-        check_truthsocial_url(url)
+        parse_truthsocial_target(url)
 
 
 def test_truthsocial_loader_initialization() -> None:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import argparse
 import logging
 from collections.abc import Callable
-from typing import NoReturn
-
-import typer
+from collections.abc import Sequence
+from typing import cast
 
 from kabigon import loader_registry
 from kabigon.api import load_url_sync
@@ -40,7 +40,6 @@ LOADER_DEFS: list[LoaderDef] = [
     for name in CLI_VISIBLE_LOADERS
 ]
 
-app = typer.Typer(add_completion=False)
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s:%(lineno)d - %(message)s"
 
 
@@ -52,26 +51,30 @@ def _loader_requirements() -> dict[str, tuple[str, ...]]:
     return {name: requirements for name, _description, _factory, requirements in LOADER_DEFS}
 
 
-def _exit_with_error(message: str) -> NoReturn:
-    typer.echo(message)
-    raise typer.Exit(code=2)
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="kabigon")
+    parser.add_argument("url", nargs="?", metavar="URL")
+    parser.add_argument("--loader", help="Comma-separated loader names")
+    parser.add_argument("--list", action="store_true", dest="list_", help="List supported loaders")
+    parser.add_argument("--verbose", action="store_true", help="Show debug logging")
+    return parser
 
 
-def _parse_loader_names(raw: str) -> list[str]:
+def _parse_loader_names(raw: str, parser: argparse.ArgumentParser) -> list[str]:
     names = [name.strip() for name in raw.split(",") if name.strip()]
     if not names:
-        _exit_with_error("Loader list cannot be empty.")
+        parser.error("Loader list cannot be empty.")
     registry = _loader_registry()
     unknown = [name for name in names if name not in registry]
     if unknown:
         hint = ", ".join(unknown)
-        _exit_with_error(f"Unknown loader(s): {hint}. Use --list to see supported loaders.")
+        parser.error(f"Unknown loader(s): {hint}. Use --list to see supported loaders.")
     return names
 
 
 def _print_loader_list() -> None:
     for name, description, _factory, _requirements in LOADER_DEFS:
-        typer.echo(f"{name} - {description}")
+        print(f"{name} - {description}")
 
 
 def _configure_logging(verbose: bool) -> None:
@@ -85,35 +88,32 @@ def _load_with_loader_names(url: str, loader_names: list[str]) -> str:
     return resolve_explicit_load_chain(url, loader_names, registry.__getitem__, requirements.__getitem__).load_sync()
 
 
-@app.callback(invoke_without_command=True)
-def _main(
-    url: str | None = typer.Argument(None, metavar="URL"),
-    loader: str | None = typer.Option(None, "--loader", help="Comma-separated loader names"),
-    list_: bool = typer.Option(False, "--list", help="List supported loaders"),
-    verbose: bool = typer.Option(False, "--verbose", help="Show debug logging"),
-) -> None:
+def run(url: str) -> None:
+    print(load_url_sync(url))
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    url = cast("str | None", args.url)
+    loader = cast("str | None", args.loader)
+    list_ = cast("bool", args.list_)
+    verbose = cast("bool", args.verbose)
+
     _configure_logging(verbose)
 
     if list_:
         if url is not None or loader is not None:
-            _exit_with_error("--list cannot be combined with URL or --loader.")
+            parser.error("--list cannot be combined with URL or --loader.")
         _print_loader_list()
         return
 
     if url is None:
-        _exit_with_error("URL is required unless --list is used.")
+        parser.error("URL is required unless --list is used.")
 
     if loader is None:
-        typer.echo(load_url_sync(url))
+        print(load_url_sync(url))
         return
 
-    names = _parse_loader_names(loader)
-    typer.echo(_load_with_loader_names(url, names))
-
-
-def run(url: str) -> None:
-    typer.echo(load_url_sync(url))
-
-
-def main() -> None:
-    app()
+    names = _parse_loader_names(loader, parser)
+    print(_load_with_loader_names(url, names))

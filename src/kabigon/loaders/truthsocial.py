@@ -15,18 +15,6 @@ from .utils import html_to_markdown
 logger = logging.getLogger(__name__)
 
 
-def check_truthsocial_url(url: str) -> None:
-    """Check if URL is from Truth Social.
-
-    Args:
-        url: The URL to check
-
-    Raises:
-        LoaderNotApplicableError: If URL is not from Truth Social
-    """
-    parse_truthsocial_target(url)
-
-
 class TruthSocialLoader(Loader):
     """Loader for Truth Social posts.
 

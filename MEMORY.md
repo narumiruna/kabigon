@@ -9,6 +9,7 @@
 - Reddit RSS fallback can return 403 when using browser-like request headers; fetch RSS with default httpx headers.
 - Treat CLI `--loader` and direct `kabigon.loaders.*` usage as advanced escape hatches; the preferred public interface is automatic Pipeline planning through `kabigon <url>` / `kabigon.load_url(url)`.
 - Keep Load chain Loader construction lazy; do not let later Fallback loader constructors run before earlier Loader attempts fail.
+- Symptom: `rich` stays in `uv.lock` after removing direct CLI deps. Cause: `curl-cffi` 0.15 depends on `rich`. Fix: keep `curl-cffi<0.15` while the no-Rich runtime goal applies.
 
 ## TASTE
 

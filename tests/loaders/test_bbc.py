@@ -5,7 +5,7 @@ import pytest
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.bbc import BBCLoader
-from kabigon.loaders.bbc import check_bbc_url
+from kabigon.sources.applicability import parse_bbc_target
 
 
 @pytest.mark.parametrize(
@@ -16,8 +16,8 @@ from kabigon.loaders.bbc import check_bbc_url
         "https://www.bbc.com/sport/football/articles/example",
     ],
 )
-def test_check_bbc_url(url: str) -> None:
-    check_bbc_url(url)
+def test_parse_bbc_target(url: str) -> None:
+    parse_bbc_target(url)
 
 
 @pytest.mark.parametrize(
@@ -27,9 +27,9 @@ def test_check_bbc_url(url: str) -> None:
         "https://edition.cnn.com/2026/03/16/tech/example",
     ],
 )
-def test_check_bbc_url_error(url: str) -> None:
+def test_parse_bbc_target_error(url: str) -> None:
     with pytest.raises(LoaderNotApplicableError, match="Not a BBC URL"):
-        check_bbc_url(url)
+        parse_bbc_target(url)
 
 
 def test_bbc_loader_uses_news_article_loading(monkeypatch: pytest.MonkeyPatch) -> None:
