@@ -5,7 +5,7 @@ import pytest
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.cnn import CNNLoader
-from kabigon.loaders.cnn import check_cnn_url
+from kabigon.sources.applicability import parse_cnn_target
 
 
 @pytest.mark.parametrize(
@@ -16,8 +16,8 @@ from kabigon.loaders.cnn import check_cnn_url
         "https://cnn.com/world/live-news/example",
     ],
 )
-def test_check_cnn_url(url: str) -> None:
-    check_cnn_url(url)
+def test_parse_cnn_target(url: str) -> None:
+    parse_cnn_target(url)
 
 
 @pytest.mark.parametrize(
@@ -27,9 +27,9 @@ def test_check_cnn_url(url: str) -> None:
         "https://bbc.com/news/world-123",
     ],
 )
-def test_check_cnn_url_error(url: str) -> None:
+def test_parse_cnn_target_error(url: str) -> None:
     with pytest.raises(LoaderNotApplicableError, match="Not a CNN URL"):
-        check_cnn_url(url)
+        parse_cnn_target(url)
 
 
 def test_cnn_loader_uses_news_article_loading(monkeypatch: pytest.MonkeyPatch) -> None:

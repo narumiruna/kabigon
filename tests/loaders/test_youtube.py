@@ -1,32 +1,12 @@
 import pytest
 
 from kabigon.core.errors import LoaderNotApplicableError
-from kabigon.loaders.youtube import NoVideoIDFoundError
-from kabigon.loaders.youtube import UnsupportedURLNetlocError
-from kabigon.loaders.youtube import UnsupportedURLSchemeError
-from kabigon.loaders.youtube import VideoIDError
 from kabigon.loaders.youtube import YoutubeLoader
-from kabigon.loaders.youtube import check_youtube_url
 from kabigon.loaders.youtube import parse_video_id
-
-
-@pytest.mark.parametrize(
-    "url",
-    [
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "https://youtube.com/watch?v=dQw4w9WgXcQ",
-        "https://youtu.be/dQw4w9WgXcQ",
-    ],
-)
-def test_check_youtube_url(url: str) -> None:
-    check_youtube_url(url)
-
-
-@pytest.mark.parametrize("url", ["https://example.com"])
-def test_check_youtube_url_error(url: str) -> None:
-    with pytest.raises(ValueError):
-        check_youtube_url(url)
-
+from kabigon.sources.applicability import NoVideoIDFoundError
+from kabigon.sources.applicability import UnsupportedURLNetlocError
+from kabigon.sources.applicability import UnsupportedURLSchemeError
+from kabigon.sources.applicability import VideoIDError
 
 # Tests for parse_video_id function
 
@@ -123,33 +103,6 @@ def test_no_video_id_found_error_message() -> None:
     """Test NoVideoIDFoundError exception message format."""
     exc = NoVideoIDFoundError("https://www.youtube.com/watch")
     assert str(exc) == "no video found in URL: https://www.youtube.com/watch"
-
-
-# Test check_youtube_url with various error scenarios
-
-
-def test_check_youtube_url_converts_scheme_error_to_value_error() -> None:
-    """Test that check_youtube_url converts UnsupportedURLSchemeError to ValueError."""
-    with pytest.raises(ValueError, match="unsupported URL scheme"):
-        check_youtube_url("ftp://www.youtube.com/watch?v=dQw4w9WgXcQ")
-
-
-def test_check_youtube_url_converts_netloc_error_to_value_error() -> None:
-    """Test that check_youtube_url converts UnsupportedURLNetlocError to ValueError."""
-    with pytest.raises(ValueError, match="unsupported URL netloc"):
-        check_youtube_url("https://example.com/watch?v=dQw4w9WgXcQ")
-
-
-def test_check_youtube_url_converts_no_video_id_error_to_value_error() -> None:
-    """Test that check_youtube_url converts NoVideoIDFoundError to ValueError."""
-    with pytest.raises(ValueError, match="no video found in URL"):
-        check_youtube_url("https://www.youtube.com/watch")
-
-
-def test_check_youtube_url_converts_video_id_error_to_value_error() -> None:
-    """Test that check_youtube_url converts VideoIDError to ValueError."""
-    with pytest.raises(ValueError, match="invalid video ID"):
-        check_youtube_url("https://www.youtube.com/watch?v=abc")
 
 
 def test_youtube_loader_converts_source_applicability_to_not_applicable() -> None:

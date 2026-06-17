@@ -128,11 +128,9 @@ print(kabigon.available_loaders())
 
 ## Architecture
 
-![Kabigon URL processing architecture](docs/architecture/url-processing.svg)
-
 The automatic path uses `kabigon.pipelines` to select a source-aware pipeline, then `kabigon.load_chain` builds one ordered execution plan. Each loader is constructed only when its turn is reached; the first non-empty string is returned, and if every planned loader fails, kabigon raises `LoaderError` with the attempted loader details.
 
-Mermaid source: [`docs/architecture/url-processing.mmd`](docs/architecture/url-processing.mmd)
+Architecture diagram source: [`docs/architecture/url-processing.mmd`](docs/architecture/url-processing.mmd)
 
 ## Commands
 
@@ -173,11 +171,14 @@ Use this only for debugging or testing specific loaders. The automatic path is p
 
 ### Docker
 
-A `Dockerfile` is provided. The image includes Playwright with Chromium and runs `xvfb-run` for headless rendering.
+A `Dockerfile` is provided. The default image includes Playwright with headless Chromium. Build with Xvfb only when you need Chromium `headless=False`.
 
 ```bash
 docker build -t kabigon .
-docker run --rm kabigon kabigon https://example.com
+docker run --rm kabigon https://example.com
+
+# Optional: support Chromium headless=False
+docker build --build-arg KABIGON_WITH_XVFB=1 -t kabigon:xvfb .
 ```
 
 ## Project Structure
@@ -188,7 +189,7 @@ src/kabigon/
 ├── loaders/       # Concrete loader implementations (one file per source)
 ├── pipelines/     # Pipeline catalog: maps URL patterns to loader chains
 ├── api.py         # Public Python interface (load_url, explain_plan, …)
-├── cli.py         # Typer CLI entrypoint
+├── cli.py         # argparse CLI entrypoint
 └── load_chain.py  # Chain execution and fallback logic
 tests/
 ├── loaders/       # Per-loader unit tests

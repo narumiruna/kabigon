@@ -28,10 +28,6 @@ _IGNORED_TAGS = {
 }
 
 
-def check_github_url(url: str) -> None:
-    parse_github_target(url)
-
-
 def to_raw_github_url(url: str) -> str:
     """Convert a GitHub blob URL to a raw.githubusercontent.com URL.
 

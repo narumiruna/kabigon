@@ -37,10 +37,6 @@ _VOID_TAGS = {
 }
 
 
-def check_ltn_url(url: str) -> None:
-    parse_ltn_target(url)
-
-
 class _FirstDivWithClassesExtractor(HTMLParser):
     def __init__(self, required_classes: set[str], ignored_tags: set[str] | None = None) -> None:
         super().__init__(convert_charrefs=True)

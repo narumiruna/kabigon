@@ -8,10 +8,6 @@ from .httpx import HttpxLoader
 logger = logging.getLogger(__name__)
 
 
-def check_ptt_url(url: str) -> None:
-    parse_ptt_target(url)
-
-
 class PttLoader(Loader):
     def __init__(self) -> None:
         self.httpx_loader = HttpxLoader(

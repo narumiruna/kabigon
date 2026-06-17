@@ -7,15 +7,13 @@ requires-python = ">=3.12"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
   "charset-normalizer>=3.4.7",
-  "curl-cffi>=0.7",
+  "curl-cffi>=0.7,<0.15",
   "firecrawl-py>=4.24.0",
   "httpx>=0.28.1",
   "markdownify>=1.2.2",
   "openai-whisper>=20250625",
   "playwright>=1.59.0",
   "pypdf>=6.11.0",
-  "rich>=15.0.0",
-  "typer>=0.26.7",
   "youtube-transcript-api>=1.2.4",
   "yt-dlp>=2026.3.17",
 ]

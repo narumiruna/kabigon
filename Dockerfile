@@ -25,10 +25,13 @@ COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+ARG KABIGON_WITH_XVFB=0
+ENV KABIGON_WITH_XVFB=${KABIGON_WITH_XVFB}
 RUN playwright install --with-deps chromium \
-    && apt-get update \
-    && apt-get install -y xauth \
-    && rm -rf /var/lib/apt/lists/*
+    && if [ "$KABIGON_WITH_XVFB" = "1" ]; then \
+        apt-get update \
+        && apt-get install -y --no-install-recommends xauth xvfb \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
 
-# ENTRYPOINT ["kabigon"]
-CMD [ "xvfb-run", "kabigon" ]
+ENTRYPOINT ["sh", "-c", "if [ \"$KABIGON_WITH_XVFB\" = \"1\" ]; then exec xvfb-run -a kabigon \"$@\"; fi; exec kabigon \"$@\"", "--"]

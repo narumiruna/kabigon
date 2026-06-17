@@ -7,10 +7,6 @@ from .news_article import DEFAULT_NEWS_ARTICLE_HEADERS
 from .news_article import load_news_article
 
 
-def check_bbc_url(url: str) -> None:
-    parse_bbc_target(url)
-
-
 class BBCLoader(Loader):
     def __init__(self, headers: dict[str, str] | None = None) -> None:
         self.headers = headers or DEFAULT_NEWS_ARTICLE_HEADERS

@@ -5,8 +5,8 @@ import pytest
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders import ltn as ltn_module
 from kabigon.loaders.ltn import LTNLoader
-from kabigon.loaders.ltn import check_ltn_url
 from kabigon.loaders.ltn import extract_ltn_article_html
+from kabigon.sources.applicability import parse_ltn_target
 
 
 @pytest.mark.parametrize(
@@ -16,8 +16,8 @@ from kabigon.loaders.ltn import extract_ltn_article_html
         "https://news.ltn.com.tw/news/politics/breakingnews/1234567",
     ],
 )
-def test_check_ltn_url(url: str) -> None:
-    check_ltn_url(url)
+def test_parse_ltn_target(url: str) -> None:
+    parse_ltn_target(url)
 
 
 @pytest.mark.parametrize(
@@ -27,9 +27,9 @@ def test_check_ltn_url(url: str) -> None:
         "https://www.bbc.com/news/articles/c70k29914q4o",
     ],
 )
-def test_check_ltn_url_error(url: str) -> None:
+def test_parse_ltn_target_error(url: str) -> None:
     with pytest.raises(LoaderNotApplicableError, match="Not an LTN URL"):
-        check_ltn_url(url)
+        parse_ltn_target(url)
 
 
 def test_extract_ltn_article_html_targets_article_body_container() -> None:
