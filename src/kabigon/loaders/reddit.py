@@ -195,7 +195,7 @@ def _rss_to_markdown(xml_text: str, source_url: str) -> str:
 class RedditLoader(Loader):
     """Loader for Reddit posts and comments.
 
-    Uses old.reddit.com for better content extraction without CAPTCHA.
+    Prefers Reddit's Atom/RSS feed, then falls back to JSON and old.reddit.com browser extraction.
     """
 
     def __init__(self, timeout: float = 30_000) -> None:
@@ -250,7 +250,7 @@ class RedditLoader(Loader):
         rss_url = to_reddit_rss_url(url)
         timeout_seconds = self.timeout / 1000
         try:
-            logger.info("[RedditLoader] Fetching Reddit RSS fallback")
+            logger.info("[RedditLoader] Fetching Reddit RSS endpoint")
             logger.debug("[RedditLoader] Reddit RSS URL: %s", rss_url)
             async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
                 response = await client.get(rss_url)
@@ -304,21 +304,21 @@ class RedditLoader(Loader):
         logger.info("[RedditLoader] Processing URL: %s", url)
         parse_reddit_target(url)
         try:
-            result = await self._load_via_json(url)
-        except (LoaderContentError, LoaderTimeoutError) as json_error:
-            logger.warning("[RedditLoader] JSON endpoint failed, trying RSS fallback: %s", json_error)
+            result = await self._load_via_rss(url)
+        except (LoaderContentError, LoaderTimeoutError) as rss_error:
+            logger.warning("[RedditLoader] RSS endpoint failed, trying JSON fallback: %s", rss_error)
             try:
-                result = await self._load_via_rss(url)
-            except (LoaderContentError, LoaderTimeoutError) as rss_error:
-                logger.warning("[RedditLoader] RSS fallback failed, falling back to old Reddit: %s", rss_error)
+                result = await self._load_via_json(url)
+            except (LoaderContentError, LoaderTimeoutError) as json_error:
+                logger.warning("[RedditLoader] JSON fallback failed, falling back to old Reddit: %s", json_error)
                 result = await self._load_via_old_reddit(url)
                 logger.info(
                     "[RedditLoader] Extracted content from old Reddit fallback (%s chars)",
                     len(result),
                 )
                 return result
-            logger.info("[RedditLoader] Extracted content from RSS fallback (%s chars)", len(result))
+            logger.info("[RedditLoader] Extracted content from JSON fallback (%s chars)", len(result))
             return result
         else:
-            logger.info("[RedditLoader] Extracted content from JSON endpoint (%s chars)", len(result))
+            logger.info("[RedditLoader] Extracted content from RSS endpoint (%s chars)", len(result))
             return result
