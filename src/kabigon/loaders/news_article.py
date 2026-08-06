@@ -32,16 +32,12 @@ def extract_news_article_main_html(html: str) -> str:
     return extract_first_tag_subtree(html, ("article", "main"), ignored_tags=_IGNORED_TAGS)
 
 
-async def load_news_article(
+async def fetch_news_article_html(
     url: str,
     *,
     loader_name: str,
-    validate_url: Callable[[str], object],
     headers: dict[str, str],
 ) -> str:
-    validate_url(url)
-    logger.info("[%s] Processing URL: %s", loader_name, url)
-
     try:
         logger.info("[%s] Fetching article HTML", loader_name)
         async with httpx.AsyncClient() as client:
@@ -54,13 +50,26 @@ async def load_news_article(
     content_type = response.headers.get("content-type", "").lower()
     if "html" not in content_type:
         raise LoaderContentError(loader_name, url, f"Expected HTML content, got: {content_type!r}")
+    return response.text
 
-    json_ld_body = extract_article_body_from_json_ld(response.text)
+
+async def load_news_article(
+    url: str,
+    *,
+    loader_name: str,
+    validate_url: Callable[[str], object],
+    headers: dict[str, str],
+) -> str:
+    validate_url(url)
+    logger.info("[%s] Processing URL: %s", loader_name, url)
+
+    html = await fetch_news_article_html(url, loader_name=loader_name, headers=headers)
+    json_ld_body = extract_article_body_from_json_ld(html)
     if json_ld_body:
         logger.info("[%s] Extracted articleBody from JSON-LD (%s chars)", loader_name, len(json_ld_body))
         return json_ld_body
 
-    main_html = extract_news_article_main_html(response.text)
+    main_html = extract_news_article_main_html(html)
     result = html_to_markdown(main_html)
     logger.info("[%s] Extracted article HTML content (%s chars)", loader_name, len(result))
     return result

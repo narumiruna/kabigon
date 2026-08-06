@@ -4,14 +4,13 @@ import logging
 from collections.abc import Set as AbstractSet
 from html.parser import HTMLParser
 
-import httpx
-
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_ltn_target
 
 from .html_extractors import extract_article_body_from_json_ld
 from .news_article import DEFAULT_NEWS_ARTICLE_HEADERS
+from .news_article import fetch_news_article_html
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -124,25 +123,14 @@ class LTNLoader(Loader):
         parse_ltn_target(url)
         logger.info("[LTNLoader] Processing URL: %s", url)
 
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, headers=self.headers, follow_redirects=True)
-                response.raise_for_status()
-        except httpx.HTTPError as e:
-            logger.warning("[LTNLoader] HTTP error: %s", e)
-            raise LoaderContentError("LTNLoader", url, f"HTTP request failed: {e}") from e
-
-        content_type = response.headers.get("content-type", "").lower()
-        if "html" not in content_type:
-            raise LoaderContentError("LTNLoader", url, f"Expected HTML content, got: {content_type!r}")
-
-        article_html = extract_ltn_article_html(response.text)
+        html = await fetch_news_article_html(url, loader_name="LTNLoader", headers=self.headers)
+        article_html = extract_ltn_article_html(html)
         if article_html:
             result = html_to_markdown(article_html)
             logger.info("[LTNLoader] Extracted LTN article HTML content (%s chars)", len(result))
             return result
 
-        json_ld_body = extract_article_body_from_json_ld(response.text)
+        json_ld_body = extract_article_body_from_json_ld(html)
         if json_ld_body:
             logger.info("[LTNLoader] Extracted articleBody from JSON-LD (%s chars)", len(json_ld_body))
             return json_ld_body
