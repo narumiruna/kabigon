@@ -1,5 +1,3 @@
-from typing import ClassVar
-
 import pytest
 
 from kabigon.core.errors import LoaderNotApplicableError
@@ -80,24 +78,13 @@ def test_ltn_loader_uses_ltn_article_container(monkeypatch: pytest.MonkeyPatch) 
     </html>
     """
 
-    class MockResponse:
-        text = html
-        headers: ClassVar[dict[str, str]] = {"content-type": "text/html; charset=utf-8"}
+    async def fake_fetch_html(url: str, *, loader_name: str, headers: dict[str, str]) -> str:
+        assert url == "https://news.ltn.com.tw/news/life/breakingnews/5432239"
+        assert loader_name == "LTNLoader"
+        assert headers
+        return html
 
-        def raise_for_status(self) -> None:
-            return
-
-    class MockAsyncClient:
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, exc_type, exc, tb):
-            return None
-
-        async def get(self, url: str, headers: dict[str, str], follow_redirects: bool):
-            return MockResponse()
-
-    monkeypatch.setattr(ltn_module.httpx, "AsyncClient", MockAsyncClient)
+    monkeypatch.setattr(ltn_module, "fetch_news_article_html", fake_fetch_html)
 
     loader = LTNLoader()
     result = loader.load_sync("https://news.ltn.com.tw/news/life/breakingnews/5432239")

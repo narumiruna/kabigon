@@ -7,6 +7,7 @@ from kabigon.core.errors import LoaderContentError
 from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.html_extractors import extract_article_body_from_json_ld
 from kabigon.loaders.news_article import extract_news_article_main_html
+from kabigon.loaders.news_article import fetch_news_article_html
 from kabigon.loaders.news_article import load_news_article
 
 
@@ -59,24 +60,13 @@ def test_load_news_article_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch)
     </html>
     """
 
-    class MockResponse:
-        text = html
-        headers: ClassVar[dict[str, str]] = {"content-type": "text/html; charset=utf-8"}
+    async def fake_fetch_html(url: str, *, loader_name: str, headers: dict[str, str]) -> str:
+        assert url == "https://example.com/article"
+        assert loader_name == "ExampleLoader"
+        assert headers == {}
+        return html
 
-        def raise_for_status(self) -> None:
-            return
-
-    class MockAsyncClient:
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, exc_type, exc, tb):
-            return None
-
-        async def get(self, url: str, headers: dict[str, str], follow_redirects: bool):
-            return MockResponse()
-
-    monkeypatch.setattr(news_article_module.httpx, "AsyncClient", MockAsyncClient)
+    monkeypatch.setattr(news_article_module, "fetch_news_article_html", fake_fetch_html)
 
     result = asyncio.run(
         load_news_article(
@@ -90,7 +80,7 @@ def test_load_news_article_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch)
     assert result == "News body paragraph"
 
 
-def test_load_news_article_rejects_non_html(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_fetch_news_article_html_rejects_non_html(monkeypatch: pytest.MonkeyPatch) -> None:
     class MockResponse:
         text = "not html"
         headers: ClassVar[dict[str, str]] = {"content-type": "application/json"}
@@ -112,10 +102,9 @@ def test_load_news_article_rejects_non_html(monkeypatch: pytest.MonkeyPatch) -> 
 
     with pytest.raises(LoaderContentError, match="Expected HTML content"):
         asyncio.run(
-            load_news_article(
+            fetch_news_article_html(
                 "https://example.com/article",
                 loader_name="ExampleLoader",
-                validate_url=lambda url: None,
                 headers={},
             )
         )
