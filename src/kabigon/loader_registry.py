@@ -25,6 +25,7 @@ YOUTUBE = "youtube"
 REEL = "reel"
 YOUTUBE_YTDLP = "youtube-ytdlp"
 PDF = "pdf"
+PI_SESSION = "pi-session"
 GITHUB = "github"
 BBC = "bbc"
 CNN = "cnn"
@@ -50,6 +51,7 @@ LOADER_DEFS: tuple[LoaderDef, ...] = (
         lambda: loaders.YoutubeYtdlpLoader(),
     ),
     LoaderDef(PDF, "Extracts text from PDF files", lambda: loaders.PDFLoader()),
+    LoaderDef(PI_SESSION, "Extracts pi.dev shared session transcripts", lambda: loaders.PiSessionLoader()),
     LoaderDef(GITHUB, "Fetches GitHub pages and file content", lambda: loaders.GitHubLoader()),
     LoaderDef(BBC, "BBC article extraction with article-aware parsing", lambda: loaders.BBCLoader()),
     LoaderDef(CNN, "CNN article extraction with article-aware parsing", lambda: loaders.CNNLoader()),
@@ -109,6 +111,7 @@ __all__ = [
     "LOADER_DEFS",
     "LTN",
     "PDF",
+    "PI_SESSION",
     "PLAYWRIGHT",
     "PLAYWRIGHT_FAST",
     "PLAYWRIGHT_NETWORKIDLE",

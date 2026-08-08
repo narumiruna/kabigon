@@ -11,7 +11,7 @@ Intended for developers and data engineers who need reliable, source-aware text 
 
 ## Features
 
-- Automatic loader selection for YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, BBC, CNN, PDF, and generic web pages
+- Automatic loader selection for YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, pi.dev shared sessions, BBC, CNN, PDF, and generic web pages
 - Fallback chain: if the primary loader fails, remaining loaders are tried in order without repeating already-attempted ones
 - Async-first (`async`/`await`) with a synchronous wrapper for scripts and notebooks
 - Single-line Python API: `kabigon.load_url_sync(url)`
@@ -60,6 +60,7 @@ kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 kabigon https://x.com/user/status/123456789
 kabigon https://reddit.com/r/python/comments/xyz/
 kabigon https://github.com/user/repo/blob/main/README.md
+kabigon 'https://pi.dev/session/#0230effc86f4a142c885cb59fe9725d5'
 kabigon https://example.com/document.pdf
 ```
 
@@ -78,9 +79,11 @@ print(text)
 import asyncio
 import kabigon
 
+
 async def main() -> None:
     text = await kabigon.load_url("https://www.google.com")
     print(text)
+
 
 asyncio.run(main())
 ```
@@ -91,6 +94,7 @@ asyncio.run(main())
 import asyncio
 import kabigon
 
+
 async def main() -> None:
     urls = [
         "https://x.com/user/status/123",
@@ -100,6 +104,7 @@ async def main() -> None:
     results = await asyncio.gather(*[kabigon.load_url(url) for url in urls])
     for url, content in zip(urls, results, strict=True):
         print(f"{url}: {len(content)} chars")
+
 
 asyncio.run(main())
 ```

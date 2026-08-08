@@ -8,6 +8,7 @@ from kabigon.loaders import GitHubLoader
 from kabigon.loaders import HttpxLoader
 from kabigon.loaders import LTNLoader
 from kabigon.loaders import PDFLoader
+from kabigon.loaders import PiSessionLoader
 from kabigon.loaders import PlaywrightLoader
 from kabigon.loaders import PttLoader
 from kabigon.loaders import RedditLoader
@@ -26,6 +27,7 @@ LOADER_CLASSES = [
     HttpxLoader,
     LTNLoader,
     PDFLoader,
+    PiSessionLoader,
     PlaywrightLoader,
     PttLoader,
     RedditLoader,

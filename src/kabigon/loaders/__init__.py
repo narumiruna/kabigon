@@ -6,6 +6,7 @@ from .github import GitHubLoader
 from .httpx import HttpxLoader
 from .ltn import LTNLoader
 from .pdf import PDFLoader
+from .pi_session import PiSessionLoader
 from .playwright import PlaywrightLoader
 from .ptt import PttLoader
 from .reddit import RedditLoader
@@ -25,6 +26,7 @@ __all__ = [
     "HttpxLoader",
     "LTNLoader",
     "PDFLoader",
+    "PiSessionLoader",
     "PlaywrightLoader",
     "PttLoader",
     "RedditLoader",

@@ -8,6 +8,7 @@ from kabigon.sources.applicability import is_github_url
 from kabigon.sources.applicability import is_ltn_url
 from kabigon.sources.applicability import is_openai_web_url
 from kabigon.sources.applicability import is_pdf_target
+from kabigon.sources.applicability import is_pi_session_url
 from kabigon.sources.applicability import is_ptt_url
 from kabigon.sources.applicability import is_reddit_url
 from kabigon.sources.applicability import is_reel_url
@@ -30,6 +31,7 @@ from kabigon.sources.applicability import require_loader_applicability
         ("https://www.youtube.com/watch?v=dQw4w9WgXcQ", is_youtube_video_url),
         ("https://www.instagram.com/reel/CuA0XYZ1234/", is_reel_url),
         ("https://github.com/anthropics/claude-code/blob/main/README.md", is_github_url),
+        ("https://pi.dev/session/#0230effc86f4a142c885cb59fe9725d5", is_pi_session_url),
         ("https://www.bbc.com/news/articles/c70k29914q4o", is_bbc_url),
         ("https://edition.cnn.com/2026/03/16/tech/example", is_cnn_url),
         ("https://news.ltn.com.tw/news/life/breakingnews/5432239", is_ltn_url),
@@ -52,6 +54,7 @@ def test_source_applicability_accepts_supported_targets(url, is_applicable) -> N
         is_youtube_video_url,
         is_reel_url,
         is_github_url,
+        is_pi_session_url,
         is_bbc_url,
         is_cnn_url,
         is_ltn_url,

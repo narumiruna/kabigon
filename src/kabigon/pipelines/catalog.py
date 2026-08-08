@@ -11,6 +11,7 @@ from kabigon.sources.applicability import is_github_url
 from kabigon.sources.applicability import is_ltn_url
 from kabigon.sources.applicability import is_openai_web_url
 from kabigon.sources.applicability import is_pdf_target
+from kabigon.sources.applicability import is_pi_session_url
 from kabigon.sources.applicability import is_ptt_url
 from kabigon.sources.applicability import is_reddit_url
 from kabigon.sources.applicability import is_reel_url
@@ -26,6 +27,7 @@ class ContentType(StrEnum):
     SOCIAL_POST = "social_post"
     NEWS_ARTICLE = "news_article"
     DOCUMENT_PDF = "document_pdf"
+    AI_SESSION = "ai_session"
     CODE_CONTENT = "code_content"
     GENERIC_WEB = "generic_web"
 
@@ -91,6 +93,14 @@ _PIPELINE_ENTRIES: tuple[tuple[Pipeline, Matcher], ...] = (
             targeted_loaders=(loader_names.REEL,),
         ),
         is_reel_url,
+    ),
+    (
+        Pipeline(
+            name=loader_names.PI_SESSION,
+            content_type=ContentType.AI_SESSION,
+            targeted_loaders=(loader_names.PI_SESSION,),
+        ),
+        is_pi_session_url,
     ),
     (
         Pipeline(
