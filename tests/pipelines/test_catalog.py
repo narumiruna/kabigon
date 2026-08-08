@@ -62,6 +62,15 @@ def test_match_pipeline_twitter_hosts(url: str) -> None:
     assert pipeline.name == "twitter"
 
 
+def test_match_pipeline_pi_session() -> None:
+    pipeline = match_pipeline("https://pi.dev/session/#0230effc86f4a142c885cb59fe9725d5")
+
+    assert pipeline is not None
+    assert pipeline.name == "pi-session"
+    assert pipeline.content_type == ContentType.AI_SESSION
+    assert pipeline.targeted_loaders == ("pi-session",)
+
+
 def test_match_pipeline_unknown_returns_none() -> None:
     assert match_pipeline("https://example.com/path") is None
 

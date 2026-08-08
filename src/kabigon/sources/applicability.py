@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs
+from urllib.parse import unquote
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
@@ -38,6 +39,8 @@ OPENAI_WEB_HOSTS = (
     "help.openai.com",
     "platform.openai.com",
 )
+PI_SESSION_HOST = "pi.dev"
+PI_SESSION_PATH = "/session"
 PTT_HOSTS = ("www.ptt.cc",)
 RAW_GITHUB_HOST = "raw.githubusercontent.com"
 REDDIT_DOMAINS = (
@@ -111,6 +114,15 @@ class GitHubTarget:
     @property
     def is_raw_content(self) -> bool:
         return self.raw_url is not None
+
+
+@dataclass(frozen=True)
+class PiSessionTarget:
+    url: str
+    gist_id: str
+    file_name: str
+    leaf_id: str | None = None
+    target_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -197,6 +209,38 @@ def is_github_url(url: str) -> bool:
     try:
         parse_github_target(url)
     except InvalidURLError:
+        return False
+    return True
+
+
+def parse_pi_session_target(url: str) -> PiSessionTarget:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or parsed.netloc.lower() != PI_SESSION_HOST:
+        raise LoaderNotApplicableError("PiSessionLoader", url, "Not a pi.dev shared session URL")
+    if parsed.path.rstrip("/") != PI_SESSION_PATH:
+        raise LoaderNotApplicableError("PiSessionLoader", url, "Not a pi.dev shared session path")
+
+    shared_path = parsed.fragment or parsed.query
+    session_path, _, raw_params = shared_path.partition("&")
+    gist_id, separator, encoded_file_name = session_path.partition("/")
+    if not gist_id or any(character not in "0123456789abcdefABCDEF" for character in gist_id):
+        raise LoaderNotApplicableError("PiSessionLoader", url, "Missing or invalid shared session ID")
+
+    file_name = unquote(encoded_file_name) if separator and encoded_file_name else "session.html"
+    params = parse_qs(raw_params, keep_blank_values=True)
+    return PiSessionTarget(
+        url=url,
+        gist_id=gist_id,
+        file_name=file_name,
+        leaf_id=params.get("leafId", [None])[0],
+        target_id=params.get("targetId", [None])[0],
+    )
+
+
+def is_pi_session_url(url: str) -> bool:
+    try:
+        parse_pi_session_target(url)
+    except LoaderNotApplicableError:
         return False
     return True
 
@@ -373,6 +417,8 @@ __all__ = [
     "CNN_DOMAIN_SUFFIX",
     "LTN_DOMAIN_SUFFIX",
     "OPENAI_WEB_HOSTS",
+    "PI_SESSION_HOST",
+    "PI_SESSION_PATH",
     "PTT_HOSTS",
     "REDDIT_DOMAINS",
     "REEL_PREFIX",
@@ -380,6 +426,7 @@ __all__ = [
     "TWITTER_DOMAINS",
     "GitHubTarget",
     "NoVideoIDFoundError",
+    "PiSessionTarget",
     "TwitterTarget",
     "UnsupportedURLNetlocError",
     "UnsupportedURLSchemeError",
@@ -391,6 +438,7 @@ __all__ = [
     "is_ltn_url",
     "is_openai_web_url",
     "is_pdf_target",
+    "is_pi_session_url",
     "is_ptt_url",
     "is_reddit_url",
     "is_reel_url",
@@ -403,6 +451,7 @@ __all__ = [
     "parse_github_target",
     "parse_ltn_target",
     "parse_pdf_target",
+    "parse_pi_session_target",
     "parse_ptt_target",
     "parse_reddit_target",
     "parse_reel_target",
