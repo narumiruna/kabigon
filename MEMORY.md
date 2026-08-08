@@ -10,6 +10,7 @@
 - Treat CLI `--loader` and direct `kabigon.loaders.*` usage as advanced escape hatches; the preferred public interface is automatic Pipeline planning through `kabigon <url>` / `kabigon.load_url(url)`.
 - Keep Load chain Loader construction lazy; do not let later Fallback loader constructors run before earlier Loader attempts fail.
 - Symptom: `rich` stays in `uv.lock` after removing direct CLI deps. Cause: `curl-cffi` 0.15 depends on `rich`. Fix: keep `curl-cffi<0.15` while the no-Rich runtime goal applies.
+- Symptom: pi.dev shared session extraction returns only the page shell. Cause: `/session/` fetches a Gist named by the URL fragment, whose export JSON is base64 in `script#session-data`. Fix: route these URLs to `PiSessionLoader` instead of generic HTML loaders.
 
 ## TASTE
 
@@ -18,3 +19,5 @@
 - Prefer top-level flow clarity (CLI and routing path) over extra indirection layers.
 - Prefer an application-level Pipeline catalog to own Pipeline metadata; keep loader registry focused on loader factory wiring.
 - Prefer Load chain as the runnable + explainable retrieval seam; keep Pipeline catalog and registry as supporting modules.
+
+## CONVENTIONS
