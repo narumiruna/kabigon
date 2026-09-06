@@ -6,7 +6,7 @@ readme          = "README.md"
 requires-python = ">=3.12"
 authors         = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 dependencies    = [
-  "charset-normalizer>=3.4.9",
+  "charset-normalizer>=3.5.1",
   "curl-cffi>=0.16.0,<0.17",
   "firecrawl-py>=4.30.3",
   "httpx>=0.28.1",
