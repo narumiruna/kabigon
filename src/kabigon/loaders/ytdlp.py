@@ -12,12 +12,15 @@ import yt_dlp
 from kabigon.core.errors import WhisperNotInstalledError
 from kabigon.core.loader import Loader
 
+from .audio import load_audio
+
 logger = logging.getLogger(__name__)
 
 
 def download_audio(url: str, outtmpl: str | None = None) -> None:
     ydl_opts: dict[str, Any] = {
         "format": "bestaudio/best",
+        "noplaylist": True,
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
@@ -48,7 +51,6 @@ class YtdlpLoader(Loader):
             raise WhisperNotInstalledError from e
 
         self.model = whisper.load_model(model)
-        self.load_audio = whisper.load_audio
 
     def load_sync(self, url: str) -> str:
         logger.info("[YtdlpLoader] Processing URL: %s", url)
@@ -58,7 +60,7 @@ class YtdlpLoader(Loader):
         result: dict[str, Any] = {"text": ""}
 
         try:
-            audio = self.load_audio(path)
+            audio = load_audio(path, ffmpeg_path=os.getenv("FFMPEG_PATH"))
             logger.info("[YtdlpLoader] Transcribing audio file")
             logger.debug("[YtdlpLoader] Audio file path: %s", path)
             result = self.model.transcribe(audio)
