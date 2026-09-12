@@ -1,11 +1,12 @@
-import asyncio
 import contextlib
 import logging
+import re
+from urllib.parse import urlparse
 
-from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
 from playwright.async_api import TimeoutError
 
+from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_twitter_target
 
@@ -22,6 +23,11 @@ TWEET_READY_SELECTORS = [
 ]
 
 
+def _status_id(url: str) -> str | None:
+    match = re.search(r"/status/([0-9]+)(?:/|$)", urlparse(url).path)
+    return match.group(1) if match else None
+
+
 def replace_domain(url: str, new_domain: str = "x.com") -> str:
     target = parse_twitter_target(url)
     if new_domain == "x.com":
@@ -34,54 +40,46 @@ class TwitterLoader(Loader):
         self.timeout = timeout
         self.wait_for_tweet_timeout = wait_for_tweet_timeout
 
-    async def _wait_for_any_selector(self, page: Page, *, selectors: list[str], timeout_ms: float) -> None:
-        async def wait_one(selector: str) -> None:
-            await page.wait_for_selector(selector, state="visible", timeout=timeout_ms)
-
-        tasks = [asyncio.create_task(wait_one(selector)) for selector in selectors]
-        try:
-            done, pending = await asyncio.wait(
-                tasks,
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=timeout_ms / 1000,
-            )
-            for task in pending:
-                task.cancel()
-            for task in done:
-                task.result()
-        finally:
-            for task in tasks:
-                if not task.done():
-                    task.cancel()
-
     async def load(self, url: str) -> str:
         logger.info("[TwitterLoader] Processing URL: %s", url)
         parse_twitter_target(url)
 
         url = replace_domain(url)
+        status_id = _status_id(url)
         logger.info("[TwitterLoader] Fetching normalized URL: %s", url)
+
+        selectors = TWEET_READY_SELECTORS
+        if status_id is not None:
+            selectors = [
+                f'article a[href$="/status/{status_id}"] time',
+                f'article a[href$="/status/{status_id}/"] time',
+                f'article a[href*="/status/{status_id}?"] time',
+                f'article a[href*="/status/{status_id}#"] time',
+            ]
 
         async def wait_for_tweet(page: Page) -> None:
             with contextlib.suppress(TimeoutError):
-                await self._wait_for_any_selector(
-                    page,
-                    selectors=TWEET_READY_SELECTORS,
-                    timeout_ms=min(self.timeout or self.wait_for_tweet_timeout, self.wait_for_tweet_timeout),
+                await page.wait_for_selector(
+                    ", ".join(selectors),
+                    state="visible",
+                    timeout=min(self.timeout or self.wait_for_tweet_timeout, self.wait_for_tweet_timeout),
                 )
 
         async def extract_tweet_content(page: Page) -> str:
-            try:
-                tweet_articles = page.locator("article").filter(has=page.locator('[data-testid="tweetText"]'))
-                if await tweet_articles.count() > 0:
-                    content = await tweet_articles.nth(0).evaluate("el => el.outerHTML")
-                    logger.debug("[TwitterLoader] Extracted tweet article content")
-                else:
-                    content = await page.content()
-                    logger.debug("[TwitterLoader] Using full page content")
-            except (PlaywrightError, TimeoutError):
-                content = await page.content()
-                logger.debug("[TwitterLoader] Fallback to full page content after error")
-            return content
+            if status_id is None:
+                return await page.content()
+
+            for article in await page.locator("article").all():
+                # The first timestamp permalink identifies the article itself;
+                # later permalinks may belong to a quoted tweet.
+                permalink = article.locator('a[href*="/status/"]').filter(has=page.locator("time")).first
+                if await permalink.count() == 0:
+                    continue
+                href = await permalink.get_attribute("href")
+                if href and _status_id(href) == status_id:
+                    return await article.evaluate("el => el.outerHTML")
+
+            raise LoaderContentError("TwitterLoader", url, f"Could not find the requested tweet ({status_id})")
 
         content = await fetch_browser_html(
             url,
