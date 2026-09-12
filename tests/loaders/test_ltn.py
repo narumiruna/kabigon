@@ -4,6 +4,7 @@ from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.loaders import ltn as ltn_module
 from kabigon.loaders.ltn import LTNLoader
 from kabigon.loaders.ltn import extract_ltn_article_html
+from kabigon.loaders.utils import html_to_markdown
 from kabigon.sources.applicability import parse_ltn_target
 
 
@@ -60,6 +61,14 @@ def test_extract_ltn_article_html_targets_article_body_container() -> None:
     assert "Download the app" not in extracted
     assert "Navigation" not in extracted
     assert "Related links" not in extracted
+
+
+def test_ltn_article_preserves_escaped_text() -> None:
+    html = '<div class="text boxTitle boxText"><pre><code>&lt;widget&gt; &amp;lt;tag&amp;gt;</code></pre></div>'
+
+    extracted = extract_ltn_article_html(html)
+
+    assert html_to_markdown(extracted) == html_to_markdown(html)
 
 
 def test_ltn_loader_uses_ltn_article_container(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Mapping
+from html import escape
 from html.parser import HTMLParser
 from typing import cast
 
@@ -54,8 +55,9 @@ class SubtreeHTMLExtractor(HTMLParser):
         if not self._capturing:
             return
 
-        if tag in self.ignored_tags:
-            self._ignored_depth += 1
+        if self._ignored_depth or tag in self.ignored_tags:
+            if tag not in _VOID_TAGS:
+                self._ignored_depth += 1
             return
 
         self._out.append(self.get_starttag_text() or f"<{tag}>")
@@ -67,7 +69,7 @@ class SubtreeHTMLExtractor(HTMLParser):
             return
 
         if self._ignored_depth:
-            if tag in self.ignored_tags:
+            if tag not in _VOID_TAGS:
                 self._ignored_depth -= 1
             return
 
@@ -88,7 +90,7 @@ class SubtreeHTMLExtractor(HTMLParser):
     def handle_data(self, data: str) -> None:
         if not self._capturing or self._ignored_depth:
             return
-        self._out.append(data)
+        self._out.append(escape(data, quote=False))
 
 
 def extract_first_tag_subtree(html: str, tags: tuple[str, ...], ignored_tags: set[str] | None = None) -> str:

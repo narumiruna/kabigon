@@ -11,21 +11,16 @@ from __future__ import annotations
 
 from kabigon.core.errors import LoaderContentError
 
-MIN_CONTENT_LENGTH: int = 300
+MIN_CONTENT_LENGTH: int = 1
 
-# Lower-cased substrings that strongly indicate a block, challenge, or
-# upstream error page rather than real content.
+# Lower-cased challenge heading prefixes. Generic HTTP error phrases also occur
+# in documentation; HTTP status validation belongs in the retrieval layer.
 BLOCKED_MARKERS: tuple[str, ...] = (
     "just a moment...",
     "checking your browser",
     "attention required! | cloudflare",
     "ddos protection by cloudflare",
     "enable javascript and cookies to continue",
-    "access denied",
-    "403 forbidden",
-    "502 bad gateway",
-    "503 service",
-    "cf-error-details",
 )
 
 
@@ -38,9 +33,9 @@ def ensure_usable_content(
 ) -> None:
     """Validate extracted markdown looks like real content.
 
-    Raises :class:`LoaderContentError` when the content is too short or matches
-    a known block/challenge marker, so the load chain can fall through to the
-    next loader.
+    By default, accept any non-empty content unless its first line starts with
+    a known challenge heading. Mentions of errors or challenges in an article's body
+    are not evidence that the page is blocked.
     """
     stripped_length = len(content.strip())
     if stripped_length < min_length:
@@ -51,15 +46,14 @@ def ensure_usable_content(
             "Page may be JS-heavy or blocking requests; chain will try next loader.",
         )
 
-    lowered = content.lower()
-    for marker in BLOCKED_MARKERS:
-        if marker in lowered:
-            raise LoaderContentError(
-                loader_name,
-                url,
-                f"Detected block/challenge marker: {marker!r}",
-                "The site appears to be blocking automated requests.",
-            )
+    heading = next(iter(content.strip().splitlines()), "").strip("#*_ \t").lower()
+    if heading.startswith(BLOCKED_MARKERS):
+        raise LoaderContentError(
+            loader_name,
+            url,
+            f"Detected block/challenge marker: {heading!r}",
+            "The site appears to be blocking automated requests.",
+        )
 
 
 __all__ = ["BLOCKED_MARKERS", "MIN_CONTENT_LENGTH", "ensure_usable_content"]

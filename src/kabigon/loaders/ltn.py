@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Set as AbstractSet
+from html import escape
 from html.parser import HTMLParser
 
 from kabigon.core.errors import LoaderContentError
@@ -106,7 +107,7 @@ class _FirstDivWithClassesExtractor(HTMLParser):
     def handle_data(self, data: str) -> None:
         if not self._capturing or self._ignored_depth:
             return
-        self._out.append(data)
+        self._out.append(escape(data, quote=False))
 
 
 def extract_ltn_article_html(html: str) -> str:
