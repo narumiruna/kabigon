@@ -7,11 +7,15 @@ from html.parser import HTMLParser
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
+from kabigon.core.resources import Browser
+from kabigon.core.resources import CurlSession
+from kabigon.core.resources import HttpClient
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_ltn_target
 
 from .html_extractors import extract_article_body_from_json_ld
 from .news_article import DEFAULT_NEWS_ARTICLE_HEADERS
-from .news_article import fetch_news_article_html
+from .news_article import load_news_article
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -116,24 +120,41 @@ def extract_ltn_article_html(html: str) -> str:
     return parser.get_html()
 
 
+def extract_ltn_article_text(html: str, url: str, loader_name: str) -> str:
+    article_html = extract_ltn_article_html(html)
+    if article_html:
+        return html_to_markdown(article_html)
+    json_ld_body = extract_article_body_from_json_ld(html)
+    if json_ld_body:
+        return json_ld_body
+    raise LoaderContentError(loader_name, url, "Could not find LTN article body")
+
+
 class LTNLoader(Loader):
-    def __init__(self, headers: dict[str, str] | None = None) -> None:
+    def __init__(
+        self,
+        headers: dict[str, str] | None = None,
+        http_client: HttpClient | None = None,
+        curl_session: CurlSession | None = None,
+        browser: Browser | None = None,
+        resource_provider: ResourceProvider | None = None,
+    ) -> None:
         self.headers = headers or DEFAULT_NEWS_ARTICLE_HEADERS
+        self.http_client = http_client
+        self.curl_session = curl_session
+        self.browser = browser
+        self.resource_provider = resource_provider
 
     async def load(self, url: str) -> str:
-        parse_ltn_target(url)
-        logger.info("[LTNLoader] Processing URL: %s", url)
-
-        html = await fetch_news_article_html(url, loader_name="LTNLoader", headers=self.headers)
-        article_html = extract_ltn_article_html(html)
-        if article_html:
-            result = html_to_markdown(article_html)
-            logger.info("[LTNLoader] Extracted LTN article HTML content (%s chars)", len(result))
-            return result
-
-        json_ld_body = extract_article_body_from_json_ld(html)
-        if json_ld_body:
-            logger.info("[LTNLoader] Extracted articleBody from JSON-LD (%s chars)", len(json_ld_body))
-            return json_ld_body
-
-        raise LoaderContentError("LTNLoader", url, "Could not find LTN article body")
+        return await load_news_article(
+            url,
+            loader_name="LTNLoader",
+            registry_id="ltn",
+            validate_url=parse_ltn_target,
+            headers=self.headers,
+            extractor=extract_ltn_article_text,
+            http_client=self.http_client,
+            curl_session=self.curl_session,
+            browser=self.browser,
+            resource_provider=self.resource_provider,
+        )

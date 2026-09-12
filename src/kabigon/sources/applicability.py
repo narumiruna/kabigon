@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from pathlib import PureWindowsPath
 from urllib.parse import parse_qs
 from urllib.parse import unquote
 from urllib.parse import urlparse
@@ -129,6 +131,7 @@ class PiSessionTarget:
 class TwitterTarget:
     url: str
     normalized_url: str
+    status_id: str | None = None
 
 
 def require_loader_applicability[TargetT](
@@ -253,6 +256,8 @@ def parse_pdf_target(target: str) -> str:
             raise InvalidURLError(target, "PDF")
         return target
 
+    if parsed.scheme and not PureWindowsPath(target).is_absolute():
+        raise InvalidURLError(target, "PDF")
     if Path(target).suffix.lower() != ".pdf":
         raise InvalidURLError(target, "PDF")
     return target
@@ -401,7 +406,19 @@ def parse_twitter_target(url: str) -> TwitterTarget:
     parsed = urlparse(url)
     if parsed.netloc.lower() not in TWITTER_DOMAINS:
         raise LoaderNotApplicableError("TwitterLoader", url, "URL is not a Twitter/X URL")
-    return TwitterTarget(url=url, normalized_url=str(urlunparse(parsed._replace(netloc="x.com"))))
+    match = re.search(r"/status/([0-9]+)(?:/|$)", parsed.path)
+    return TwitterTarget(
+        url=url,
+        normalized_url=str(urlunparse(parsed._replace(netloc="x.com"))),
+        status_id=match.group(1) if match else None,
+    )
+
+
+def is_twitter_status_url(url: str) -> bool:
+    try:
+        return parse_twitter_target(url).status_id is not None
+    except LoaderNotApplicableError:
+        return False
 
 
 def is_twitter_url(url: str) -> bool:
@@ -443,6 +460,7 @@ __all__ = [
     "is_reddit_url",
     "is_reel_url",
     "is_truthsocial_url",
+    "is_twitter_status_url",
     "is_twitter_url",
     "is_youtube_video_url",
     "parse_bbc_target",

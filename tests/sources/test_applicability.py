@@ -37,6 +37,7 @@ from kabigon.sources.applicability import require_loader_applicability
         ("https://news.ltn.com.tw/news/life/breakingnews/5432239", is_ltn_url),
         ("https://openai.com/pricing", is_openai_web_url),
         ("/tmp/demo.pdf", is_pdf_target),
+        (r"C:\docs\demo.pdf", is_pdf_target),
         ("https://arxiv.org/pdf/2603.20617", is_pdf_target),
     ],
 )
@@ -107,8 +108,9 @@ def test_twitter_target_normalizes_to_x_domain() -> None:
     assert target.normalized_url == "https://x.com/user/status/1"
 
 
-def test_pdf_target_requires_pdf_suffix() -> None:
+def test_pdf_target_requires_pdf_suffix_and_supported_scheme() -> None:
     assert not is_pdf_target("not-a-valid-url")
+    assert not is_pdf_target("ftp://example.com/document.pdf")
 
 
 def test_loader_applicability_converts_source_parse_failure() -> None:

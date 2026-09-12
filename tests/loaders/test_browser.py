@@ -1,6 +1,8 @@
 import asyncio
+from typing import cast
 
 import pytest
+from playwright.async_api import Browser
 from playwright.async_api import TimeoutError
 
 from kabigon.core.errors import LoaderContentError
@@ -194,6 +196,40 @@ def test_fetch_browser_html_rejects_http_errors_before_extraction(
 
     assert fake_browser.context.closed is True
     assert fake_browser.closed is True
+
+
+def test_shared_browser_reuses_process_but_closes_each_context() -> None:
+    contexts: list[FakeContext] = []
+
+    class ReusableBrowser:
+        def __init__(self) -> None:
+            self.closed = False
+
+        async def new_context(self, **_kwargs) -> FakeContext:
+            context = FakeContext(FakePage())
+            contexts.append(context)
+            return context
+
+        async def close(self) -> None:
+            self.closed = True
+
+    async def scenario() -> ReusableBrowser:
+        shared = ReusableBrowser()
+        for suffix in ("one", "two"):
+            await browser.fetch_browser_html(
+                f"https://example.com/{suffix}",
+                loader_name="TestLoader",
+                timeout_ms=1_000,
+                timeout_suggestion="try again",
+                browser=cast("Browser", shared),
+            )
+        return shared
+
+    shared = asyncio.run(scenario())
+
+    assert len(contexts) == 2
+    assert all(context.closed for context in contexts)
+    assert shared.closed is False
 
 
 def test_fetch_browser_html_maps_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

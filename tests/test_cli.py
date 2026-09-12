@@ -89,6 +89,17 @@ def test_cli_default_pipeline_uses_load_url_sync(
     assert capsys.readouterr().out.strip() == "content"
 
 
+def test_registry_metadata_controls_cli_visibility(capsys: pytest.CaptureFixture[str]) -> None:
+    cli._print_loader_list()
+    output = capsys.readouterr().out
+
+    assert "pi-session -" in output
+    assert "ltn -" in output
+    assert "curl-cffi -" in output
+    assert "playwright-networkidle -" not in output
+    assert "playwright-fast -" not in output
+
+
 def test_cli_loader_selection_reports_missing_requirements(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
 

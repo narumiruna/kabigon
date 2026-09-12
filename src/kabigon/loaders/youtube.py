@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from collections.abc import Awaitable
+from collections.abc import Callable
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -76,8 +78,13 @@ def parse_video_id(url: str) -> str:
 
 
 class YoutubeLoader(Loader):
-    def __init__(self, languages: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        languages: list[str] | None = None,
+        run_blocking: Callable[[Callable[[], str]], Awaitable[str]] | None = None,
+    ) -> None:
         self.languages = languages or DEFAULT_LANGUAGES
+        self.run_blocking = run_blocking
 
     def load_sync(self, url: str) -> str:
         logger.info("[YoutubeLoader] Processing URL: %s", url)
@@ -116,4 +123,9 @@ class YoutubeLoader(Loader):
         return result
 
     async def load(self, url: str) -> str:
-        return await asyncio.to_thread(self.load_sync, url)
+        def operation() -> str:
+            return self.load_sync(url)
+
+        if self.run_blocking is not None:
+            return await self.run_blocking(operation)
+        return await asyncio.to_thread(operation)

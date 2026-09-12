@@ -142,7 +142,11 @@ def test_twitter_loader_rejects_missing_target(monkeypatch: pytest.MonkeyPatch, 
         TwitterLoader().load_sync("https://x.com/bob/status/222")
 
 
-def test_twitter_loader_keeps_non_status_page_support(monkeypatch: pytest.MonkeyPatch) -> None:
-    install_page(monkeypatch, [])
+def test_twitter_loader_rejects_non_status_page_before_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fail_fetch(*_args, **_kwargs) -> str:
+        pytest.fail("non-status URLs must be rejected before browser fetch")
 
-    assert TwitterLoader().load_sync("https://x.com/bob") == "Unrelated full page content"
+    monkeypatch.setattr("kabigon.loaders.twitter.fetch_browser_html", fail_fetch)
+
+    with pytest.raises(LoaderNotApplicableError, match="Twitter/X status URL"):
+        TwitterLoader().load_sync("https://x.com/bob")

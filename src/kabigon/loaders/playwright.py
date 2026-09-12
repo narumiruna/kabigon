@@ -1,7 +1,10 @@
 import logging
 from typing import Literal
 
+from playwright.async_api import Browser
+
 from kabigon.core.loader import Loader
+from kabigon.core.resources import ResourceProvider
 
 from .browser import fetch_browser_html
 from .content_guard import ensure_usable_content
@@ -16,10 +19,14 @@ class PlaywrightLoader(Loader):
         timeout: float | None = 0,
         wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,
         browser_headless: bool = True,
+        browser: Browser | None = None,
+        resource_provider: ResourceProvider | None = None,
     ) -> None:
         self.timeout = timeout
         self.wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = wait_until
         self.browser_headless = browser_headless
+        self.browser = browser
+        self.resource_provider = resource_provider
 
     async def load(self, url: str) -> str:
         logger.info("[PlaywrightLoader] Processing URL: %s", url)
@@ -30,6 +37,7 @@ class PlaywrightLoader(Loader):
             self.wait_until,
         )
 
+        browser = await self.resource_provider.browser() if self.resource_provider is not None else self.browser
         content = await fetch_browser_html(
             url,
             loader_name="PlaywrightLoader",
@@ -39,6 +47,7 @@ class PlaywrightLoader(Loader):
             ),
             wait_until=self.wait_until,
             browser_headless=self.browser_headless,
+            browser=browser,
         )
         logger.debug("[PlaywrightLoader] Loaded browser page")
         result = html_to_markdown(content)

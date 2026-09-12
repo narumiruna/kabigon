@@ -15,6 +15,8 @@ import httpx
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.loader import Loader
+from kabigon.core.resources import HttpClient
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import PiSessionTarget
 from kabigon.sources.applicability import parse_pi_session_target
 
@@ -356,33 +358,43 @@ def _validated_raw_url(value: object, source_url: str) -> str:
 class PiSessionLoader(Loader):
     """Load a pi.dev shared session export from its backing GitHub Gist."""
 
-    def __init__(self, timeout: float = 30.0) -> None:
+    def __init__(self, timeout: float = 30.0, resource_provider: ResourceProvider | None = None) -> None:
         self.timeout = timeout
+        self.resource_provider = resource_provider
 
     async def load(self, url: str) -> str:
         logger.info("[PiSessionLoader] Processing URL: %s", url)
         target = parse_pi_session_target(url)
         api_url = _GITHUB_GIST_API.format(gist_id=target.gist_id)
 
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
-                response = await client.get(
-                    api_url,
-                    headers={
-                        "Accept": "application/vnd.github+json",
-                        "User-Agent": "kabigon (pi.dev shared session loader)",
-                    },
-                )
-                response.raise_for_status()
-                file_data = _gist_file(response.json(), target, url)
+        async def fetch(client: HttpClient) -> str:
+            response = await client.get(
+                api_url,
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "User-Agent": "kabigon (pi.dev shared session loader)",
+                },
+                timeout=self.timeout,
+                follow_redirects=True,
+            )
+            response.raise_for_status()
+            file_data = _gist_file(response.json(), target, url)
 
-                content = _text(file_data.get("content"))
-                if file_data.get("truncated") is True or not content:
-                    raw_url = _validated_raw_url(file_data.get("raw_url"), url)
-                    logger.info("[PiSessionLoader] Fetching truncated session export: %s", raw_url)
-                    raw_response = await client.get(raw_url)
-                    raw_response.raise_for_status()
-                    content = raw_response.text
+            content = _text(file_data.get("content"))
+            if file_data.get("truncated") is True or not content:
+                raw_url = _validated_raw_url(file_data.get("raw_url"), url)
+                logger.info("[PiSessionLoader] Fetching truncated session export: %s", raw_url)
+                raw_response = await client.get(raw_url, timeout=self.timeout, follow_redirects=True)
+                raw_response.raise_for_status()
+                content = raw_response.text
+            return content
+
+        try:
+            if self.resource_provider is None:
+                async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                    content = await fetch(client)
+            else:
+                content = await fetch(await self.resource_provider.http_client())
         except httpx.TimeoutException as error:
             raise LoaderTimeoutError(
                 "PiSessionLoader",

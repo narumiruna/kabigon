@@ -1,8 +1,64 @@
 import pytest
 
+from kabigon.pipelines.catalog import ContentContract
 from kabigon.pipelines.catalog import ContentType
 from kabigon.pipelines.catalog import FallbackPolicy
 from kabigon.pipelines.catalog import match_pipeline
+from kabigon.pipelines.catalog import plan_for_url
+
+
+@pytest.mark.parametrize(
+    ("target", "pipeline_name", "execution_plan", "contract"),
+    [
+        (
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "youtube",
+            ("youtube", "youtube-ytdlp"),
+            ContentContract.SOURCE_REQUIRED,
+        ),
+        (
+            "https://www.youtube.com/playlist?list=PL123",
+            None,
+            ("curl-cffi", "playwright-networkidle", "playwright-fast", "httpx"),
+            ContentContract.GENERIC_HTML,
+        ),
+        ("https://x.com/user/status/1", "twitter", ("twitter",), ContentContract.SOURCE_REQUIRED),
+        (
+            "https://x.com/user",
+            None,
+            ("curl-cffi", "playwright-networkidle", "playwright-fast", "httpx"),
+            ContentContract.GENERIC_HTML,
+        ),
+        ("https://www.bbc.com/news/articles/c70k29914q4o", "bbc", ("bbc",), ContentContract.SOURCE_REQUIRED),
+        ("https://edition.cnn.com/2026/03/16/tech/example", "cnn", ("cnn",), ContentContract.SOURCE_REQUIRED),
+        (
+            "https://news.ltn.com.tw/news/life/breakingnews/5432239",
+            "ltn",
+            ("ltn",),
+            ContentContract.SOURCE_REQUIRED,
+        ),
+        ("https://example.com/demo.pdf", "pdf", ("pdf",), ContentContract.SOURCE_REQUIRED),
+        ("/tmp/demo.pdf", "pdf", ("pdf",), ContentContract.SOURCE_REQUIRED),
+        (
+            "https://github.com/a/b/blob/main/demo.pdf",
+            "github",
+            ("github",),
+            ContentContract.SOURCE_REQUIRED,
+        ),
+        (
+            "https://pi.dev/session/#0230effc86f4a142c885cb59fe9725d5",
+            "pi-session",
+            ("pi-session",),
+            ContentContract.SOURCE_REQUIRED,
+        ),
+    ],
+)
+def test_source_acceptance_matrix(target: str, pipeline_name: str | None, execution_plan: tuple[str, ...], contract):
+    plan = plan_for_url(target)
+
+    assert plan.pipeline_name == pipeline_name
+    assert plan.execution_plan == execution_plan
+    assert plan.content_contract == contract
 
 
 def test_match_pipeline_youtube() -> None:

@@ -1,7 +1,10 @@
 import pytest
 
+from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderNotApplicableError
-from kabigon.loaders import ltn as ltn_module
+from kabigon.core.retrieval import RetrievedHtml
+from kabigon.loaders import curl_cffi as curl_module
+from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.ltn import LTNLoader
 from kabigon.loaders.ltn import extract_ltn_article_html
 from kabigon.loaders.utils import html_to_markdown
@@ -93,9 +96,29 @@ def test_ltn_loader_uses_ltn_article_container(monkeypatch: pytest.MonkeyPatch) 
         assert headers
         return html
 
-    monkeypatch.setattr(ltn_module, "fetch_news_article_html", fake_fetch_html)
+    monkeypatch.setattr(news_article_module, "fetch_news_article_html", fake_fetch_html)
 
     loader = LTNLoader()
     result = loader.load_sync("https://news.ltn.com.tw/news/life/breakingnews/5432239")
 
     assert result == "Clean LTN body paragraph"
+
+
+def test_ltn_loader_preserves_ltn_extraction_on_curl_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    html = """
+    <nav>unrelated page text</nav>
+    <div class="text boxTitle boxText"><p>LTN fallback article</p><div id="ad-one">ad</div></div>
+    """
+
+    async def fail_httpx(*_args, **_kwargs) -> str:
+        raise LoaderContentError("LTNLoader", "https://news.ltn.com.tw/news/life/breakingnews/5432239", "failed")
+
+    async def curl_success(*_args, **_kwargs) -> RetrievedHtml:
+        return RetrievedHtml(html, "text/html")
+
+    monkeypatch.setattr(news_article_module, "fetch_news_article_html", fail_httpx)
+    monkeypatch.setattr(curl_module, "fetch_curl_html", curl_success)
+
+    result = LTNLoader().load_sync("https://news.ltn.com.tw/news/life/breakingnews/5432239")
+
+    assert result == "LTN fallback article"

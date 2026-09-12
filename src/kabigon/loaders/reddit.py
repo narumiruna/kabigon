@@ -10,7 +10,9 @@ import httpx
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
+from kabigon.core.execution import remaining_seconds
 from kabigon.core.loader import Loader
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_reddit_target
 
 from .browser import DEFAULT_BROWSER_USER_AGENT
@@ -198,17 +200,19 @@ class RedditLoader(Loader):
     Prefers Reddit's Atom/RSS feed, then falls back to JSON and old.reddit.com browser extraction.
     """
 
-    def __init__(self, timeout: float = 30_000) -> None:
+    def __init__(self, timeout: float = 30_000, resource_provider: ResourceProvider | None = None) -> None:
         """Initialize RedditLoader.
 
         Args:
             timeout: Timeout in milliseconds for page loading (default: 30 seconds)
         """
         self.timeout = timeout
+        self.resource_provider = resource_provider
 
     async def _load_via_json(self, url: str) -> str:
         api_url = to_reddit_json_url(url)
-        timeout_seconds = self.timeout / 1000
+        remaining = remaining_seconds()
+        timeout_seconds = min(self.timeout / 1000, remaining) if remaining is not None else self.timeout / 1000
         headers = {
             "User-Agent": USER_AGENT,
             "Accept": "application/json",
@@ -217,10 +221,14 @@ class RedditLoader(Loader):
         try:
             logger.info("[RedditLoader] Fetching Reddit JSON endpoint")
             logger.debug("[RedditLoader] Reddit JSON URL: %s", api_url)
-            async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
-                response = await client.get(api_url, headers=headers)
-                response.raise_for_status()
-                payload = response.json()
+            if self.resource_provider is None:
+                async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
+                    response = await client.get(api_url, headers=headers)
+            else:
+                client = await self.resource_provider.http_client()
+                response = await client.get(api_url, headers=headers, timeout=timeout_seconds, follow_redirects=True)
+            response.raise_for_status()
+            payload = response.json()
         except httpx.TimeoutException as e:
             raise LoaderTimeoutError(
                 "RedditLoader",
@@ -248,13 +256,18 @@ class RedditLoader(Loader):
 
     async def _load_via_rss(self, url: str) -> str:
         rss_url = to_reddit_rss_url(url)
-        timeout_seconds = self.timeout / 1000
+        remaining = remaining_seconds()
+        timeout_seconds = min(self.timeout / 1000, remaining) if remaining is not None else self.timeout / 1000
         try:
             logger.info("[RedditLoader] Fetching Reddit RSS endpoint")
             logger.debug("[RedditLoader] Reddit RSS URL: %s", rss_url)
-            async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
-                response = await client.get(rss_url)
-                response.raise_for_status()
+            if self.resource_provider is None:
+                async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
+                    response = await client.get(rss_url)
+            else:
+                client = await self.resource_provider.http_client()
+                response = await client.get(rss_url, timeout=timeout_seconds, follow_redirects=True)
+            response.raise_for_status()
         except httpx.TimeoutException as e:
             raise LoaderTimeoutError(
                 "RedditLoader",
@@ -277,13 +290,20 @@ class RedditLoader(Loader):
         logger.info("[RedditLoader] Fetching old Reddit browser fallback")
         logger.debug("[RedditLoader] Old Reddit URL: %s", old_reddit_url)
 
-        content = await fetch_browser_html(
-            old_reddit_url,
-            loader_name="RedditLoader",
-            timeout_ms=self.timeout,
-            timeout_suggestion="Reddit pages can be slow to load. Try increasing the timeout.",
-            wait_until="networkidle",
-            user_agent=DEFAULT_BROWSER_USER_AGENT,
+        async def fetch() -> str:
+            browser = await self.resource_provider.browser() if self.resource_provider is not None else None
+            return await fetch_browser_html(
+                old_reddit_url,
+                loader_name="RedditLoader",
+                timeout_ms=min(self.timeout, (remaining_seconds() or self.timeout / 1000) * 1000),
+                timeout_suggestion="Reddit pages can be slow to load. Try increasing the timeout.",
+                wait_until="networkidle",
+                user_agent=DEFAULT_BROWSER_USER_AGENT,
+                browser=browser,
+            )
+
+        content = (
+            await self.resource_provider.run_browser(fetch) if self.resource_provider is not None else await fetch()
         )
         logger.debug("[RedditLoader] Loaded old Reddit browser page")
         return html_to_markdown(content)

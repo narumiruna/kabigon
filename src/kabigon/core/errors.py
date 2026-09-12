@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .results import AttemptRecord
+
+
 class KabigonError(Exception):
     """Base exception for all Kabigon errors."""
 
@@ -5,9 +13,15 @@ class KabigonError(Exception):
 class LoaderError(KabigonError):
     """Raised when all loaders fail to load a URL."""
 
-    def __init__(self, url: str, details: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        url: str,
+        details: list[str] | None = None,
+        attempts: tuple[AttemptRecord, ...] = (),
+    ) -> None:
         self.url = url
         self.details = details or []
+        self.attempts = attempts
 
         message = f"Failed to load URL: {url}"
         if self.details:
@@ -46,14 +60,20 @@ class FirecrawlAPIKeyNotSetError(ConfigurationError):
 
 
 class MissingDependencyError(KabigonError):
-    """Raised when a required dependency is not installed."""
+    """Raised when a requested loader dependency is not installed."""
+
+    def __init__(self, loader_name: str, dependency: str, hint: str) -> None:
+        self.loader_name = loader_name
+        self.dependency = dependency
+        self.hint = hint
+        super().__init__(f"Loader {loader_name!r} requires {dependency!r}. {hint}")
 
 
 class WhisperNotInstalledError(MissingDependencyError):
     """Raised when OpenAI Whisper is not installed."""
 
     def __init__(self) -> None:
-        super().__init__("OpenAI Whisper not installed. Please install it with `pip install openai-whisper`.")
+        super().__init__("ytdlp", "whisper", "Install it with `pip install openai-whisper`.")
 
 
 class LoaderNotApplicableError(KabigonError):
