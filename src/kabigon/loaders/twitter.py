@@ -8,6 +8,7 @@ from playwright.async_api import TimeoutError
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.loader import Loader
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_twitter_target
 
 from .browser import DEFAULT_BLOCKED_RESOURCE_TYPES
@@ -36,16 +37,22 @@ def replace_domain(url: str, new_domain: str = "x.com") -> str:
 
 
 class TwitterLoader(Loader):
-    def __init__(self, timeout: float = 20_000, wait_for_tweet_timeout: float = 15_000) -> None:
+    def __init__(
+        self,
+        timeout: float = 20_000,
+        wait_for_tweet_timeout: float = 15_000,
+        resource_provider: ResourceProvider | None = None,
+    ) -> None:
         self.timeout = timeout
         self.wait_for_tweet_timeout = wait_for_tweet_timeout
+        self.resource_provider = resource_provider
 
     async def load(self, url: str) -> str:
         logger.info("[TwitterLoader] Processing URL: %s", url)
-        parse_twitter_target(url)
+        target = parse_twitter_target(url)
 
-        url = replace_domain(url)
-        status_id = _status_id(url)
+        url = target.normalized_url
+        status_id = target.status_id
         logger.info("[TwitterLoader] Fetching normalized URL: %s", url)
 
         selectors = TWEET_READY_SELECTORS
@@ -81,6 +88,7 @@ class TwitterLoader(Loader):
 
             raise LoaderContentError("TwitterLoader", url, f"Could not find the requested tweet ({status_id})")
 
+        browser = await self.resource_provider.browser() if self.resource_provider is not None else None
         content = await fetch_browser_html(
             url,
             loader_name="TwitterLoader",
@@ -93,6 +101,7 @@ class TwitterLoader(Loader):
             block_resource_types=DEFAULT_BLOCKED_RESOURCE_TYPES,
             after_goto=wait_for_tweet,
             extract_content=extract_tweet_content,
+            browser=browser,
         )
         result = html_to_markdown(content)
         logger.info("[TwitterLoader] Extracted Twitter content (%s chars)", len(result))

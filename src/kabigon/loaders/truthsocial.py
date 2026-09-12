@@ -5,6 +5,7 @@ from playwright.async_api import Page
 from playwright.async_api import TimeoutError
 
 from kabigon.core.loader import Loader
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_truthsocial_target
 
 from .browser import DEFAULT_BLOCKED_RESOURCE_TYPES
@@ -22,13 +23,14 @@ class TruthSocialLoader(Loader):
     for content to fully load.
     """
 
-    def __init__(self, timeout: float = 60_000) -> None:
+    def __init__(self, timeout: float = 60_000, resource_provider: ResourceProvider | None = None) -> None:
         """Initialize TruthSocialLoader.
 
         Args:
             timeout: Timeout in milliseconds for page loading (default: 60 seconds)
         """
         self.timeout = timeout
+        self.resource_provider = resource_provider
 
     async def load(self, url: str) -> str:
         """Load Truth Social content from URL.
@@ -54,6 +56,7 @@ class TruthSocialLoader(Loader):
                     timeout=min(self.timeout, 5_000),
                 )
 
+        browser = await self.resource_provider.browser() if self.resource_provider is not None else None
         content = await fetch_browser_html(
             url,
             loader_name="TruthSocialLoader",
@@ -63,6 +66,7 @@ class TruthSocialLoader(Loader):
             user_agent=DEFAULT_BROWSER_USER_AGENT,
             block_resource_types=DEFAULT_BLOCKED_RESOURCE_TYPES,
             after_goto=wait_for_post_content,
+            browser=browser,
         )
         logger.debug("[TruthSocialLoader] Loaded browser page")
 

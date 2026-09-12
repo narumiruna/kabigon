@@ -12,7 +12,7 @@ Intended for developers and data engineers who need reliable, source-aware text 
 ## Features
 
 - Automatic loader selection for YouTube, Twitter/X, Truth Social, Reddit, Instagram Reels, PTT, GitHub, pi.dev shared sessions, BBC, CNN, PDF, and generic web pages
-- Fallback chain: if the primary loader fails, remaining loaders are tried in order without repeating already-attempted ones
+- Source-safe fallback chains: strict targets retry only strategies that preserve the requested content semantics
 - Async-first (`async`/`await`) with a synchronous wrapper for scripts and notebooks
 - Single-line Python API: `kabigon.load_url_sync(url)`
 - CLI for ad-hoc extraction and debugging
@@ -35,7 +35,7 @@ uv tool install kabigon
 uvx kabigon <url>
 ```
 
-After installation, install the Chromium browser for Playwright:
+This release retains the full dependency set in the default installation for compatibility; browser, Firecrawl, and transcription dependencies have not moved to extras. After installation, install the Chromium browser for Playwright:
 
 ```bash
 playwright install chromium
@@ -88,7 +88,11 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-### Parallel batch loading
+### Reusable client, deadlines, and batch loading
+
+`KabigonClient` owns reusable HTTP sessions, a browser process, and bounded blocking workers. Use one client from one event loop and close it with `async with`. `deadline` is a total budget in seconds for each load; it is unset by default for compatibility. Positive `request_limit`, `browser_limit`, and `worker_limit` values bound admitted work, and time spent waiting for a slot counts toward the deadline.
+
+After a deadline expires, kabigon starts no new loader attempts and propagates cancellation to async operations. Python cannot forcibly stop arbitrary work already running in a thread, so client shutdown may wait for admitted transcription or parsing work to drain. One-shot `load_url()` and `load_url_sync()` create and close a short-lived client under the same contract; neither promises hard wall-clock termination of a running thread.
 
 ```python
 import asyncio
@@ -101,7 +105,8 @@ async def main() -> None:
         "https://youtube.com/watch?v=abc",
         "https://reddit.com/r/python/comments/xyz",
     ]
-    results = await asyncio.gather(*[kabigon.load_url(url) for url in urls])
+    async with kabigon.KabigonClient(deadline=30, request_limit=8, browser_limit=2, worker_limit=2) as client:
+        results = await asyncio.gather(*(client.load_url(url) for url in urls))
     for url, content in zip(urls, results, strict=True):
         print(f"{url}: {len(content)} chars")
 
@@ -115,12 +120,16 @@ All public functions are importable from the `kabigon` package.
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `load_url_sync` | `(url: str) -> str` | Load a URL synchronously using automatic loader selection |
-| `load_url` | `async (url: str) -> str` | Load a URL asynchronously using automatic loader selection |
-| `available_loaders` | `() -> list[str]` | Return names of all registered loaders |
-| `explain_plan` | `(url: str) -> dict[str, object]` | Return the planned loader chain for a URL without executing it |
+| `load_url_sync` | `(url: str, *, deadline: float \| None = None) -> str` | Load once synchronously and close its short-lived client |
+| `load_url` | `async (url: str, *, deadline: float \| None = None) -> str` | Load once asynchronously and close its short-lived client |
+| `load_url_detailed` | `async (url: str, *, deadline: float \| None = None) -> LoadResult` | Return content plus actual loader/category and ordered attempts |
+| `KabigonClient` | `(*, deadline=None, request_limit=8, browser_limit=2, worker_limit=2)` | Reuse bounded resources inside one event loop |
+| `available_loaders` | `() -> list[str]` | Return names of all registered loaders without importing implementations |
+| `explain_plan` | `(url: str) -> dict[str, object]` | Return the planned loader chain and missing environment variables without executing it |
 
 ```python
+import asyncio
+
 import kabigon
 
 # Inspect which loaders would be used for a URL
@@ -129,19 +138,30 @@ print(plan)
 
 # List all loader names
 print(kabigon.available_loaders())
+
+# Inspect actual execution, including skipped requirements and transport fallback
+result = asyncio.run(kabigon.load_url_detailed("https://example.com"))
+print(result.content, result.loader_id, result.content_type)
+print(result.to_dict()["attempts"])
 ```
 
 ## Extraction behavior
 
-- Generic HTML loaders accept non-empty pages, including content shorter than 300 characters. Empty pages and recognized challenge headings are rejected; mentioning an HTTP error in an article does not make it a block page.
+- Missing environment requirements are checked per alternative. An unavailable loader is recorded as skipped while available alternatives continue; if no planned alternative is eligible, resolution fails before constructing an SDK client.
+- Generic HTML loaders accept non-empty pages, including content shorter than 300 characters. Empty pages and recognized challenge headings are rejected; challenge heuristics are not applied to source transcripts, code, or PDF text.
 - HTTP 4xx and 5xx responses fail extraction, including browser-based retrieval, so the load chain can try its next loader.
 - GitHub and news article extraction preserves escaped text such as literal HTML examples and excludes ignored subtrees without capturing surrounding page content.
-- For Twitter/X status URLs, the Twitter loader selects the requested post by its timestamp permalink, not the first post in the conversation. A missing target fails that loader rather than returning an unrelated post.
-- YouTube video URLs containing a playlist ID transcribe only the requested video when the yt-dlp fallback is used.
+- BBC, CNN, and LTN retries use HTTPX, curl_cffi, then a browser, but every transport feeds the same article extractor. Generic page markdown is never accepted as a news article.
+- Twitter/X status URLs require the requested post; profiles use the generic HTML plan. A missing tweet does not fall through to unrelated page text.
+- YouTube video URLs require transcript output and never fall through to generic HTML. Playlist pages without a selected video use the generic plan; a video URL containing a playlist ID still transcribes only that video.
+- PDF, pi.dev session, social-post, and GitHub source plans reject generic fallback output. GitHub blob URLs take precedence over the PDF suffix rule.
+- Explicit `--loader` selection remains a debugging escape hatch. Its output is categorized by the loader actually used, but explicit generic extraction is not source verification.
 
 ## Architecture
 
-The automatic path uses `kabigon.pipelines` to select a source-aware pipeline, then `kabigon.load_chain` builds one ordered execution plan. Each loader is constructed only when its turn is reached; the first non-empty string is returned, and if every planned loader fails, kabigon raises `LoaderError` with the attempted loader details.
+The automatic path uses `kabigon.pipelines` to select a source-aware pipeline and content contract, then `kabigon.load_chain` executes one ordered plan. Requirements are evaluated per attempt, implementations are imported and constructed only when attempted, whitespace-only or contract-incompatible results are rejected, and `LoaderError.details` remains the readable all-failed representation. `LoadResult` is produced by this same runtime rather than a second execution engine.
+
+`KabigonClient` owns reusable sessions, one lazily launched browser with isolated contexts, and bounded workers. Standalone Loader construction remains supported and owns its local cleanup.
 
 Architecture diagram source: [`docs/architecture/url-processing.mmd`](docs/architecture/url-processing.mmd)
 
@@ -171,7 +191,7 @@ Override automatic loader selection with a comma-separated list of loader names,
 kabigon --loader twitter,playwright https://x.com/user/status/123
 ```
 
-Use this only for debugging or testing specific loaders. The automatic path is preferred for normal use.
+Use this only for debugging or testing specific loaders. The automatic path is preferred for normal use. Registry metadata exposes `pi-session`, `ltn`, and `curl-cffi`; internal `playwright-fast` and `playwright-networkidle` variants are intentionally hidden from CLI selection and listing.
 
 ## Configuration
 
@@ -201,9 +221,10 @@ src/kabigon/
 ├── core/          # Loader ABC, exceptions, and shared helpers
 ├── loaders/       # Concrete loader implementations (one file per source)
 ├── pipelines/     # Pipeline catalog: maps URL patterns to loader chains
-├── api.py         # Public Python interface (load_url, explain_plan, …)
+├── api.py         # One-shot Python interface (load_url, load_url_detailed, …)
+├── client.py      # Reusable resource ownership, limits, and deadlines
 ├── cli.py         # argparse CLI entrypoint
-└── load_chain.py  # Chain execution and fallback logic
+└── load_chain.py  # Chain execution, acceptance, and attempt records
 tests/
 ├── loaders/       # Per-loader unit tests
 examples/          # Runnable usage samples

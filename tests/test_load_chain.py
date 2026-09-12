@@ -1,3 +1,6 @@
+import asyncio
+import time
+
 import pytest
 
 from kabigon.core.errors import LoaderContentError
@@ -5,11 +8,17 @@ from kabigon.core.errors import LoaderError
 from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.errors import MissingRequirementError
+from kabigon.core.execution import reset_deadline
+from kabigon.core.execution import set_deadline
 from kabigon.core.loader import Loader
+from kabigon.core.results import AttemptStatus
 from kabigon.load_chain import DEFAULT_FALLBACK_LOADERS
+from kabigon.load_chain import LoadChain
+from kabigon.load_chain import LoadChainExplanation
 from kabigon.load_chain import explain_load_chain
 from kabigon.load_chain import resolve_explicit_load_chain
 from kabigon.load_chain import resolve_load_chain
+from kabigon.pipelines.catalog import ContentContract
 from kabigon.pipelines.catalog import ContentType
 
 
@@ -61,10 +70,8 @@ def test_load_chain_explains_youtube_decision() -> None:
     assert explanation.pipeline == "youtube"
     assert explanation.content_type == ContentType.YOUTUBE_VIDEO
     assert explanation.targeted_loaders == ("youtube", "youtube-ytdlp")
-    assert explanation.fallback_loaders == tuple(
-        loader_name for loader_name in DEFAULT_FALLBACK_LOADERS if loader_name not in explanation.targeted_loaders
-    )
-    assert explanation.execution_plan[:2] == ("youtube", "youtube-ytdlp")
+    assert explanation.fallback_loaders == ()
+    assert explanation.execution_plan == ("youtube", "youtube-ytdlp")
     assert explanation.requirements == ()
 
 
@@ -241,6 +248,105 @@ def test_resolve_load_chain_checks_requirements_before_building_loader(monkeypat
         resolve_load_chain("https://openai.com/pricing")
 
 
+@pytest.mark.parametrize("names", [("httpx", "firecrawl"), ("firecrawl", "httpx")])
+def test_missing_requirement_does_not_block_available_alternative(monkeypatch, names) -> None:
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
+    built: list[str] = []
+
+    def factory(name: str):
+        built.append(name)
+        return SuccessLoader
+
+    chain = resolve_explicit_load_chain(
+        "https://example.com",
+        names,
+        factory,
+        lambda name: ("FIRECRAWL_API_KEY",) if name == "firecrawl" else (),
+    )
+
+    assert chain.explanation.eligible_loaders == ("httpx",)
+    assert chain.explanation.unavailable_loaders == ("firecrawl",)
+    assert chain.load_sync() == "loaded https://example.com"
+    assert "firecrawl" not in built
+    assert built == ["httpx"]
+
+
+def test_no_eligible_alternative_fails_before_factory(monkeypatch) -> None:
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
+    built = False
+
+    def factory(_name: str):
+        nonlocal built
+        built = True
+        return SuccessLoader
+
+    with pytest.raises(MissingRequirementError, match="FIRECRAWL_API_KEY"):
+        resolve_explicit_load_chain(
+            "https://example.com",
+            ("firecrawl",),
+            factory,
+            lambda _name: ("FIRECRAWL_API_KEY",),
+        )
+    assert built is False
+
+
+def test_mixed_skipped_and_failed_attempts_are_actionable(monkeypatch) -> None:
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
+    chain = resolve_explicit_load_chain(
+        "https://example.com",
+        ("firecrawl", "empty"),
+        {"firecrawl": SuccessLoader, "empty": EmptyLoader}.__getitem__,
+        lambda name: ("FIRECRAWL_API_KEY",) if name == "firecrawl" else (),
+    )
+
+    with pytest.raises(LoaderError) as exc_info:
+        chain.load_sync()
+
+    assert "firecrawl: Skipped" in str(exc_info.value)
+    assert [attempt.status for attempt in exc_info.value.attempts] == [AttemptStatus.SKIPPED, AttemptStatus.EMPTY]
+
+
+def test_shared_deadline_stops_new_attempts() -> None:
+    built: list[str] = []
+
+    class SlowLoader(Loader):
+        async def load(self, url: str) -> str:
+            await asyncio.sleep(1)
+            return url
+
+    def factory(name: str):
+        built.append(name)
+        return SlowLoader if name == "slow" else SuccessLoader
+
+    async def scenario() -> None:
+        token = set_deadline(time.monotonic() + 0.01)
+        try:
+            chain = resolve_explicit_load_chain("https://example.com", ("slow", "success"), factory)
+            with pytest.raises(LoaderError):
+                await chain.load()
+        finally:
+            reset_deadline(token)
+
+    asyncio.run(scenario())
+    assert built == ["slow"]
+
+
+def test_source_contract_rejects_generic_loader_result() -> None:
+    explanation = LoadChainExplanation(
+        url="https://x.com/user/status/1",
+        pipeline="twitter",
+        content_type=ContentType.SOCIAL_POST,
+        targeted_loaders=("generic",),
+        fallback_loaders=(),
+        execution_plan=("generic",),
+        content_contract=ContentContract.SOURCE_REQUIRED,
+    )
+    chain = LoadChain(lambda _name: SuccessLoader, explanation, lambda _name: (), lambda _name: "generic_web")
+
+    with pytest.raises(LoaderError, match="Rejected content type"):
+        chain.load_sync()
+
+
 def test_load_chain_explanation_as_dict_uses_public_shapes() -> None:
     explanation = explain_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
@@ -253,4 +359,6 @@ def test_load_chain_explanation_as_dict_uses_public_shapes() -> None:
         "execution_plan": list(explanation.execution_plan),
         "requirements": [],
         "missing_requirements": [],
+        "eligible_loaders": ["youtube", "youtube-ytdlp"],
+        "unavailable_loaders": [],
     }

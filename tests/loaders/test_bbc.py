@@ -3,7 +3,7 @@ from typing import ClassVar
 import pytest
 
 from kabigon.core.errors import LoaderNotApplicableError
-from kabigon.loaders import news_article as news_article_module
+from kabigon.loaders import httpx as httpx_module
 from kabigon.loaders.bbc import BBCLoader
 from kabigon.sources.applicability import parse_bbc_target
 
@@ -63,7 +63,7 @@ def test_bbc_loader_uses_news_article_loading(monkeypatch: pytest.MonkeyPatch) -
         async def get(self, url: str, headers: dict[str, str], follow_redirects: bool):
             return MockResponse()
 
-    monkeypatch.setattr(news_article_module.httpx, "AsyncClient", MockAsyncClient)
+    monkeypatch.setattr(httpx_module.httpx, "AsyncClient", MockAsyncClient)
 
     loader = BBCLoader()
     result = loader.load_sync("https://www.bbc.com/news/articles/c70k29914q4o")

@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import asyncio
 import io
+import time
 from typing import Any
+from typing import cast
 
 import httpx
 import pytest
 from curl_cffi import requests as curl_requests
 
+from kabigon.core.execution import reset_deadline
+from kabigon.core.execution import set_deadline
+from kabigon.core.resources import ResourceProvider
 from kabigon.loaders import pdf as pdf_module
 from kabigon.loaders.pdf import PDFLoader
 
@@ -45,6 +50,37 @@ class _CurlSession:
     async def get(self, url: str, **kwargs: Any) -> _CurlResponse:
         self.last_request = {"url": url, **kwargs}
         return _CurlResponse()
+
+
+def test_remote_pdf_receives_remaining_deadline() -> None:
+    class Client:
+        timeout = 0.0
+
+        async def get(self, _url: str, **kwargs: Any) -> _CurlResponse:
+            self.timeout = kwargs["timeout"]
+            return _CurlResponse()
+
+    class Provider:
+        def __init__(self) -> None:
+            self.client = Client()
+
+        async def http_client(self) -> Client:
+            return self.client
+
+    async def scenario() -> float:
+        provider = Provider()
+        token = set_deadline(time.monotonic() + 0.1)
+        try:
+            await pdf_module.fetch_remote_pdf(
+                "https://example.com/document.pdf",
+                resource_provider=cast("ResourceProvider", provider),
+            )
+        finally:
+            reset_deadline(token)
+        return provider.client.timeout
+
+    timeout = asyncio.run(scenario())
+    assert 0 < timeout <= 0.1
 
 
 def test_remote_pdf_falls_back_to_curl_cffi_after_httpx_transport_error(monkeypatch: pytest.MonkeyPatch) -> None:

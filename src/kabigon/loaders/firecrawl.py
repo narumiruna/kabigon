@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+from collections.abc import Awaitable
+from collections.abc import Callable
 from typing import Any
 
 from firecrawl import FirecrawlApp
@@ -13,8 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 class FirecrawlLoader(Loader):
-    def __init__(self, timeout: int | None = None) -> None:
+    def __init__(
+        self,
+        timeout: int | None = None,
+        run_blocking: Callable[[Callable[[], str]], Awaitable[str]] | None = None,
+    ) -> None:
         self.timeout = timeout
+        self.run_blocking = run_blocking
 
         api_key = os.getenv("FIRECRAWL_API_KEY")
         if not api_key:
@@ -52,4 +59,9 @@ class FirecrawlLoader(Loader):
         return markdown
 
     async def load(self, url: str) -> str:
-        return await asyncio.to_thread(self.load_sync, url)
+        def operation() -> str:
+            return self.load_sync(url)
+
+        if self.run_blocking is not None:
+            return await self.run_blocking(operation)
+        return await asyncio.to_thread(operation)

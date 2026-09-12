@@ -7,6 +7,8 @@ import httpx
 
 from kabigon.core.errors import InvalidURLError
 from kabigon.core.loader import Loader
+from kabigon.core.resources import HttpResponse
+from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import RAW_GITHUB_HOST
 from kabigon.sources.applicability import parse_github_raw_content_target
 from kabigon.sources.applicability import parse_github_target
@@ -44,6 +46,15 @@ def extract_main_html(html: str) -> str:
 
 
 class GitHubLoader(Loader):
+    def __init__(self, resource_provider: ResourceProvider | None = None) -> None:
+        self.resource_provider = resource_provider
+
+    async def _get(self, url: str, headers: dict[str, str]) -> HttpResponse:
+        if self.resource_provider is None:
+            async with httpx.AsyncClient() as client:
+                return await client.get(url, headers=headers, follow_redirects=True)
+        return await (await self.resource_provider.http_client()).get(url, headers=headers, follow_redirects=True)
+
     async def load(self, url: str) -> str:
         logger.info("[GitHubLoader] Processing URL: %s", url)
         require_loader_applicability("GitHubLoader", url, parse_github_target)
@@ -53,13 +64,11 @@ class GitHubLoader(Loader):
             raw_url = to_raw_github_url(url)
             logger.info("[GitHubLoader] Fetching raw GitHub content: %s", raw_url)
 
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    raw_url,
-                    follow_redirects=True,
-                    headers={"Accept": "text/plain, text/markdown;q=0.9, */*;q=0.1"},
-                )
-                response.raise_for_status()
+            response = await self._get(
+                raw_url,
+                headers={"Accept": "text/plain, text/markdown;q=0.9, */*;q=0.1"},
+            )
+            response.raise_for_status()
 
             content_type = response.headers.get("content-type", "")
             logger.debug("[GitHubLoader] Raw content-type: %s", content_type)
@@ -70,16 +79,14 @@ class GitHubLoader(Loader):
             return response.text
 
         logger.info("[GitHubLoader] Fetching GitHub HTML page")
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url,
-                follow_redirects=True,
-                headers={
-                    "Accept": "text/html,application/xhtml+xml",
-                    "User-Agent": "kabigon (httpx)",
-                },
-            )
-            response.raise_for_status()
+        response = await self._get(
+            url,
+            headers={
+                "Accept": "text/html,application/xhtml+xml",
+                "User-Agent": "kabigon (httpx)",
+            },
+        )
+        response.raise_for_status()
 
         content_type = response.headers.get("content-type", "")
         logger.debug("[GitHubLoader] HTML content-type: %s", content_type)

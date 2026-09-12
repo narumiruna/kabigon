@@ -1,9 +1,17 @@
 import asyncio
+import time
 from typing import ClassVar
+from typing import cast
 
 import pytest
 
 from kabigon.core.errors import LoaderContentError
+from kabigon.core.execution import reset_deadline
+from kabigon.core.execution import set_deadline
+from kabigon.core.resources import HttpClient
+from kabigon.core.retrieval import RetrievedHtml
+from kabigon.loaders import curl_cffi as curl_module
+from kabigon.loaders import httpx as httpx_module
 from kabigon.loaders import news_article as news_article_module
 from kabigon.loaders.html_extractors import extract_article_body_from_json_ld
 from kabigon.loaders.news_article import extract_news_article_main_html
@@ -80,6 +88,64 @@ def test_load_news_article_prefers_json_ld_body(monkeypatch: pytest.MonkeyPatch)
     assert result == "News body paragraph"
 
 
+def test_news_article_preserves_extractor_across_curl_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    html = "<html><nav>unrelated</nav><article><p>article body only</p></article></html>"
+
+    async def fail_httpx(*_args, **_kwargs) -> str:
+        raise LoaderContentError("ExampleLoader", "https://example.com/article", "transport failed")
+
+    async def curl_success(*_args, **_kwargs) -> RetrievedHtml:
+        return RetrievedHtml(html, "text/html")
+
+    monkeypatch.setattr(news_article_module, "fetch_news_article_html", fail_httpx)
+    monkeypatch.setattr(curl_module, "fetch_curl_html", curl_success)
+
+    result = asyncio.run(
+        load_news_article(
+            "https://example.com/article",
+            loader_name="ExampleLoader",
+            validate_url=lambda _url: None,
+            headers={},
+        )
+    )
+
+    assert result == "article body only"
+    assert "unrelated" not in result
+
+
+def test_news_http_transport_receives_remaining_deadline() -> None:
+    class Response:
+        text = "<article>body</article>"
+        headers: ClassVar[dict[str, str]] = {"content-type": "text/html"}
+
+        def raise_for_status(self) -> None:
+            return None
+
+    class Client:
+        timeout = 0.0
+
+        async def get(self, _url: str, **kwargs):
+            self.timeout = kwargs["timeout"]
+            return Response()
+
+    async def scenario() -> float:
+        client = Client()
+        token = set_deadline(time.monotonic() + 0.1)
+        try:
+            await fetch_news_article_html(
+                "https://example.com/article",
+                loader_name="ExampleLoader",
+                headers={},
+                http_client=cast("HttpClient", client),
+            )
+        finally:
+            reset_deadline(token)
+        return client.timeout
+
+    timeout = asyncio.run(scenario())
+    assert 0 < timeout <= 0.1
+
+
 def test_fetch_news_article_html_rejects_non_html(monkeypatch: pytest.MonkeyPatch) -> None:
     class MockResponse:
         text = "not html"
@@ -98,7 +164,7 @@ def test_fetch_news_article_html_rejects_non_html(monkeypatch: pytest.MonkeyPatc
         async def get(self, url: str, headers: dict[str, str], follow_redirects: bool):
             return MockResponse()
 
-    monkeypatch.setattr(news_article_module.httpx, "AsyncClient", MockAsyncClient)
+    monkeypatch.setattr(httpx_module.httpx, "AsyncClient", MockAsyncClient)
 
     with pytest.raises(LoaderContentError, match="Expected HTML content"):
         asyncio.run(

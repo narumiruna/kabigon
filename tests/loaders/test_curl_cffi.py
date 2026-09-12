@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+from typing import ClassVar
 
 import pytest
 
@@ -59,6 +60,19 @@ def test_curl_cffi_loader_returns_markdown(monkeypatch: pytest.MonkeyPatch, body
 
     result = asyncio.run(CurlCffiLoader().load("https://example.com/article"))
     assert "real news paragraph" in result
+
+
+def test_curl_cffi_loader_rejects_http_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    class ErrorResponse(_FakeResponse):
+        headers: ClassVar[dict[str, str]] = {"content-type": "text/html"}
+
+        def raise_for_status(self) -> None:
+            raise RuntimeError("HTTP 503")
+
+    _install_fake_session(monkeypatch, ErrorResponse(b"<p>error</p>"))
+
+    with pytest.raises(LoaderContentError, match="503"):
+        asyncio.run(CurlCffiLoader().load("https://example.com/error"))
 
 
 def test_curl_cffi_loader_rejects_cloudflare_challenge(monkeypatch: pytest.MonkeyPatch) -> None:
