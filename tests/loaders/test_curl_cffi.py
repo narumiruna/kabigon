@@ -6,6 +6,8 @@ from typing import Any
 import pytest
 
 from kabigon.core.errors import LoaderContentError
+from kabigon.core.loader import Loader
+from kabigon.load_chain import resolve_explicit_load_chain
 from kabigon.loaders import curl_cffi as curl_cffi_module
 from kabigon.loaders.curl_cffi import CurlCffiLoader
 
@@ -59,6 +61,30 @@ def test_curl_cffi_loader_returns_markdown(monkeypatch: pytest.MonkeyPatch, body
 
     result = asyncio.run(CurlCffiLoader().load("https://example.com/article"))
     assert "real news paragraph" in result
+
+
+def test_curl_cffi_loader_falls_back_after_http_200_access_denied(monkeypatch: pytest.MonkeyPatch) -> None:
+    html = (
+        b"<html><body><h1>Access Denied</h1>"
+        b'<p>You don\'t have permission to access "https://example.com/" on this server.</p>'
+        b"<p>Reference #18.abcdef</p></body></html>"
+    )
+    _install_fake_session(monkeypatch, _FakeResponse(html))
+
+    with pytest.raises(LoaderContentError, match="block/challenge marker"):
+        CurlCffiLoader().load_sync("https://example.com/blocked")
+
+    class FallbackLoader(Loader):
+        async def load(self, url: str) -> str:
+            return "Article from fallback"
+
+    chain = resolve_explicit_load_chain(
+        "https://example.com/blocked",
+        ("curl-cffi", "fallback"),
+        {"curl-cffi": CurlCffiLoader, "fallback": FallbackLoader}.__getitem__,
+    )
+
+    assert chain.load_sync() == "Article from fallback"
 
 
 def test_curl_cffi_loader_rejects_cloudflare_challenge(monkeypatch: pytest.MonkeyPatch) -> None:
