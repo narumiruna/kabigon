@@ -1,37 +1,52 @@
 import pytest
 
 from kabigon.core.errors import LoaderContentError
-from kabigon.loaders.content_guard import BLOCKED_MARKERS
-from kabigon.loaders.content_guard import MIN_CONTENT_LENGTH
 from kabigon.loaders.content_guard import ensure_usable_content
 
 
-def _long_text(n: int = MIN_CONTENT_LENGTH + 50) -> str:
-    return "lorem ipsum dolor sit amet " * (n // 27 + 1)
+@pytest.mark.parametrize("content", ["hi", "Hello world. This is my homepage.", "A useful paragraph. " * 50])
+def test_ensure_usable_content_accepts_nonempty_pages(content: str) -> None:
+    ensure_usable_content(content, loader_name="X", url="https://example.com")
 
 
-def test_ensure_usable_content_passes_for_real_content() -> None:
-    ensure_usable_content(_long_text(), loader_name="X", url="https://example.com")
-
-
-def test_ensure_usable_content_rejects_short_content() -> None:
+@pytest.mark.parametrize("content", ["", " \n\t "])
+def test_ensure_usable_content_rejects_empty_content(content: str) -> None:
     with pytest.raises(LoaderContentError, match="too short"):
-        ensure_usable_content("hi", loader_name="X", url="https://example.com")
+        ensure_usable_content(content, loader_name="X", url="https://example.com")
 
 
 def test_ensure_usable_content_honors_custom_min_length() -> None:
     ensure_usable_content("hello world", loader_name="X", url="https://example.com", min_length=5)
+    with pytest.raises(LoaderContentError, match="too short"):
+        ensure_usable_content("hi", loader_name="X", url="https://example.com", min_length=5)
 
 
-@pytest.mark.parametrize("marker", BLOCKED_MARKERS)
-def test_ensure_usable_content_rejects_known_block_markers(marker: str) -> None:
-    payload = _long_text() + "\n" + marker.upper()
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "Just a moment...",
+        "Checking your browser",
+        "Attention required! | Cloudflare",
+        "DDoS protection by Cloudflare",
+        "Enable JavaScript and cookies to continue",
+    ],
+)
+@pytest.mark.parametrize("prefix", ["", "# ", "## "])
+def test_ensure_usable_content_rejects_challenge_headings(heading: str, prefix: str) -> None:
+    payload = f"\n{prefix}{heading}\nPlease wait while we verify your browser."
     with pytest.raises(LoaderContentError, match="block/challenge marker"):
         ensure_usable_content(payload, loader_name="X", url="https://example.com")
 
 
-def test_cloudflare_just_a_moment_is_rejected() -> None:
-    # Realistic snippet returned by curl/httpx against a CF-protected site.
-    payload = "Just a moment...\nEnable JavaScript and cookies to continue\n" * 20
-    with pytest.raises(LoaderContentError):
-        ensure_usable_content(payload, loader_name="X", url="https://example.com")
+@pytest.mark.parametrize(
+    "phrase",
+    ["access denied", "403 forbidden", "502 bad gateway", "503 service unavailable", "cf-error-details"],
+)
+def test_ensure_usable_content_accepts_error_documentation(phrase: str) -> None:
+    payload = f"# {phrase}\n" + "Verify that your account has the required permissions. " * 20
+    ensure_usable_content(payload, loader_name="X", url="https://example.com")
+
+
+def test_ensure_usable_content_accepts_challenge_phrases_inside_an_article() -> None:
+    payload = "# Troubleshooting browser challenges\n\nJust a moment...\nChecking your browser\n"
+    ensure_usable_content(payload, loader_name="X", url="https://example.com")

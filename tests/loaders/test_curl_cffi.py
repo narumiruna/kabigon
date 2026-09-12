@@ -44,8 +44,17 @@ def _install_fake_session(monkeypatch: pytest.MonkeyPatch, response: _FakeRespon
     return fake
 
 
-def test_curl_cffi_loader_returns_markdown(monkeypatch: pytest.MonkeyPatch) -> None:
-    html = b"<html><body>" + (b"<p>real news paragraph</p>" * 50) + b"</body></html>"
+@pytest.mark.parametrize(
+    "body",
+    [
+        b"<p>real news paragraph</p>" * 50,
+        b"<p>real news paragraph</p>",
+        b"<h1>Troubleshooting access denied errors</h1>" + b"<p>real news paragraph</p>" * 50,
+    ],
+    ids=["long-page", "short-page", "error-documentation"],
+)
+def test_curl_cffi_loader_returns_markdown(monkeypatch: pytest.MonkeyPatch, body: bytes) -> None:
+    html = b"<html><body>" + body + b"</body></html>"
     _install_fake_session(monkeypatch, _FakeResponse(html))
 
     result = asyncio.run(CurlCffiLoader().load("https://example.com/article"))
