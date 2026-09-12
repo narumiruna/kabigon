@@ -3,6 +3,7 @@ import asyncio
 import pytest
 from playwright.async_api import TimeoutError
 
+from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.loaders import browser
 
@@ -24,9 +25,15 @@ class FakeRoute:
         self.continued = True
 
 
+class FakeResponse:
+    def __init__(self, status: int) -> None:
+        self.status = status
+
+
 class FakePage:
-    def __init__(self, raise_timeout: bool = False) -> None:
+    def __init__(self, raise_timeout: bool = False, status: int | None = 200) -> None:
         self.raise_timeout = raise_timeout
+        self.status = status
         self.route_pattern = ""
         self.route_handler = None
         self.goto_timeout = 0.0
@@ -36,11 +43,12 @@ class FakePage:
         self.route_pattern = pattern
         self.route_handler = handler
 
-    async def goto(self, url: str, **kwargs) -> None:
+    async def goto(self, url: str, **kwargs) -> FakeResponse | None:
         if self.raise_timeout:
             raise TimeoutError("timeout")
         self.goto_timeout = kwargs["timeout"]
         self.goto_wait_until = kwargs.get("wait_until", "")
+        return FakeResponse(self.status) if self.status is not None else None
 
     async def content(self) -> str:
         return "<html><body>content</body></html>"
@@ -107,8 +115,11 @@ def _set_fake_playwright(monkeypatch: pytest.MonkeyPatch, page: FakePage) -> tup
     return fake_browser, chromium
 
 
-def test_fetch_browser_html_applies_navigation_options_and_closes_resources(monkeypatch: pytest.MonkeyPatch) -> None:
-    page = FakePage()
+@pytest.mark.parametrize("status", [200, None])
+def test_fetch_browser_html_applies_navigation_options_and_closes_resources(
+    monkeypatch: pytest.MonkeyPatch, status: int | None
+) -> None:
+    page = FakePage(status=status)
     fake_browser, chromium = _set_fake_playwright(monkeypatch, page)
 
     html = asyncio.run(
@@ -153,6 +164,36 @@ def test_fetch_browser_html_filters_blocked_resources(monkeypatch: pytest.Monkey
     asyncio.run(page.route_handler(script_route, FakeRequest("script")))
     assert image_route.aborted is True
     assert script_route.continued is True
+
+
+@pytest.mark.parametrize("status", [403, 404, 500, 503])
+@pytest.mark.parametrize("wait_until", [None, "domcontentloaded"])
+def test_fetch_browser_html_rejects_http_errors_before_extraction(
+    monkeypatch: pytest.MonkeyPatch, status: int, wait_until
+) -> None:
+    fake_browser, _ = _set_fake_playwright(monkeypatch, FakePage(status=status))
+
+    async def unexpected_hook(page) -> None:
+        pytest.fail("post-navigation hook must not run after an HTTP error")
+
+    async def unexpected_extractor(page) -> str:
+        pytest.fail("HTTP error content must not be extracted")
+
+    with pytest.raises(LoaderContentError, match=f"HTTP.*{status}"):
+        asyncio.run(
+            browser.fetch_browser_html(
+                "https://example.com/missing",
+                loader_name="TestLoader",
+                timeout_ms=10_000,
+                timeout_suggestion="try again",
+                wait_until=wait_until,
+                after_goto=unexpected_hook,
+                extract_content=unexpected_extractor,
+            )
+        )
+
+    assert fake_browser.context.closed is True
+    assert fake_browser.closed is True
 
 
 def test_fetch_browser_html_maps_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

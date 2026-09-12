@@ -11,6 +11,7 @@ from playwright.async_api import Route
 from playwright.async_api import TimeoutError
 from playwright.async_api import async_playwright
 
+from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
 
 BrowserPageHook = Callable[[Page], Awaitable[None]]
@@ -43,12 +44,8 @@ async def fetch_browser_html(
         browser = await p.chromium.launch(headless=browser_headless)
         context = None
         try:
-            if user_agent is None:
-                logger.debug("[%s] Creating browser context", loader_name)
-                context = await browser.new_context()
-            else:
-                logger.debug("[%s] Creating browser context with custom user agent", loader_name)
-                context = await browser.new_context(user_agent=user_agent)
+            logger.debug("[%s] Creating browser context (custom_user_agent=%s)", loader_name, user_agent is not None)
+            context = await browser.new_context(user_agent=user_agent)
             page = await context.new_page()
 
             if block_resource_types:
@@ -70,13 +67,16 @@ async def fetch_browser_html(
                     wait_until,
                 )
                 if wait_until is None:
-                    await page.goto(url, timeout=timeout_ms)
+                    response = await page.goto(url, timeout=timeout_ms)
                 else:
-                    await page.goto(url, timeout=timeout_ms, wait_until=wait_until)
+                    response = await page.goto(url, timeout=timeout_ms, wait_until=wait_until)
             except TimeoutError as e:
                 timeout_seconds = (timeout_ms or 0) / 1000 if timeout_ms else 30
                 logger.warning("[%s] Browser navigation timed out after %ss", loader_name, timeout_seconds)
                 raise LoaderTimeoutError(loader_name, url, timeout_seconds, timeout_suggestion) from e
+
+            if response is not None and response.status >= 400:
+                raise LoaderContentError(loader_name, url, f"HTTP request failed with status {response.status}")
 
             if after_goto is not None:
                 logger.debug("[%s] Running post-navigation hook", loader_name)
