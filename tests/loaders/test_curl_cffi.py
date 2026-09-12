@@ -12,8 +12,9 @@ from kabigon.loaders.curl_cffi import CurlCffiLoader
 
 
 class _FakeResponse:
-    def __init__(self, content: bytes) -> None:
+    def __init__(self, content: bytes, headers: dict[str, str] | None = None) -> None:
         self.content = content
+        self.headers = headers or {}
 
     def raise_for_status(self) -> None:
         return None
@@ -60,6 +61,26 @@ def test_curl_cffi_loader_returns_markdown(monkeypatch: pytest.MonkeyPatch, body
 
     result = asyncio.run(CurlCffiLoader().load("https://example.com/article"))
     assert "real news paragraph" in result
+
+
+@pytest.mark.parametrize(
+    ("encoding", "content_type", "text"),
+    [
+        ("big5", "text/html; charset=big5", "繁體中文內容, 這是一段用來測試編碼的新聞文章。"),
+        ("shift_jis", "text/html", "日本語の記事です。文字コードの検出を確認します。"),
+    ],
+    ids=["declared-big5", "detected-shift-jis"],
+)
+def test_curl_cffi_loader_preserves_response_encoding(
+    monkeypatch: pytest.MonkeyPatch, encoding: str, content_type: str, text: str
+) -> None:
+    html = f"<html><body><p>{text * 20}</p></body></html>".encode(encoding)
+    _install_fake_session(monkeypatch, _FakeResponse(html, {"content-type": content_type}))
+
+    result = asyncio.run(CurlCffiLoader().load("https://example.com/article"))
+
+    assert text in result
+    assert "�" not in result
 
 
 def test_curl_cffi_loader_rejects_http_errors(monkeypatch: pytest.MonkeyPatch) -> None:

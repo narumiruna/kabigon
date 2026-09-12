@@ -60,6 +60,28 @@ def test_client_construction_opens_no_resources_and_first_use_is_singleton(monke
     assert resource.closed is True
 
 
+def test_nested_client_context_keeps_outer_context_open(monkeypatch: pytest.MonkeyPatch) -> None:
+    FakeHttpClient.created = 0
+    monkeypatch.setattr(
+        client_module.importlib,
+        "import_module",
+        lambda name: SimpleNamespace(AsyncClient=FakeHttpClient) if name == "httpx" else __import__(name),
+    )
+
+    async def scenario() -> FakeHttpClient:
+        client = KabigonClient()
+        async with client:
+            resource = cast("FakeHttpClient", await client.http_client())
+            async with client:
+                assert await client.http_client() is resource
+            assert await client.http_client() is resource
+            assert resource.closed is False
+        return resource
+
+    resource = asyncio.run(scenario())
+    assert resource.closed is True
+
+
 def test_client_closes_resources_when_body_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         client_module.importlib,
@@ -134,6 +156,44 @@ def test_concurrent_curl_and_browser_initialization_happens_once(  # noqa: C901
     assert counts == {"curl": 1, "playwright": 1, "browser": 1}
 
 
+def test_client_stops_playwright_when_browser_launch_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    stopped = 0
+
+    class Chromium:
+        async def launch(self, **_kwargs) -> None:
+            raise RuntimeError("browser unavailable")
+
+    class Playwright:
+        chromium = Chromium()
+
+        async def stop(self) -> None:
+            nonlocal stopped
+            stopped += 1
+
+    class Manager:
+        async def start(self) -> Playwright:
+            return Playwright()
+
+    real_import = client_module.importlib.import_module
+
+    def fake_import(name: str):
+        if name == "playwright.async_api":
+            return SimpleNamespace(async_playwright=Manager)
+        return real_import(name)
+
+    monkeypatch.setattr(client_module.importlib, "import_module", fake_import)
+
+    async def scenario() -> None:
+        async with KabigonClient() as client:
+            with pytest.raises(RuntimeError, match="browser unavailable"):
+                await client.browser()
+            assert client._playwright is None
+            assert client._browser is None
+
+    asyncio.run(scenario())
+    assert stopped == 1
+
+
 def test_client_projects_detailed_result_and_checks_context(monkeypatch: pytest.MonkeyPatch) -> None:
     expected = LoadResult("body", "httpx", "generic_web", False, ())
 
@@ -170,6 +230,31 @@ def test_client_rejects_non_positive_limits_and_deadline() -> None:
         KabigonClient(deadline=0)
     with pytest.raises(ValueError, match="limits"):
         KabigonClient(worker_limit=0)
+
+
+def test_client_close_releases_cached_whisper_models(monkeypatch: pytest.MonkeyPatch) -> None:
+    model = object()
+    real_import = client_module.importlib.import_module
+
+    def fake_import(name: str):
+        if name == "whisper":
+            return SimpleNamespace(load_model=lambda _model_name: model)
+        return real_import(name)
+
+    monkeypatch.setattr(client_module.importlib, "import_module", fake_import)
+
+    async def scenario() -> KabigonClient:
+        client = KabigonClient()
+        async with client:
+            loaded_model, _lock = client.whisper_model("base")
+            assert loaded_model is model
+            assert client._models == {"base": model}
+            assert set(client._model_use_locks) == {"base"}
+        return client
+
+    client = asyncio.run(scenario())
+    assert client._models == {}
+    assert client._model_use_locks == {}
 
 
 def test_blocking_cancellation_drains_before_releasing_worker_slot() -> None:
@@ -289,6 +374,17 @@ def test_chain_cancellation_reaches_active_loader() -> None:
         with pytest.raises(asyncio.CancelledError):
             await task
         assert cancelled.is_set()
+
+    asyncio.run(scenario())
+
+
+def test_client_accepts_windows_absolute_pdf_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    expected = LoadResult("PDF body", "pdf", "pdf", False, ())
+    monkeypatch.setattr(client_module, "resolve_load_chain", lambda *_args, **_kwargs: FakeChain(expected))
+
+    async def scenario() -> None:
+        async with KabigonClient() as client:
+            assert await client.load_url(r"C:\docs\file.pdf") == "PDF body"
 
     asyncio.run(scenario())
 

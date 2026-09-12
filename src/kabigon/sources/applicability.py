@@ -4,6 +4,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from pathlib import PureWindowsPath
 from urllib.parse import parse_qs
 from urllib.parse import unquote
 from urllib.parse import urlparse
@@ -255,6 +256,8 @@ def parse_pdf_target(target: str) -> str:
             raise InvalidURLError(target, "PDF")
         return target
 
+    if parsed.scheme and not PureWindowsPath(target).is_absolute():
+        raise InvalidURLError(target, "PDF")
     if Path(target).suffix.lower() != ".pdf":
         raise InvalidURLError(target, "PDF")
     return target

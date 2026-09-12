@@ -14,6 +14,7 @@ from kabigon.core.resources import ResourceProvider
 from kabigon.core.retrieval import RetrievedHtml
 
 from .content_guard import ensure_usable_content
+from .utils import decode_html
 from .utils import html_to_markdown
 
 if TYPE_CHECKING:
@@ -46,10 +47,8 @@ async def fetch_curl_html(
             response = await request(session)
     except Exception as error:
         raise LoaderContentError(loader_name, url, f"HTTP request failed: {error}") from error
-    content = (
-        response.content.decode(errors="replace") if isinstance(response.content, bytes) else str(response.content)
-    )
-    return RetrievedHtml(content, getattr(response, "headers", {}).get("content-type", ""))
+    content_type = getattr(response, "headers", {}).get("content-type", "")
+    return RetrievedHtml(decode_html(response.content, content_type), content_type)
 
 
 class CurlCffiLoader(Loader):

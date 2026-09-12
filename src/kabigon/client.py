@@ -42,6 +42,7 @@ from kabigon.loader_registry import YTDLP
 from kabigon.loader_registry import LoaderDef
 from kabigon.loader_registry import get_loader_def
 from kabigon.loader_registry import get_loader_factory
+from kabigon.sources.applicability import is_pdf_target
 
 _POSITIVE_DEADLINE = "deadline must be positive"
 _POSITIVE_LIMIT = "concurrency limits must be positive"
@@ -94,6 +95,7 @@ class KabigonClient:
         self._playwright: Any | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._entered = False
+        self._entry_depth = 0
         self._models: dict[str, Any] = {}
         self._model_init_lock = threading.Lock()
         self._model_use_locks: dict[str, threading.Lock] = {}
@@ -103,13 +105,19 @@ class KabigonClient:
         if self._loop is not None and self._loop is not loop:
             raise RuntimeError(_CLIENT_LOOP_MISMATCH)
         if self._entered:
+            self._entry_depth += 1
             return self
         self._loop = loop
         self._entered = True
+        self._entry_depth = 1
         return self
 
     async def __aexit__(self, *_: object) -> None:
-        await self.aclose()
+        if not self._entered:
+            return
+        self._entry_depth -= 1
+        if self._entry_depth == 0:
+            await self.aclose()
 
     def _check_loop(self) -> None:
         if not self._entered:
@@ -141,8 +149,15 @@ class KabigonClient:
             async with self._browser_lock:
                 if self._browser is None:
                     async_api = importlib.import_module("playwright.async_api")
-                    self._playwright = await async_api.async_playwright().start()
-                    self._browser = await self._playwright.chromium.launch(headless=True)
+                    playwright = await async_api.async_playwright().start()
+                    try:
+                        browser = await playwright.chromium.launch(headless=True)
+                    except BaseException:
+                        with contextlib.suppress(Exception):
+                            await playwright.stop()
+                        raise
+                    self._playwright = playwright
+                    self._browser = browser
         return self._browser
 
     def loader_kwargs(self, loader_def: LoaderDef) -> dict[str, Any]:
@@ -237,6 +252,10 @@ class KabigonClient:
         self._curl = None
         self._http = None
         self._entered = False
+        self._entry_depth = 0
+        with self._model_init_lock:
+            self._models.clear()
+            self._model_use_locks.clear()
         first_error: Exception | None = None
         for resource, close_method in resources:
             if resource is None:
@@ -254,7 +273,7 @@ def _validate_target(target: str) -> None:
     parsed = urlparse(target)
     if parsed.scheme in {"http", "https"} and parsed.netloc:
         return
-    if not parsed.scheme and target.lower().endswith(".pdf"):
+    if is_pdf_target(target):
         return
     raise ValueError(_INVALID_TARGET)
 
