@@ -38,7 +38,8 @@ class SubtreeHTMLExtractor(HTMLParser):
         self.root_tag = root_tag
         self.ignored_tags = ignored_tags or set()
         self._capturing = False
-        self._depth = 0
+        self._open_tags: list[str] = []
+        # Stack depth of the outermost ignored element; zero means visible.
         self._ignored_depth = 0
         self._out: list[str] = []
 
@@ -48,36 +49,36 @@ class SubtreeHTMLExtractor(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag == self.root_tag and not self._capturing:
             self._capturing = True
-            self._depth = 1
+            self._open_tags.append(tag)
             self._out.append(self.get_starttag_text() or f"<{tag}>")
             return
 
         if not self._capturing:
             return
 
-        if self._ignored_depth or tag in self.ignored_tags:
+        if tag not in _VOID_TAGS:
+            self._open_tags.append(tag)
+        if self._ignored_depth:
+            return
+        if tag in self.ignored_tags:
             if tag not in _VOID_TAGS:
-                self._ignored_depth += 1
+                self._ignored_depth = len(self._open_tags)
             return
 
         self._out.append(self.get_starttag_text() or f"<{tag}>")
-        if tag not in _VOID_TAGS:
-            self._depth += 1
 
     def handle_endtag(self, tag: str) -> None:
-        if not self._capturing:
+        if not self._capturing or tag not in self._open_tags:
             return
 
-        if self._ignored_depth:
-            if tag not in _VOID_TAGS:
-                self._ignored_depth -= 1
-            return
-
-        self._out.append(f"</{tag}>")
-        if tag not in _VOID_TAGS:
-            self._depth -= 1
-
-        if self._depth <= 0:
+        # An ancestor end tag also closes descendants with omitted end tags.
+        index = len(self._open_tags) - 1 - self._open_tags[::-1].index(tag)
+        if not self._ignored_depth or index < self._ignored_depth - 1:
+            self._out.append(f"</{tag}>")
+        del self._open_tags[index:]
+        if len(self._open_tags) < self._ignored_depth:
+            self._ignored_depth = 0
+        if not self._open_tags:
             self._capturing = False
 
     def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
