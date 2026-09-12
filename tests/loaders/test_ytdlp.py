@@ -205,6 +205,23 @@ def test_audio_decode_terminates_subprocess_on_timeout_or_cancellation(
     process.wait.assert_called_once_with(timeout=5)
 
 
+@pytest.mark.parametrize("error", [subprocess.TimeoutExpired("ffmpeg", 1), KeyboardInterrupt()])
+def test_audio_decode_preserves_primary_error_when_process_already_exited(
+    monkeypatch: pytest.MonkeyPatch, error: BaseException
+) -> None:
+    process = Mock()
+    process.communicate.side_effect = error
+    process.terminate.side_effect = ProcessLookupError
+    monkeypatch.setattr(subprocess, "Popen", lambda *_args, **_kwargs: process)
+
+    with pytest.raises(type(error)) as exc_info:
+        audio_module.load_audio("audio.mp3", timeout=1)
+
+    assert exc_info.value is error
+    process.terminate.assert_called_once()
+    process.wait.assert_not_called()
+
+
 @pytest.mark.parametrize("error_type", [FileNotFoundError, subprocess.CalledProcessError])
 def test_transcription_cleans_up_when_decoding_fails(
     monkeypatch: pytest.MonkeyPatch, transcription, error_type: type[Exception]

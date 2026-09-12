@@ -7,6 +7,7 @@ from playwright.async_api import Page
 from playwright.async_api import TimeoutError
 
 from kabigon.core.errors import LoaderContentError
+from kabigon.core.errors import LoaderNotApplicableError
 from kabigon.core.loader import Loader
 from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_twitter_target
@@ -17,11 +18,6 @@ from .browser import fetch_browser_html
 from .utils import html_to_markdown
 
 logger = logging.getLogger(__name__)
-TWEET_READY_SELECTORS = [
-    'article [data-testid="tweetText"]',
-    'article [data-testid="tweet"]',
-    '[data-testid="tweetText"]',
-]
 
 
 def _status_id(url: str) -> str | None:
@@ -51,18 +47,19 @@ class TwitterLoader(Loader):
         logger.info("[TwitterLoader] Processing URL: %s", url)
         target = parse_twitter_target(url)
 
+        if target.status_id is None:
+            raise LoaderNotApplicableError("TwitterLoader", url, "URL is not a Twitter/X status URL")
+
         url = target.normalized_url
         status_id = target.status_id
         logger.info("[TwitterLoader] Fetching normalized URL: %s", url)
 
-        selectors = TWEET_READY_SELECTORS
-        if status_id is not None:
-            selectors = [
-                f'article a[href$="/status/{status_id}"] time',
-                f'article a[href$="/status/{status_id}/"] time',
-                f'article a[href*="/status/{status_id}?"] time',
-                f'article a[href*="/status/{status_id}#"] time',
-            ]
+        selectors = [
+            f'article a[href$="/status/{status_id}"] time',
+            f'article a[href$="/status/{status_id}/"] time',
+            f'article a[href*="/status/{status_id}?"] time',
+            f'article a[href*="/status/{status_id}#"] time',
+        ]
 
         async def wait_for_tweet(page: Page) -> None:
             with contextlib.suppress(TimeoutError):
@@ -73,9 +70,6 @@ class TwitterLoader(Loader):
                 )
 
         async def extract_tweet_content(page: Page) -> str:
-            if status_id is None:
-                return await page.content()
-
             for article in await page.locator("article").all():
                 # The first timestamp permalink identifies the article itself;
                 # later permalinks may belong to a quoted tweet.

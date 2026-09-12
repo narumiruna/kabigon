@@ -102,14 +102,9 @@ class LoadChain:
                 errors.append(f"{planned_loader_name}: Deadline expired before attempt")
                 break
 
-            loader_name = planned_loader_name
             started = time.monotonic()
             try:
                 loader = self.get_factory(planned_loader_name)()
-                try:
-                    get_loader_content_type(planned_loader_name)
-                except KeyError:
-                    loader_name = loader.__class__.__name__
                 logger.debug("[%s] Attempting to load URL: %s", planned_loader_name, self.explanation.url)
                 if self.admit is not None:
                     operation = self.admit(
@@ -125,25 +120,25 @@ class LoadChain:
                         result = await operation
             except LoaderNotApplicableError as error:
                 message = error.reason or "not applicable"
-                errors.append(f"{loader_name}: Not applicable ({message})")
+                errors.append(f"{planned_loader_name}: Not applicable ({message})")
                 self._append_attempt(
                     attempts, planned_loader_name, AttemptStatus.NOT_APPLICABLE, started, error, message
                 )
                 continue
             except LoaderTimeoutError as error:
-                errors.append(f"{loader_name}: Timeout after {error.timeout}s")
+                errors.append(f"{planned_loader_name}: Timeout after {error.timeout}s")
                 self._append_attempt(
                     attempts, planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Loader timed out"
                 )
                 continue
             except TimeoutError as error:
-                errors.append(f"{loader_name}: Shared deadline expired")
+                errors.append(f"{planned_loader_name}: Shared deadline expired")
                 self._append_attempt(
                     attempts, planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Deadline expired"
                 )
                 break
             except LoaderContentError as error:
-                errors.append(f"{loader_name}: Content extraction failed - {error.reason}")
+                errors.append(f"{planned_loader_name}: Content extraction failed - {error.reason}")
                 self._append_attempt(
                     attempts, planned_loader_name, AttemptStatus.FAILED, started, error, "Content extraction failed"
                 )
@@ -151,14 +146,14 @@ class LoadChain:
             except asyncio.CancelledError:
                 raise
             except Exception as error:  # noqa: BLE001
-                errors.append(f"{loader_name}: {type(error).__name__}: {error!s}")
+                errors.append(f"{planned_loader_name}: {type(error).__name__}: {error!s}")
                 self._append_attempt(
                     attempts, planned_loader_name, AttemptStatus.FAILED, started, error, "Loader failed"
                 )
                 continue
 
             if not result or not result.strip():
-                errors.append(f"{loader_name}: Empty result")
+                errors.append(f"{planned_loader_name}: Empty result")
                 self._append_attempt(attempts, planned_loader_name, AttemptStatus.EMPTY, started, None, "Empty result")
                 continue
 
@@ -167,7 +162,7 @@ class LoadChain:
                 self.explanation.content_contract == ContentContract.SOURCE_REQUIRED
                 and actual_type != self.explanation.content_type
             ):
-                errors.append(f"{loader_name}: Rejected content type {actual_type}")
+                errors.append(f"{planned_loader_name}: Rejected content type {actual_type}")
                 self._append_attempt(
                     attempts,
                     planned_loader_name,

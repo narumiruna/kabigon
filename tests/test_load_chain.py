@@ -208,10 +208,11 @@ def test_load_chain_records_failed_attempt_details() -> None:
     error = exc_info.value
     assert error.url == "https://example.com"
     assert error.details
-    assert "NotApplicableLoader: Not applicable (unsupported domain)" in error.details
-    assert "TimeoutLoader: Timeout after 3.0s" in error.details
-    assert "ContentFailLoader: Content extraction failed - parse failed" in error.details
-    assert "EmptyLoader: Empty result" in error.details
+    assert "not-applicable: Not applicable (unsupported domain)" in error.details
+    assert "timeout: Timeout after 3.0s" in error.details
+    assert "content-fail: Content extraction failed - parse failed" in error.details
+    assert "empty: Empty result" in error.details
+    assert [detail.partition(":")[0] for detail in error.details] == [attempt.loader_id for attempt in error.attempts]
     assert "Attempted loaders:" in str(error)
 
 
@@ -225,7 +226,7 @@ def test_load_chain_records_source_applicability_as_not_applicable() -> None:
     with pytest.raises(LoaderError) as exc_info:
         chain.load_sync()
 
-    assert exc_info.value.details == ["SourceApplicabilityLoader: Not applicable (unsupported URL netloc: example.com)"]
+    assert exc_info.value.details == ["source-applicability: Not applicable (unsupported URL netloc: example.com)"]
 
 
 def test_explain_load_chain_does_not_build_loader_for_missing_requirement(monkeypatch) -> None:

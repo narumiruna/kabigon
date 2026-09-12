@@ -16,12 +16,13 @@ DEFAULT_DECODE_TIMEOUT = 120.0
 
 
 def _stop_process(process: subprocess.Popen[bytes]) -> None:
-    process.terminate()
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait()
+    with contextlib.suppress(ProcessLookupError):
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
 
 
 def load_audio(
