@@ -131,6 +131,14 @@ print(plan)
 print(kabigon.available_loaders())
 ```
 
+## Extraction behavior
+
+- Generic HTML loaders accept non-empty pages, including content shorter than 300 characters. Empty pages and recognized challenge headings are rejected; mentioning an HTTP error in an article does not make it a block page.
+- HTTP 4xx and 5xx responses fail extraction, including browser-based retrieval, so the load chain can try its next loader.
+- GitHub and news article extraction preserves escaped text such as literal HTML examples and excludes ignored subtrees without capturing surrounding page content.
+- For Twitter/X status URLs, the Twitter loader selects the requested post by its timestamp permalink, not the first post in the conversation. A missing target fails that loader rather than returning an unrelated post.
+- YouTube video URLs containing a playlist ID transcribe only the requested video when the yt-dlp fallback is used.
+
 ## Architecture
 
 The automatic path uses `kabigon.pipelines` to select a source-aware pipeline, then `kabigon.load_chain` builds one ordered execution plan. Each loader is constructed only when its turn is reached; the first non-empty string is returned, and if every planned loader fails, kabigon raises `LoaderError` with the attempted loader details.
@@ -172,7 +180,7 @@ Use this only for debugging or testing specific loaders. The automatic path is p
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `FIRECRAWL_API_KEY` | For `firecrawl` loader | API key for the [Firecrawl](https://firecrawl.dev) web extraction service |
-| `FFMPEG_PATH` | Optional | Custom path to the FFmpeg binary used by Whisper / yt-dlp |
+| `FFMPEG_PATH` | Optional | FFmpeg executable or containing directory used for yt-dlp post-processing and Whisper audio decoding |
 
 ### Docker
 
@@ -266,6 +274,8 @@ brew install ffmpeg
 # Custom binary
 export FFMPEG_PATH=/path/to/ffmpeg
 ```
+
+`FFMPEG_PATH` applies to both audio download post-processing and decoding for transcription. The configured binary does not need to be on `PATH`; when the variable is unset, kabigon uses `ffmpeg` from `PATH`.
 
 ### Playwright timeout
 
