@@ -133,9 +133,9 @@ print(kabigon.available_loaders())
 
 ## Extraction behavior
 
-- Generic HTML loaders accept non-empty pages, including content shorter than 300 characters. Empty pages and recognized challenge headings are rejected; mentioning an HTTP error in an article does not make it a block page.
+- Generic HTML loaders accept non-empty pages, including content shorter than 300 characters. Empty pages, recognized challenge headings, and `Access Denied` headings immediately followed by permission-denial or request-blocking diagnostics are rejected, even with HTTP 200. Mentioning an HTTP error in an article does not make it a block page.
 - HTTP 4xx and 5xx responses fail extraction, including browser-based retrieval, so the load chain can try its next loader.
-- GitHub and news article extraction preserves escaped text such as literal HTML examples and excludes ignored subtrees without capturing surrounding page content.
+- GitHub and news article extraction preserves escaped text such as literal HTML examples and excludes ignored subtrees without capturing surrounding page content, including when ignored descendants omit end tags or the article closes before an ignored element does.
 - For Twitter/X status URLs, the Twitter loader selects the requested post by its timestamp permalink, not the first post in the conversation. A missing target fails that loader rather than returning an unrelated post.
 - YouTube video URLs containing a playlist ID transcribe only the requested video when the yt-dlp fallback is used.
 
