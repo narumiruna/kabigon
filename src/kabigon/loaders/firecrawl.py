@@ -1,14 +1,13 @@
-import asyncio
 import logging
 import os
-from collections.abc import Awaitable
-from collections.abc import Callable
 from typing import Any
 
 from firecrawl import FirecrawlApp
 
 from kabigon.core.errors import FirecrawlAPIKeyNotSetError
 from kabigon.core.errors import LoaderError
+from kabigon.core.execution import BlockingRunner
+from kabigon.core.execution import run_blocking_operation
 from kabigon.core.loader import Loader
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ class FirecrawlLoader(Loader):
     def __init__(
         self,
         timeout: int | None = None,
-        run_blocking: Callable[[Callable[[], str]], Awaitable[str]] | None = None,
+        run_blocking: BlockingRunner | None = None,
     ) -> None:
         self.timeout = timeout
         self.run_blocking = run_blocking
@@ -62,6 +61,4 @@ class FirecrawlLoader(Loader):
         def operation() -> str:
             return self.load_sync(url)
 
-        if self.run_blocking is not None:
-            return await self.run_blocking(operation)
-        return await asyncio.to_thread(operation)
+        return await run_blocking_operation(operation, self.run_blocking)

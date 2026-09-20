@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 import io
 import logging
-from collections.abc import Awaitable
-from collections.abc import Callable
 from pathlib import Path
 from typing import IO
 from typing import Any
@@ -15,7 +12,9 @@ from pypdf import PdfReader
 
 from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderNotApplicableError
+from kabigon.core.execution import BlockingRunner
 from kabigon.core.execution import remaining_seconds
+from kabigon.core.execution import run_blocking_operation
 from kabigon.core.loader import Loader
 from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_pdf_target
@@ -30,7 +29,6 @@ DEFAULT_HEADERS = {
     ),
 }
 DEFAULT_TIMEOUT = 20.0
-BlockingRunner = Callable[[Callable[[], str]], Awaitable[str]]
 
 
 class PDFLoader(Loader):
@@ -46,9 +44,7 @@ class PDFLoader(Loader):
         def operation() -> str:
             return read_pdf_content(source)
 
-        if self.run_blocking is not None:
-            return await self.run_blocking(operation)
-        return await asyncio.to_thread(operation)
+        return await run_blocking_operation(operation, self.run_blocking)
 
     async def load(self, url_or_file: str) -> str:  # ty:ignore[invalid-method-override]
         require_loader_applicability("PDFLoader", url_or_file, parse_pdf_target)

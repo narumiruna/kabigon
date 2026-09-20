@@ -12,6 +12,8 @@ from kabigon.core.errors import LoaderContentError
 from kabigon.core.errors import LoaderTimeoutError
 from kabigon.core.execution import remaining_seconds
 from kabigon.core.loader import Loader
+from kabigon.core.resources import HttpClient
+from kabigon.core.resources import HttpResponse
 from kabigon.core.resources import ResourceProvider
 from kabigon.sources.applicability import parse_reddit_target
 
@@ -209,40 +211,67 @@ class RedditLoader(Loader):
         self.timeout = timeout
         self.resource_provider = resource_provider
 
-    async def _load_via_json(self, url: str) -> str:
-        api_url = to_reddit_json_url(url)
+    async def _request_endpoint(
+        self,
+        url: str,
+        *,
+        endpoint: str,
+        headers: dict[str, str] | None = None,
+    ) -> HttpResponse:
         remaining = remaining_seconds()
         timeout_seconds = min(self.timeout / 1000, remaining) if remaining is not None else self.timeout / 1000
-        headers = {
-            "User-Agent": USER_AGENT,
-            "Accept": "application/json",
-        }
+
+        async def request(client: HttpClient, *, apply_timeout: bool) -> HttpResponse:
+            kwargs: dict[str, Any] = {}
+            if headers is not None:
+                kwargs["headers"] = headers
+            if apply_timeout:
+                kwargs.update(timeout=timeout_seconds, follow_redirects=True)
+            response = await client.get(url, **kwargs)
+            response.raise_for_status()
+            return response
 
         try:
-            logger.info("[RedditLoader] Fetching Reddit JSON endpoint")
-            logger.debug("[RedditLoader] Reddit JSON URL: %s", api_url)
+            logger.info("[RedditLoader] Fetching Reddit %s endpoint", endpoint)
+            logger.debug("[RedditLoader] Reddit %s URL: %s", endpoint, url)
             if self.resource_provider is None:
                 async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
-                    response = await client.get(api_url, headers=headers)
-            else:
-                client = await self.resource_provider.http_client()
-                response = await client.get(api_url, headers=headers, timeout=timeout_seconds, follow_redirects=True)
-            response.raise_for_status()
-            payload = response.json()
-        except httpx.TimeoutException as e:
+                    return await request(client, apply_timeout=False)
+            return await request(await self.resource_provider.http_client(), apply_timeout=True)
+        except httpx.TimeoutException as error:
             raise LoaderTimeoutError(
                 "RedditLoader",
-                api_url,
+                url,
                 timeout_seconds,
-                "Reddit JSON endpoint timed out. Try increasing the timeout.",
-            ) from e
-        except (httpx.HTTPError, ValueError) as e:
+                f"Reddit {endpoint} endpoint timed out. Try increasing the timeout.",
+            ) from error
+        except httpx.HTTPError as error:
+            raise LoaderContentError(
+                "RedditLoader",
+                url,
+                f"Reddit {endpoint} request failed: {error}",
+                "Try again later or use the Playwright fallback path.",
+            ) from error
+
+    async def _load_via_json(self, url: str) -> str:
+        api_url = to_reddit_json_url(url)
+        response = await self._request_endpoint(
+            api_url,
+            endpoint="JSON",
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json",
+            },
+        )
+        try:
+            payload = response.json()
+        except ValueError as error:
             raise LoaderContentError(
                 "RedditLoader",
                 api_url,
-                f"Reddit JSON request failed: {e}",
+                f"Reddit JSON request failed: {error}",
                 "Try again later or use the Playwright fallback path.",
-            ) from e
+            ) from error
 
         post_data = _extract_post(payload, api_url)
         comment_children = _extract_comment_children(payload, api_url)
@@ -256,33 +285,7 @@ class RedditLoader(Loader):
 
     async def _load_via_rss(self, url: str) -> str:
         rss_url = to_reddit_rss_url(url)
-        remaining = remaining_seconds()
-        timeout_seconds = min(self.timeout / 1000, remaining) if remaining is not None else self.timeout / 1000
-        try:
-            logger.info("[RedditLoader] Fetching Reddit RSS endpoint")
-            logger.debug("[RedditLoader] Reddit RSS URL: %s", rss_url)
-            if self.resource_provider is None:
-                async with httpx.AsyncClient(timeout=timeout_seconds, follow_redirects=True) as client:
-                    response = await client.get(rss_url)
-            else:
-                client = await self.resource_provider.http_client()
-                response = await client.get(rss_url, timeout=timeout_seconds, follow_redirects=True)
-            response.raise_for_status()
-        except httpx.TimeoutException as e:
-            raise LoaderTimeoutError(
-                "RedditLoader",
-                rss_url,
-                timeout_seconds,
-                "Reddit RSS endpoint timed out. Try increasing the timeout.",
-            ) from e
-        except httpx.HTTPError as e:
-            raise LoaderContentError(
-                "RedditLoader",
-                rss_url,
-                f"Reddit RSS request failed: {e}",
-                "Try again later or use the Playwright fallback path.",
-            ) from e
-
+        response = await self._request_endpoint(rss_url, endpoint="RSS")
         return _rss_to_markdown(response.text, rss_url)
 
     async def _load_via_old_reddit(self, url: str) -> str:

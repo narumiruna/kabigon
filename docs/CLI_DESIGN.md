@@ -5,9 +5,9 @@
 kabigon https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 # Default behavior
-# 1) Route URL to source-specific pipeline first
-# 2) If needed, continue with remaining default fallback loaders
-# 3) Already-attempted loaders are not repeated
+# 1) Route recognized URLs to a source-specific, source-safe loader plan
+# 2) Use the generic loader order only for unmatched web pages
+# 3) Try each planned loader at most once
 
 # List supported loaders
 kabigon --list

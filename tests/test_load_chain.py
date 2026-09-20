@@ -85,7 +85,7 @@ def test_load_chain_explains_generic_web_default_order() -> None:
     assert explanation.execution_plan == DEFAULT_FALLBACK_LOADERS
 
 
-def test_load_chain_deduplicates_targeted_loaders_from_fallback() -> None:
+def test_source_pipeline_execution_plan_has_unique_loaders() -> None:
     explanation = explain_load_chain("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     assert explanation.execution_plan.count("youtube") == 1

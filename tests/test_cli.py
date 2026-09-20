@@ -7,6 +7,7 @@ import pytest
 from kabigon import cli
 from kabigon.core.errors import MissingRequirementError
 from kabigon.core.loader import Loader
+from kabigon.loader_registry import LoaderDef
 
 
 class DummyLoader(Loader):
@@ -25,16 +26,25 @@ class DummyLoadChain:
         return "ok"
 
 
-def make_defs(
-    *defs: tuple[str, str, Callable[[], Loader], tuple[str, ...]],
-) -> list[tuple[str, str, Callable[[], Loader], tuple[str, ...]]]:
-    return list(defs)
+def make_defs(*defs: tuple[str, str, tuple[str, ...]]) -> list[LoaderDef]:
+    return [
+        LoaderDef(
+            name,
+            description,
+            __name__,
+            "DummyLoader",
+            "generic_web",
+            requirements=requirements,
+            kwargs=(("name", name),),
+        )
+        for name, description, requirements in defs
+    ]
 
 
 def test_cli_list_outputs_loaders(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     specs = make_defs(
-        ("alpha", "Alpha loader", lambda: DummyLoader("alpha"), ()),
-        ("beta", "Beta loader", lambda: DummyLoader("beta"), ()),
+        ("alpha", "Alpha loader", ()),
+        ("beta", "Beta loader", ()),
     )
     monkeypatch.setattr(cli, "LOADER_DEFS", specs)
 
@@ -50,8 +60,8 @@ def test_cli_loader_selection_uses_load_chain_runtime(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     specs = make_defs(
-        ("first", "First loader", lambda: DummyLoader("first"), ()),
-        ("second", "Second loader", lambda: DummyLoader("second"), ()),
+        ("first", "First loader", ()),
+        ("second", "Second loader", ()),
     )
     monkeypatch.setattr(cli, "LOADER_DEFS", specs)
 

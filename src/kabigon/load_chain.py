@@ -121,40 +121,32 @@ class LoadChain:
             except LoaderNotApplicableError as error:
                 message = error.reason or "not applicable"
                 errors.append(f"{planned_loader_name}: Not applicable ({message})")
-                self._append_attempt(
-                    attempts, planned_loader_name, AttemptStatus.NOT_APPLICABLE, started, error, message
-                )
+                self._append_attempt(planned_loader_name, AttemptStatus.NOT_APPLICABLE, started, error, message)
                 continue
             except LoaderTimeoutError as error:
                 errors.append(f"{planned_loader_name}: Timeout after {error.timeout}s")
-                self._append_attempt(
-                    attempts, planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Loader timed out"
-                )
+                self._append_attempt(planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Loader timed out")
                 continue
             except TimeoutError as error:
                 errors.append(f"{planned_loader_name}: Shared deadline expired")
-                self._append_attempt(
-                    attempts, planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Deadline expired"
-                )
+                self._append_attempt(planned_loader_name, AttemptStatus.TIMEOUT, started, error, "Deadline expired")
                 break
             except LoaderContentError as error:
                 errors.append(f"{planned_loader_name}: Content extraction failed - {error.reason}")
                 self._append_attempt(
-                    attempts, planned_loader_name, AttemptStatus.FAILED, started, error, "Content extraction failed"
+                    planned_loader_name, AttemptStatus.FAILED, started, error, "Content extraction failed"
                 )
                 continue
             except asyncio.CancelledError:
                 raise
             except Exception as error:  # noqa: BLE001
                 errors.append(f"{planned_loader_name}: {type(error).__name__}: {error!s}")
-                self._append_attempt(
-                    attempts, planned_loader_name, AttemptStatus.FAILED, started, error, "Loader failed"
-                )
+                self._append_attempt(planned_loader_name, AttemptStatus.FAILED, started, error, "Loader failed")
                 continue
 
             if not result or not result.strip():
                 errors.append(f"{planned_loader_name}: Empty result")
-                self._append_attempt(attempts, planned_loader_name, AttemptStatus.EMPTY, started, None, "Empty result")
+                self._append_attempt(planned_loader_name, AttemptStatus.EMPTY, started, None, "Empty result")
                 continue
 
             actual_type = ContentType(self.get_content_type(planned_loader_name))
@@ -164,7 +156,6 @@ class LoadChain:
             ):
                 errors.append(f"{planned_loader_name}: Rejected content type {actual_type}")
                 self._append_attempt(
-                    attempts,
                     planned_loader_name,
                     AttemptStatus.REJECTED,
                     started,
@@ -173,7 +164,7 @@ class LoadChain:
                 )
                 continue
 
-            self._append_attempt(attempts, planned_loader_name, AttemptStatus.SUCCESS, started)
+            self._append_attempt(planned_loader_name, AttemptStatus.SUCCESS, started)
             return LoadResult(
                 content=result,
                 loader_id=planned_loader_name,
@@ -188,7 +179,6 @@ class LoadChain:
 
     @staticmethod
     def _append_attempt(
-        attempts: list[AttemptRecord],
         loader_id: str,
         status: AttemptStatus,
         started: float,

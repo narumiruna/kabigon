@@ -1,11 +1,10 @@
-import asyncio
 import logging
-from collections.abc import Awaitable
-from collections.abc import Callable
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from kabigon.core.errors import LoaderContentError
+from kabigon.core.execution import BlockingRunner
+from kabigon.core.execution import run_blocking_operation
 from kabigon.core.loader import Loader
 from kabigon.sources.applicability import parse_youtube_video_target
 from kabigon.sources.applicability import require_loader_applicability
@@ -81,7 +80,7 @@ class YoutubeLoader(Loader):
     def __init__(
         self,
         languages: list[str] | None = None,
-        run_blocking: Callable[[Callable[[], str]], Awaitable[str]] | None = None,
+        run_blocking: BlockingRunner | None = None,
     ) -> None:
         self.languages = languages or DEFAULT_LANGUAGES
         self.run_blocking = run_blocking
@@ -126,6 +125,4 @@ class YoutubeLoader(Loader):
         def operation() -> str:
             return self.load_sync(url)
 
-        if self.run_blocking is not None:
-            return await self.run_blocking(operation)
-        return await asyncio.to_thread(operation)
+        return await run_blocking_operation(operation, self.run_blocking)

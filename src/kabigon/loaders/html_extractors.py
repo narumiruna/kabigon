@@ -45,8 +45,14 @@ class SubtreeHTMLExtractor(HTMLParser):
     def get_html(self) -> str:
         return "".join(self._out).strip()
 
+    def _matches_root(self, tag: str, attrs: list[tuple[str, str | None]]) -> bool:
+        return tag == self.root_tag
+
+    def _should_ignore_subtree(self, tag: str, attrs: list[tuple[str, str | None]]) -> bool:
+        return tag in self.ignored_tags
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag == self.root_tag and not self._capturing:
+        if not self._capturing and self._matches_root(tag, attrs):
             self._capturing = True
             self._depth = 1
             self._out.append(self.get_starttag_text() or f"<{tag}>")
@@ -55,9 +61,14 @@ class SubtreeHTMLExtractor(HTMLParser):
         if not self._capturing:
             return
 
-        if self._ignored_depth or tag in self.ignored_tags:
+        if self._ignored_depth:
             if tag not in _VOID_TAGS:
                 self._ignored_depth += 1
+            return
+
+        if self._should_ignore_subtree(tag, attrs):
+            if tag not in _VOID_TAGS:
+                self._ignored_depth = 1
             return
 
         self._out.append(self.get_starttag_text() or f"<{tag}>")
@@ -81,9 +92,7 @@ class SubtreeHTMLExtractor(HTMLParser):
             self._capturing = False
 
     def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if not self._capturing:
-            return
-        if self._ignored_depth or tag in self.ignored_tags:
+        if not self._capturing or self._ignored_depth or self._should_ignore_subtree(tag, attrs):
             return
         self._out.append(self.get_starttag_text() or f"<{tag} />")
 

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import logging
 import os
 import tempfile
 import threading
-from collections.abc import Awaitable
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -15,12 +13,13 @@ from typing import cast
 import yt_dlp
 
 from kabigon.core.errors import WhisperNotInstalledError
+from kabigon.core.execution import BlockingRunner
+from kabigon.core.execution import run_blocking_operation
 from kabigon.core.loader import Loader
 
 from .audio import load_audio
 
 logger = logging.getLogger(__name__)
-BlockingRunner = Callable[[Callable[[], str]], Awaitable[str]]
 ModelProvider = Callable[[str], tuple[Any, threading.Lock]]
 
 
@@ -87,6 +86,4 @@ class YtdlpLoader(Loader):
         def operation() -> str:
             return self.load_sync(url)
 
-        if self.run_blocking is not None:
-            return await self.run_blocking(operation)
-        return await asyncio.to_thread(operation)
+        return await run_blocking_operation(operation, self.run_blocking)
