@@ -13,23 +13,16 @@ from kabigon.loader_registry import LoaderDef
 from kabigon.loader_registry import list_loader_defs
 
 LoaderFactory = Callable[[], Loader]
-LegacyLoaderDef = tuple[str, str, LoaderFactory, tuple[str, ...]]
-LOADER_DEFS: list[LoaderDef | LegacyLoaderDef] = list(list_loader_defs(cli_visible=True))
+LOADER_DEFS: list[LoaderDef] = list(list_loader_defs(cli_visible=True))
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s:%(lineno)d - %(message)s"
 
 
-def _parts(definition: LoaderDef | LegacyLoaderDef) -> tuple[str, str, LoaderFactory, tuple[str, ...]]:
-    if isinstance(definition, LoaderDef):
-        return definition.name, definition.description, definition.factory, definition.requirements
-    return definition
-
-
 def _loader_registry() -> dict[str, LoaderFactory]:
-    return {name: factory for name, _description, factory, _requirements in map(_parts, LOADER_DEFS)}
+    return {definition.name: definition.factory for definition in LOADER_DEFS}
 
 
 def _loader_requirements() -> dict[str, tuple[str, ...]]:
-    return {name: requirements for name, _description, _factory, requirements in map(_parts, LOADER_DEFS)}
+    return {definition.name: definition.requirements for definition in LOADER_DEFS}
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -53,8 +46,8 @@ def _parse_loader_names(raw: str, parser: argparse.ArgumentParser) -> list[str]:
 
 
 def _print_loader_list() -> None:
-    for name, description, _factory, _requirements in map(_parts, LOADER_DEFS):
-        print(f"{name} - {description}")
+    for definition in LOADER_DEFS:
+        print(f"{definition.name} - {definition.description}")
 
 
 def _configure_logging(verbose: bool) -> None:

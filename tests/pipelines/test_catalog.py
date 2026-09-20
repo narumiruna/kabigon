@@ -2,7 +2,6 @@ import pytest
 
 from kabigon.pipelines.catalog import ContentContract
 from kabigon.pipelines.catalog import ContentType
-from kabigon.pipelines.catalog import FallbackPolicy
 from kabigon.pipelines.catalog import match_pipeline
 from kabigon.pipelines.catalog import plan_for_url
 
@@ -198,7 +197,6 @@ def test_match_pipeline_openai_web(url: str) -> None:
     assert pipeline.name == "openai_web"
     assert pipeline.content_type == ContentType.GENERIC_WEB
     assert pipeline.targeted_loaders == ("firecrawl",)
-    assert pipeline.fallback_policy == FallbackPolicy.NO_FALLBACK
 
 
 def test_match_pipeline_developers_openai_is_not_openai_web() -> None:

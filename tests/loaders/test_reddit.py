@@ -104,6 +104,20 @@ class Rss403ThenJsonClient:
         raise AssertionError(f"unexpected URL: {url}")
 
 
+class TimeoutClient:
+    def __init__(self, **_: object) -> None:
+        return None
+
+    async def __aenter__(self) -> "TimeoutClient":
+        return self
+
+    async def __aexit__(self, _exc_type: object, _exc: object, _tb: object) -> None:
+        return None
+
+    async def get(self, url: str, **_kwargs: object) -> RedditResponse:
+        raise httpx.ReadTimeout("timed out", request=httpx.Request("GET", url))
+
+
 class RssAndJson403Client:
     def __init__(self, **_: object) -> None:
         return None
@@ -167,6 +181,22 @@ def test_reddit_loader_falls_back_to_json_when_rss_http_error(monkeypatch: pytes
     assert "Great project" in result
     assert "u/bob" in result
     assert "Looks useful!" in result
+
+
+@pytest.mark.parametrize(
+    ("method_name", "endpoint"),
+    [("_load_via_rss", "RSS"), ("_load_via_json", "JSON")],
+)
+def test_reddit_endpoint_timeout_is_translated(
+    monkeypatch: pytest.MonkeyPatch,
+    method_name: str,
+    endpoint: str,
+) -> None:
+    monkeypatch.setattr(reddit.httpx, "AsyncClient", TimeoutClient)
+    loader = RedditLoader(timeout=1_000)
+
+    with pytest.raises(reddit.LoaderTimeoutError, match=rf"Reddit {endpoint} endpoint timed out"):
+        asyncio.run(getattr(loader, method_name)("https://www.reddit.com/r/python/comments/abc/demo/"))
 
 
 def test_reddit_loader_uses_old_reddit_when_rss_and_json_http_error(monkeypatch: pytest.MonkeyPatch) -> None:

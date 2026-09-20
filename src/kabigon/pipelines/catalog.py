@@ -37,11 +37,6 @@ class ContentContract(StrEnum):
     GENERIC_HTML = "generic_html"
 
 
-class FallbackPolicy(StrEnum):
-    REMAINING_DEFAULT = "remaining_default"
-    NO_FALLBACK = "no_fallback"
-
-
 GENERIC_HTML_LOADERS = (
     loader_names.CURL_CFFI,
     loader_names.PLAYWRIGHT_NETWORKIDLE,
@@ -55,9 +50,7 @@ class Pipeline:
     name: str
     content_type: ContentType
     targeted_loaders: tuple[str, ...]
-    fallback_policy: FallbackPolicy = FallbackPolicy.NO_FALLBACK
     content_contract: ContentContract = ContentContract.SOURCE_REQUIRED
-    fallback_loaders: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -121,13 +114,12 @@ def plan_for_url(url: str) -> PipelinePlan:
             content_contract=ContentContract.GENERIC_HTML,
         )
 
-    execution_plan = tuple(dict.fromkeys((*pipeline.targeted_loaders, *pipeline.fallback_loaders)))
     return PipelinePlan(
         pipeline_name=pipeline.name,
         content_type=pipeline.content_type,
         targeted_loaders=pipeline.targeted_loaders,
-        fallback_loaders=pipeline.fallback_loaders,
-        execution_plan=execution_plan,
+        fallback_loaders=(),
+        execution_plan=pipeline.targeted_loaders,
         content_contract=pipeline.content_contract,
     )
 
@@ -140,7 +132,6 @@ __all__ = [
     "GENERIC_HTML_LOADERS",
     "ContentContract",
     "ContentType",
-    "FallbackPolicy",
     "Pipeline",
     "PipelinePlan",
     "list_pipelines",
